@@ -1,6 +1,8 @@
-[gd_scene load_steps=5 format=4 uid="uid://duf77tiua4n4i"]
+[gd_scene load_steps=7 format=4 uid="uid://duf77tiua4n4i"]
 
 [ext_resource type="PackedScene" uid="uid://bboni0qj12dw2" path="res://Meshes/Pieces/Pawn.glb" id="1_eu7ni"]
+[ext_resource type="PackedScene" uid="uid://bm8ty1amlhee7" path="res://Scenes/Components/health.tscn" id="2_yp78i"]
+[ext_resource type="PackedScene" uid="uid://cp75tet6digbe" path="res://Scenes/Components/damage.tscn" id="3_04pu8"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_3865y"]
 size = Vector3(0.3, 0.751245, 0.3)
@@ -38,4 +40,24 @@ mesh = SubResource("ArrayMesh_eu7ni")
 skeleton = NodePath("../PAWN")
 surface_material_override/0 = SubResource("StandardMaterial3D_3865y")
 
+[node name="Health" parent="." node_paths=PackedStringArray("body") instance=ExtResource("2_yp78i")]
+body = NodePath("..")
+
+[node name="HealthArea" parent="Health" index="0"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.990104, 0)
+
+[node name="CollisionShape" parent="Health/HealthArea" index="0"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.699421, 0)
+
+[node name="Damage" parent="." node_paths=PackedStringArray("body") instance=ExtResource("3_04pu8")]
+body = NodePath("..")
+
+[node name="DamageArea" parent="Damage" index="0"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.29836, 0)
+
+[node name="CollisionShape" parent="Damage/DamageArea" index="0"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.591265, 0)
+
 [editable path="Mesh"]
+[editable path="Health"]
+[editable path="Damage"]

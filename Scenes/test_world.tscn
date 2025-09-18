@@ -1,15 +1,15 @@
 [gd_scene load_steps=19 format=3 uid="uid://b078atu5ef0dt"]
 
-[ext_resource type="Script" uid="uid://dxroe3qs8cilg" path="res://Scripts/edge_detection_compositor.gd" id="1_5a7ea"]
-[ext_resource type="Script" uid="uid://4tv1s05rp373" path="res://Scenes/drag&drop.gd" id="2_8j60k"]
-[ext_resource type="Script" uid="uid://b4ck42sr5p0qp" path="res://Scenes/move_wasd.gd" id="3_0fj1v"]
-[ext_resource type="PackedScene" uid="uid://4dwhgmum18oq" path="res://Scenes/tower.tscn" id="3_5a7ea"]
-[ext_resource type="PackedScene" uid="uid://cfqxcsswpttwe" path="res://Scenes/king.tscn" id="4_fo5ed"]
-[ext_resource type="PackedScene" uid="uid://bk5q2sljd1bv7" path="res://Scenes/bishop.tscn" id="5_k7acu"]
-[ext_resource type="PackedScene" uid="uid://duf77tiua4n4i" path="res://Scenes/pawn.tscn" id="6_5v1tr"]
-[ext_resource type="PackedScene" uid="uid://doxoly2gci3e1" path="res://Scenes/horse.tscn" id="7_0fj1v"]
-[ext_resource type="PackedScene" uid="uid://d0dtjr43kx12f" path="res://Scenes/queen.tscn" id="8_5v1tr"]
-[ext_resource type="MeshLibrary" uid="uid://crvilvmqn1jsv" path="res://Meshes/Tiles/tiles.tres" id="10_ikia7"]
+[ext_resource type="Script" uid="uid://dxroe3qs8cilg" path="res://Scripts/edge_detection_compositor.gd" id="1_yrarp"]
+[ext_resource type="Script" uid="uid://4tv1s05rp373" path="res://Scripts/select_&_drag.gd" id="2_5qo1a"]
+[ext_resource type="Script" uid="uid://b4ck42sr5p0qp" path="res://Scripts/camera_movement.gd" id="3_bgy8c"]
+[ext_resource type="MeshLibrary" uid="uid://crvilvmqn1jsv" path="res://Meshes/Tiles/tiles.tres" id="4_dftws"]
+[ext_resource type="PackedScene" uid="uid://4dwhgmum18oq" path="res://Scenes/Pieces/tower.tscn" id="5_h2i6u"]
+[ext_resource type="PackedScene" uid="uid://cfqxcsswpttwe" path="res://Scenes/Pieces/king.tscn" id="6_6sxhy"]
+[ext_resource type="PackedScene" uid="uid://bk5q2sljd1bv7" path="res://Scenes/Pieces/bishop.tscn" id="7_mde35"]
+[ext_resource type="PackedScene" uid="uid://duf77tiua4n4i" path="res://Scenes/Pieces/pawn.tscn" id="8_bv2ho"]
+[ext_resource type="PackedScene" uid="uid://doxoly2gci3e1" path="res://Scenes/Pieces/horse.tscn" id="9_byarb"]
+[ext_resource type="PackedScene" uid="uid://d0dtjr43kx12f" path="res://Scenes/Pieces/queen.tscn" id="10_eid5o"]
 
 [sub_resource type="Environment" id="Environment_fo5ed"]
 background_mode = 1
@@ -22,7 +22,7 @@ enabled = false
 effect_callback_type = 4
 needs_motion_vectors = false
 needs_normal_roughness = true
-script = ExtResource("1_5a7ea")
+script = ExtResource("1_yrarp")
 metadata/_custom_type_script = "uid://dxroe3qs8cilg"
 
 [sub_resource type="Compositor" id="Compositor_fo5ed"]
@@ -192,13 +192,13 @@ mesh = SubResource("QuadMesh_go701")
 surface_material_override/0 = SubResource("ShaderMaterial_5a7ea")
 
 [node name="Drag&Drop" type="Node3D" parent="SubViewportContainer/SubViewport/MainCamera" node_paths=PackedStringArray("camera")]
-script = ExtResource("2_8j60k")
+script = ExtResource("2_5qo1a")
 camera = NodePath("..")
 
 [node name="DraggableRay" type="RayCast3D" parent="SubViewportContainer/SubViewport/MainCamera/Drag&Drop"]
 
 [node name="MoveHorizon" type="Node3D" parent="SubViewportContainer/SubViewport/MainCamera" node_paths=PackedStringArray("camera")]
-script = ExtResource("3_0fj1v")
+script = ExtResource("3_bgy8c")
 camera = NodePath("..")
 
 [node name="BlueLight" type="DirectionalLight3D" parent="SubViewportContainer/SubViewport"]
@@ -217,7 +217,7 @@ directional_shadow_mode = 1
 
 [node name="GridMap" type="GridMap" parent="SubViewportContainer/SubViewport"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.99, 0)
-mesh_library = ExtResource("10_ikia7")
+mesh_library = ExtResource("4_dftws")
 physics_material = SubResource("PhysicsMaterial_0fj1v")
 cell_size = Vector3(1, 1, 1)
 collision_layer = 2
@@ -235,20 +235,20 @@ shape = SubResource("BoxShape3D_0fj1v")
 
 [node name="Pieces" type="Node3D" parent="SubViewportContainer/SubViewport"]
 
-[node name="Tower" parent="SubViewportContainer/SubViewport/Pieces" instance=ExtResource("3_5a7ea")]
+[node name="Tower" parent="SubViewportContainer/SubViewport/Pieces" instance=ExtResource("5_h2i6u")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.92553, -0.0946493, 3.02709)
 
-[node name="King" parent="SubViewportContainer/SubViewport/Pieces" instance=ExtResource("4_fo5ed")]
+[node name="King" parent="SubViewportContainer/SubViewport/Pieces" instance=ExtResource("6_6sxhy")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.06647, -0.216359, 2.86932)
 
-[node name="Bishop" parent="SubViewportContainer/SubViewport/Pieces" instance=ExtResource("5_k7acu")]
+[node name="Bishop" parent="SubViewportContainer/SubViewport/Pieces" instance=ExtResource("7_mde35")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.96817, -0.0490098, 3.04916)
 
-[node name="Pawn" parent="SubViewportContainer/SubViewport/Pieces" instance=ExtResource("6_5v1tr")]
+[node name="Pawn" parent="SubViewportContainer/SubViewport/Pieces" instance=ExtResource("8_bv2ho")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.20666, 0, 4.30271)
 
-[node name="Horse" parent="SubViewportContainer/SubViewport/Pieces" instance=ExtResource("7_0fj1v")]
+[node name="Horse" parent="SubViewportContainer/SubViewport/Pieces" instance=ExtResource("9_byarb")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.66858, 0, 1.90199)
 
-[node name="Queen" parent="SubViewportContainer/SubViewport/Pieces" instance=ExtResource("8_5v1tr")]
+[node name="Queen" parent="SubViewportContainer/SubViewport/Pieces" instance=ExtResource("10_eid5o")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.95674, 0.00925541, 2.12443)

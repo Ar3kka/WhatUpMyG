@@ -79,3 +79,5 @@ Back={
 
 3d_physics/layer_1="Pieces"
 3d_physics/layer_2="Tiles"
+3d_physics/layer_3="Health"
+3d_physics/layer_4="Damage"

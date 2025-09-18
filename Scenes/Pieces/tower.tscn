@@ -1,6 +1,9 @@
-[gd_scene load_steps=5 format=4 uid="uid://4dwhgmum18oq"]
+[gd_scene load_steps=8 format=4 uid="uid://4dwhgmum18oq"]
 
 [ext_resource type="PackedScene" uid="uid://grf1wmcd38w2" path="res://Meshes/Pieces/Tower.glb" id="1_mh5eo"]
+[ext_resource type="Script" uid="uid://6byb163onpt6" path="res://Scripts/selectable_object.gd" id="2_mh5eo"]
+[ext_resource type="PackedScene" uid="uid://bm8ty1amlhee7" path="res://Scenes/Components/health.tscn" id="3_t30n1"]
+[ext_resource type="PackedScene" uid="uid://cp75tet6digbe" path="res://Scenes/Components/damage.tscn" id="4_5ob2u"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_mh5eo"]
 size = Vector3(0.3, 0.791219, 0.3)
@@ -38,6 +41,29 @@ mesh = SubResource("ArrayMesh_mh5eo")
 skeleton = NodePath("../TOWER")
 surface_material_override/0 = SubResource("StandardMaterial3D_tghyl")
 
-[node name="PieceOfBrain" type="Node3D" parent="."]
+[node name="Selectable" type="Node3D" parent="."]
+script = ExtResource("2_mh5eo")
+
+[node name="Health" parent="." node_paths=PackedStringArray("body") instance=ExtResource("3_t30n1")]
+transform = Transform3D(0.3, 0, 0, 0, 0.3, 0, 0, 0, 0.3, 0, 0.250318, 0)
+body = NodePath("..")
+
+[node name="HealthArea" parent="Health" index="0"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.493051, 0)
+
+[node name="CollisionShape" parent="Health/HealthArea" index="0"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.380936, 0)
+
+[node name="Damage" parent="." node_paths=PackedStringArray("body") instance=ExtResource("4_5ob2u")]
+transform = Transform3D(0.3, 0, 0, 0, 0.3, 0, 0, 0, 0.3, 0, -0.00300872, 0)
+body = NodePath("..")
+
+[node name="DamageArea" parent="Damage" index="0"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.406361, 0)
+
+[node name="CollisionShape" parent="Damage/DamageArea" index="0"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.708698, 0)
 
 [editable path="Mesh"]
+[editable path="Health"]
+[editable path="Damage"]
