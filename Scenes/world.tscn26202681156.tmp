@@ -1,0 +1,242 @@
+[gd_scene load_steps=17 format=3 uid="uid://b078atu5ef0dt"]
+
+[ext_resource type="Script" uid="uid://dxroe3qs8cilg" path="res://Scripts/edge_detection_compositor.gd" id="1_5a7ea"]
+[ext_resource type="Script" uid="uid://4tv1s05rp373" path="res://Scenes/drag&drop.gd" id="2_8j60k"]
+[ext_resource type="Script" uid="uid://b4ck42sr5p0qp" path="res://Scenes/move_wasd.gd" id="3_0fj1v"]
+[ext_resource type="PackedScene" uid="uid://4dwhgmum18oq" path="res://Scenes/tower.tscn" id="3_5a7ea"]
+[ext_resource type="PackedScene" uid="uid://id780lmocm12" path="res://Scenes/tile.tscn" id="4_8j60k"]
+[ext_resource type="PackedScene" uid="uid://cfqxcsswpttwe" path="res://Scenes/king.tscn" id="4_fo5ed"]
+[ext_resource type="PackedScene" uid="uid://bk5q2sljd1bv7" path="res://Scenes/bishop.tscn" id="5_k7acu"]
+[ext_resource type="PackedScene" uid="uid://duf77tiua4n4i" path="res://Scenes/pawn.tscn" id="6_5v1tr"]
+[ext_resource type="PackedScene" uid="uid://doxoly2gci3e1" path="res://Scenes/horse.tscn" id="7_0fj1v"]
+[ext_resource type="PackedScene" uid="uid://d0dtjr43kx12f" path="res://Scenes/queen.tscn" id="8_5v1tr"]
+
+[sub_resource type="Environment" id="Environment_fo5ed"]
+background_mode = 1
+background_color = Color(0.0338533, 0.0338533, 0.0338533, 1)
+
+[sub_resource type="CompositorEffect" id="CompositorEffect_5a7ea"]
+resource_local_to_scene = false
+resource_name = ""
+enabled = false
+effect_callback_type = 4
+needs_motion_vectors = false
+needs_normal_roughness = true
+script = ExtResource("1_5a7ea")
+metadata/_custom_type_script = "uid://dxroe3qs8cilg"
+
+[sub_resource type="Compositor" id="Compositor_fo5ed"]
+compositor_effects = Array[CompositorEffect]([SubResource("CompositorEffect_5a7ea")])
+
+[sub_resource type="QuadMesh" id="QuadMesh_go701"]
+flip_faces = true
+size = Vector2(2, 2)
+
+[sub_resource type="Shader" id="Shader_8j60k"]
+code = "shader_type spatial;
+render_mode specular_disabled, ambient_light_disabled;
+
+uniform sampler2D DEPTH_TEXTURE : hint_depth_texture, filter_linear_mipmap;
+uniform sampler2D SCREEN_TEXTURE : hint_screen_texture, filter_nearest;
+uniform sampler2D NORMAL_TEXTURE : hint_normal_roughness_texture, filter_nearest;
+
+uniform float lightIntensity = 1.25;
+uniform float lineAlpha = 0.7;
+uniform bool useLighting = true;
+uniform float lineHighlight = 0.2;
+uniform float lineShadow = 0.55;
+
+varying vec2 screenUV;
+varying float lineMask;
+
+
+float GetLinearDepth(vec2 sUV, sampler2D depthTexture, mat4 invProjectionMat, float mask){
+	// Raw depth to linear depth code from:
+	// https://docs.godotengine.org/en/latest/tutorials/shaders/advanced_postprocessing.html
+	float depth = texture(depthTexture, sUV).x * mask;
+	vec3 ndc = vec3(sUV * 2.0 - 1.0, depth);
+    vec4 view = invProjectionMat * vec4(ndc, 1.0);
+	view.xyz /= view.w;
+	return -view.z;
+}
+
+vec3 GetNormal(vec2 uv, sampler2D normalTexture, float mask){
+	vec3 normal = texture(normalTexture, uv).rgb;
+	normal = normal * 2.0 - 1.0 * mask;
+	return normal;
+}
+
+float NormalEdgeIndicator(vec3 normalEdgeBias, vec3 normal, vec3 neighborNormal, float depthDifference){
+	//From Kody King: https://threejs.org/examples/webgl_postprocessing_pixel.html
+	float normalDifference = dot(normal - neighborNormal, normalEdgeBias);
+	float normalIndicator = clamp(smoothstep(-.01, .01, normalDifference), 0.0, 1.0);
+	float depthIndicator = clamp(sign(depthDifference * .25 + .0025), 0.0, 1.0);
+	return (1.0 - dot(normal, neighborNormal)) * depthIndicator * normalIndicator;
+}
+
+void vertex(){
+  POSITION = vec4(VERTEX.xy, 1.0, 1.0);
+}
+
+void fragment() {
+	vec2 texelSize = 1.0 / VIEWPORT_SIZE.xy;
+	screenUV = SCREEN_UV;
+
+	// UV offsets
+	vec2 UVOffsets[4];
+	UVOffsets[0] = SCREEN_UV + vec2(0.0, -1.0) * texelSize;
+	UVOffsets[1] = SCREEN_UV + vec2(0.0, 1.0) * texelSize;
+	UVOffsets[2] = SCREEN_UV + vec2(1.0, 0.0) * texelSize;
+	UVOffsets[3] = SCREEN_UV + vec2(-1.0, 0.0) * texelSize;
+
+	// Using alpha channel (screen roughness) to mask objects to not receive outlines
+	float outlineMask = texture(NORMAL_TEXTURE, SCREEN_UV).a;
+	outlineMask = ceil(outlineMask); // Objects with Roughness = 0 will not have and outline
+
+	// Edge detection with Depth
+	float depthDifference = 0.0;
+	float invDepthDifference = 0.5;
+	float depth = GetLinearDepth(SCREEN_UV, DEPTH_TEXTURE, INV_PROJECTION_MATRIX, outlineMask);
+
+	for (int i = 0; i < UVOffsets.length(); i++){
+		float dOff = GetLinearDepth(UVOffsets[i],DEPTH_TEXTURE, INV_PROJECTION_MATRIX, outlineMask);
+		depthDifference += clamp(dOff - depth, 0.0, 1.0);
+		invDepthDifference += depth - dOff;
+	}
+	invDepthDifference = clamp(invDepthDifference, 0.0, 1.0);
+	invDepthDifference = clamp(smoothstep(0.9, 0.9, invDepthDifference) * 10.0 , 0.0, 1.0);
+	depthDifference = smoothstep(0.25, 0.3, depthDifference);
+
+	// Edge detection with Normals
+	float normalDifference = 0.;
+	vec3 normalEdgeBias = vec3(1.0, 1.0, 1.0);
+	vec3 normal = GetNormal(SCREEN_UV, NORMAL_TEXTURE, outlineMask);
+
+	for (int i = 0; i < UVOffsets.length(); i++){
+		vec3 nOff = GetNormal(UVOffsets[i],NORMAL_TEXTURE, outlineMask);
+		normalDifference += NormalEdgeIndicator(normalEdgeBias, normal, nOff, depthDifference);
+	}
+	normalDifference = smoothstep(0.2, 0.2, normalDifference);
+	normalDifference = clamp(normalDifference - invDepthDifference, 0.0, 1.0);
+
+
+	ALBEDO = texture(SCREEN_TEXTURE, SCREEN_UV).rgb;
+	lineMask = clamp(0.1, lineAlpha, (depthDifference + normalDifference * 5.0));
+
+
+	if (!useLighting){
+		ALBEDO += clamp((normalDifference - depthDifference), 0.0, 1.0) * lineHighlight;
+		ALBEDO -= ALBEDO * depthDifference * lineShadow;
+	}
+}
+
+void light (){
+	if (useLighting){
+		vec4 normal = texture(NORMAL_TEXTURE, screenUV);
+		normal = normal * 2.0 - 1.0;
+
+		// Calculate light direction
+		float dotNL = dot(normal.rgb, LIGHT);
+		dotNL = pow(dotNL, 2.5);
+		dotNL = clamp(dotNL, 0.0, 1.0);
+
+		if(LIGHT_IS_DIRECTIONAL)
+			DIFFUSE_LIGHT += mix(vec3(1.0), dotNL * LIGHT_COLOR * lightIntensity, lineMask);
+	}
+	else
+		DIFFUSE_LIGHT = vec3(1.0);
+}
+"
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_5a7ea"]
+render_priority = 0
+shader = SubResource("Shader_8j60k")
+shader_parameter/lightIntensity = 1.25
+shader_parameter/lineAlpha = 0.7
+shader_parameter/useLighting = true
+shader_parameter/lineHighlight = 0.2
+shader_parameter/lineShadow = 0.55
+
+[node name="World" type="Node3D"]
+
+[node name="SubViewportContainer" type="SubViewportContainer" parent="."]
+texture_filter = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+stretch = true
+stretch_shrink = 3
+
+[node name="SubViewport" type="SubViewport" parent="SubViewportContainer"]
+handle_input_locally = false
+size = Vector2i(640, 360)
+render_target_update_mode = 4
+
+[node name="WorldShader" type="WorldEnvironment" parent="SubViewportContainer/SubViewport"]
+environment = SubResource("Environment_fo5ed")
+compositor = SubResource("Compositor_fo5ed")
+
+[node name="MainCamera" type="Camera3D" parent="SubViewportContainer/SubViewport"]
+transform = Transform3D(1, 0, 0, 0, 0.715753, 0.698353, 0, -0.698353, 0.715753, -3.79853, 2.48995, 6.66878)
+
+[node name="PixelArtShader" type="MeshInstance3D" parent="SubViewportContainer/SubViewport/MainCamera"]
+extra_cull_margin = 16384.0
+mesh = SubResource("QuadMesh_go701")
+surface_material_override/0 = SubResource("ShaderMaterial_5a7ea")
+
+[node name="Drag&Drop" type="Node3D" parent="SubViewportContainer/SubViewport/MainCamera" node_paths=PackedStringArray("camera")]
+script = ExtResource("2_8j60k")
+camera = NodePath("..")
+
+[node name="DraggableRay" type="RayCast3D" parent="SubViewportContainer/SubViewport/MainCamera/Drag&Drop"]
+
+[node name="MoveHorizon" type="Node3D" parent="SubViewportContainer/SubViewport/MainCamera" node_paths=PackedStringArray("camera")]
+script = ExtResource("3_0fj1v")
+camera = NodePath("..")
+
+[node name="BlueLight" type="DirectionalLight3D" parent="SubViewportContainer/SubViewport"]
+transform = Transform3D(0.906441, -0.183806, 0.380238, 5.45776e-09, 0.900326, 0.435216, -0.422333, -0.394497, 0.816092, 2.22688, 5.87193, 15.0536)
+light_color = Color(0.534917, 0.80211, 0.894056, 1)
+light_energy = 1.911
+shadow_enabled = true
+directional_shadow_mode = 1
+
+[node name="RedLight" type="DirectionalLight3D" parent="SubViewportContainer/SubViewport"]
+transform = Transform3D(0.804521, 0.258485, -0.534726, -1.23034e-08, 0.900326, 0.435216, 0.593925, -0.35014, 0.724331, -21.9325, 6.81046, 0.20546)
+light_color = Color(0.996078, 0.298039, 0.654902, 1)
+light_energy = 1.101
+shadow_enabled = true
+directional_shadow_mode = 1
+
+[node name="Pieces" type="Node3D" parent="SubViewportContainer/SubViewport"]
+
+[node name="Tower" parent="SubViewportContainer/SubViewport/Pieces" instance=ExtResource("3_5a7ea")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.48921, 3.00895)
+
+[node name="King" parent="SubViewportContainer/SubViewport/Pieces" instance=ExtResource("4_fo5ed")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.06647, 1.10456, 2.86932)
+
+[node name="Bishop" parent="SubViewportContainer/SubViewport/Pieces" instance=ExtResource("5_k7acu")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.96817, -0.0490098, 3.04916)
+
+[node name="Pawn" parent="SubViewportContainer/SubViewport/Pieces" instance=ExtResource("6_5v1tr")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.20666, 0, 4.30271)
+
+[node name="Horse" parent="SubViewportContainer/SubViewport/Pieces" instance=ExtResource("7_0fj1v")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.66858, 0, 1.90199)
+
+[node name="Queen" parent="SubViewportContainer/SubViewport/Pieces" instance=ExtResource("8_5v1tr")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.95674, 0.00925541, 2.12443)
+
+[node name="Tiles" type="Node3D" parent="SubViewportContainer/SubViewport"]
+
+[node name="Tile" parent="SubViewportContainer/SubViewport/Tiles" instance=ExtResource("4_8j60k")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.08657, 3.00895)
+
+[node name="Tile2" parent="SubViewportContainer/SubViewport/Tiles" instance=ExtResource("4_8j60k")]
+transform = Transform3D(5, 0, 0, 0, 5, 0, 0, 0, 5, -3.86281, -0.906985, 3.00895)
+
+[node name="Tile3" parent="SubViewportContainer/SubViewport/Tiles" instance=ExtResource("4_8j60k")]
+transform = Transform3D(5, 0, 0, 0, 5, 0, 0, 0, 5, -6.40573, 0.114854, 0.832803)

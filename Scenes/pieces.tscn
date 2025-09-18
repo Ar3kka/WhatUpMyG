@@ -1,0 +1,23 @@
+[gd_scene load_steps=7 format=3 uid="uid://bxtu3pjn0wdxp"]
+
+[ext_resource type="PackedScene" uid="uid://rb6072na0ky6" path="res://Meshes/Pieces/Bishop.glb" id="1_dhbd6"]
+[ext_resource type="PackedScene" uid="uid://d1rhx3b2apwy6" path="res://Meshes/Pieces/Horse.glb" id="2_jy2y8"]
+[ext_resource type="PackedScene" uid="uid://bwwfrec8ecw56" path="res://Meshes/Pieces/King.glb" id="3_0orwo"]
+[ext_resource type="PackedScene" uid="uid://bboni0qj12dw2" path="res://Meshes/Pieces/Pawn.glb" id="4_g20ag"]
+[ext_resource type="PackedScene" uid="uid://cuajmp8wq8orj" path="res://Meshes/Pieces/Queen.glb" id="5_a7p71"]
+[ext_resource type="PackedScene" uid="uid://grf1wmcd38w2" path="res://Meshes/Pieces/Tower.glb" id="6_33ula"]
+
+[node name="Pieces" type="Node3D"]
+
+[node name="Bishop" parent="." instance=ExtResource("1_dhbd6")]
+transform = Transform3D(-0.419975, 0, 0.907536, 0, 1, 0, -0.907536, 0, -0.419975, 0, 0, 0)
+
+[node name="Horse" parent="." instance=ExtResource("2_jy2y8")]
+
+[node name="King" parent="." instance=ExtResource("3_0orwo")]
+
+[node name="Pawn" parent="." instance=ExtResource("4_g20ag")]
+
+[node name="Queen" parent="." instance=ExtResource("5_a7p71")]
+
+[node name="Tower" parent="." instance=ExtResource("6_33ula")]
