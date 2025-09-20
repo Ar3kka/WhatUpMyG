@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://c31ejrrbumpwa"]
+
+[ext_resource type="Script" uid="uid://dvl8bnl3m06kf" path="res://Scripts/PieceComponents/freezable.gd" id="1_7lfa2"]
+
+[node name="Freezable" type="Node3D"]
+script = ExtResource("1_7lfa2")

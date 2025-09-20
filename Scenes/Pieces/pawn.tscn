@@ -1,8 +1,9 @@
-[gd_scene load_steps=7 format=4 uid="uid://duf77tiua4n4i"]
+[gd_scene load_steps=8 format=4 uid="uid://duf77tiua4n4i"]
 
 [ext_resource type="PackedScene" uid="uid://bboni0qj12dw2" path="res://Meshes/Pieces/Pawn.glb" id="1_eu7ni"]
 [ext_resource type="PackedScene" uid="uid://bm8ty1amlhee7" path="res://Scenes/Components/health.tscn" id="2_yp78i"]
 [ext_resource type="PackedScene" uid="uid://cp75tet6digbe" path="res://Scenes/Components/damage.tscn" id="3_04pu8"]
+[ext_resource type="PackedScene" uid="uid://dlp8m3k2m3qns" path="res://Scenes/Components/draggable.tscn" id="4_w368m"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_3865y"]
 size = Vector3(0.3, 0.751245, 0.3)
@@ -23,7 +24,7 @@ _surfaces = [{
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_3865y"]
 albedo_color = Color(0, 0, 0, 1)
 
-[node name="Pawn" type="RigidBody3D" groups=["draggable"]]
+[node name="Pawn" type="RigidBody3D"]
 collision_mask = 3
 
 [node name="CollisionHitbox" type="CollisionShape3D" parent="."]
@@ -57,6 +58,8 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.29836, 0)
 
 [node name="CollisionShape" parent="Damage/DamageArea" index="0"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.591265, 0)
+
+[node name="Draggable" parent="." instance=ExtResource("4_w368m")]
 
 [editable path="Mesh"]
 [editable path="Health"]

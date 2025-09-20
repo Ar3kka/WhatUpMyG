@@ -1,6 +1,7 @@
-[gd_scene load_steps=5 format=4 uid="uid://doxoly2gci3e1"]
+[gd_scene load_steps=6 format=4 uid="uid://doxoly2gci3e1"]
 
 [ext_resource type="PackedScene" uid="uid://d1rhx3b2apwy6" path="res://Meshes/Pieces/Horse.glb" id="1_guxo3"]
+[ext_resource type="PackedScene" uid="uid://dlp8m3k2m3qns" path="res://Scenes/Components/draggable.tscn" id="2_hj04a"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_3865y"]
 size = Vector3(0.3, 0.871646, 0.356396)
@@ -21,7 +22,7 @@ _surfaces = [{
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_8yyqj"]
 albedo_color = Color(0, 0, 0, 1)
 
-[node name="Horse" type="RigidBody3D" groups=["draggable"]]
+[node name="Horse" type="RigidBody3D"]
 collision_mask = 3
 
 [node name="CollisionHitbox" type="CollisionShape3D" parent="."]
@@ -37,5 +38,7 @@ visible = false
 mesh = SubResource("ArrayMesh_guxo3")
 skeleton = NodePath("../HORSE")
 surface_material_override/0 = SubResource("StandardMaterial3D_8yyqj")
+
+[node name="Draggable" parent="." instance=ExtResource("2_hj04a")]
 
 [editable path="Mesh"]

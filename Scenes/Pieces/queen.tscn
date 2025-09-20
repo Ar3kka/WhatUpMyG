@@ -1,6 +1,7 @@
-[gd_scene load_steps=5 format=4 uid="uid://d0dtjr43kx12f"]
+[gd_scene load_steps=6 format=4 uid="uid://d0dtjr43kx12f"]
 
 [ext_resource type="PackedScene" uid="uid://cuajmp8wq8orj" path="res://Meshes/Pieces/Queen.glb" id="1_cm4hx"]
+[ext_resource type="PackedScene" uid="uid://dlp8m3k2m3qns" path="res://Scenes/Components/draggable.tscn" id="2_7vfvp"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_3865y"]
 size = Vector3(0.3, 1.15641, 0.356396)
@@ -21,7 +22,7 @@ _surfaces = [{
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_gs1eq"]
 albedo_color = Color(0, 0, 0, 1)
 
-[node name="Queen" type="RigidBody3D" groups=["draggable"]]
+[node name="Queen" type="RigidBody3D"]
 collision_mask = 3
 
 [node name="CollisionHitbox" type="CollisionShape3D" parent="."]
@@ -37,5 +38,7 @@ visible = false
 mesh = SubResource("ArrayMesh_cm4hx")
 skeleton = NodePath("../QUEEN")
 surface_material_override/0 = SubResource("StandardMaterial3D_gs1eq")
+
+[node name="Draggable" parent="." instance=ExtResource("2_7vfvp")]
 
 [editable path="Mesh"]

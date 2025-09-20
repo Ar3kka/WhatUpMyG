@@ -1,4 +1,4 @@
-[gd_scene load_steps=12 format=4 uid="uid://4dwhgmum18oq"]
+[gd_scene load_steps=10 format=4 uid="uid://4dwhgmum18oq"]
 
 [ext_resource type="PackedScene" uid="uid://grf1wmcd38w2" path="res://Meshes/Pieces/Tower.glb" id="1_mh5eo"]
 [ext_resource type="Script" uid="uid://6byb163onpt6" path="res://Scripts/PieceComponents/selectable_object.gd" id="2_mh5eo"]
@@ -6,8 +6,6 @@
 [ext_resource type="PackedScene" uid="uid://cp75tet6digbe" path="res://Scenes/Components/damage.tscn" id="4_5ob2u"]
 [ext_resource type="Script" uid="uid://dead5xek34wrv" path="res://Scripts/PieceComponents/team.gd" id="5_5ob2u"]
 [ext_resource type="PackedScene" uid="uid://dlp8m3k2m3qns" path="res://Scenes/Components/draggable.tscn" id="6_cu5w2"]
-[ext_resource type="PackedScene" uid="uid://c31ejrrbumpwa" path="res://Scenes/Components/freezable.tscn" id="7_3nrh3"]
-[ext_resource type="Script" uid="uid://bi5f7sapco8tk" path="res://Scripts/PieceComponents/lookable.gd" id="8_gfquu"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_mh5eo"]
 size = Vector3(0.3, 0.791219, 0.3)
@@ -71,15 +69,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.708698, 0)
 [node name="Team" type="Node3D" parent="."]
 script = ExtResource("5_5ob2u")
 
-[node name="Draggable" parent="." node_paths=PackedStringArray("body") instance=ExtResource("6_cu5w2")]
-body = NodePath("..")
-
-[node name="Freezable" parent="." node_paths=PackedStringArray("body") instance=ExtResource("7_3nrh3")]
-body = NodePath("..")
-
-[node name="Lookable" type="Node3D" parent="." node_paths=PackedStringArray("body")]
-script = ExtResource("8_gfquu")
-body = NodePath("..")
+[node name="Draggable" parent="." instance=ExtResource("6_cu5w2")]
 
 [editable path="Mesh"]
 [editable path="Health"]
