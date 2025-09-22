@@ -1,9 +1,14 @@
-[gd_scene load_steps=8 format=4 uid="uid://duf77tiua4n4i"]
+[gd_scene load_steps=13 format=4 uid="uid://duf77tiua4n4i"]
 
 [ext_resource type="PackedScene" uid="uid://bboni0qj12dw2" path="res://Meshes/Pieces/Pawn.glb" id="1_eu7ni"]
 [ext_resource type="PackedScene" uid="uid://bm8ty1amlhee7" path="res://Scenes/Components/health.tscn" id="2_yp78i"]
 [ext_resource type="PackedScene" uid="uid://cp75tet6digbe" path="res://Scenes/Components/damage.tscn" id="3_04pu8"]
 [ext_resource type="PackedScene" uid="uid://dlp8m3k2m3qns" path="res://Scenes/Components/draggable.tscn" id="4_w368m"]
+[ext_resource type="PackedScene" uid="uid://depnx2by2pk0h" path="res://Scenes/Components/lookable.tscn" id="5_kwjfa"]
+[ext_resource type="PackedScene" uid="uid://c31ejrrbumpwa" path="res://Scenes/Components/freezable.tscn" id="6_lc8uw"]
+[ext_resource type="PackedScene" uid="uid://dxfkxdyxpicyy" path="res://Scenes/Components/selectable.tscn" id="7_6bymd"]
+[ext_resource type="PackedScene" uid="uid://2bji2dbrhdop" path="res://Scenes/Components/team.tscn" id="8_kuxq2"]
+[ext_resource type="PackedScene" uid="uid://dfjvv6pbb18hp" path="res://Scenes/Components/rotatable.tscn" id="9_wxs05"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_3865y"]
 size = Vector3(0.3, 0.751245, 0.3)
@@ -60,6 +65,19 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.29836, 0)
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.591265, 0)
 
 [node name="Draggable" parent="." instance=ExtResource("4_w368m")]
+
+[node name="Lookable" parent="." instance=ExtResource("5_kwjfa")]
+
+[node name="Freezable" parent="." instance=ExtResource("6_lc8uw")]
+
+[node name="Selectable" parent="." node_paths=PackedStringArray("Outline") instance=ExtResource("7_6bymd")]
+active = true
+Outline = NodePath("../Mesh/Outline")
+
+[node name="Team" parent="." instance=ExtResource("8_kuxq2")]
+team = 1
+
+[node name="Rotatable" parent="." instance=ExtResource("9_wxs05")]
 
 [editable path="Mesh"]
 [editable path="Health"]

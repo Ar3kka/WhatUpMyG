@@ -1,16 +1,33 @@
 class_name FreezableComponent extends Node3D
 
-signal freeze(freezing : bool, mode : RigidBody3D.FreezeMode)
+signal freeze(freezing : bool, player_manipulation : bool)
+
+## RECOMMENDED MODE
+const FREEZE_MODE = RigidBody3D.FREEZE_MODE_KINEMATIC
 
 @export var body : RigidBody3D
-@export var active : bool = true 
+@export var active : bool = true
+var freeze_by_player_manipulation : bool = false
 
-func is_frozen() -> bool: return body.freeze
-
-func frozen_mode() -> RigidBody3D.FreezeMode: return body.freeze_mode
+@export var frozen : bool :
+	set(freezing_value): 
+		if !active || body == null || freezing_value == body.freeze: return
+		if freeze_by_player_manipulation:
+			var team_component : TeamComponent = body.get_node("Team")
+			if team_component && team_component.active && team_component.team != 0 && team_component.observer_team != team_component.team: return
+		#if freezing_value: print("I'M FROZEN")
+		#else: print("I'M HOT")
+		body.freeze = freezing_value
+	get(): return body.freeze
+@export var freeze_mode : RigidBody3D.FreezeMode :
+	set(new_value): 
+		if body == null: return
+		body.freeze_mode = new_value
+	get(): return body.freeze_mode
 
 func _ready() -> void:
 	if !body: body = get_parent_node_3d()
-	freeze.connect(func(freezing : bool, mode : RigidBody3D.FreezeMode): 
-			body.freeze = freezing
-			body.freeze_mode = mode)
+	freeze_mode = FREEZE_MODE
+	freeze.connect(func(freezing : bool, player_manipulation : bool): 
+		frozen = freezing
+		freeze_by_player_manipulation = player_manipulation)

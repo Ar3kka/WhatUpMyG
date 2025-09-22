@@ -1,0 +1,7 @@
+[gd_scene load_steps=2 format=3 uid="uid://2bji2dbrhdop"]
+
+[ext_resource type="Script" uid="uid://dead5xek34wrv" path="res://Scripts/PieceComponents/team.gd" id="1_8loyy"]
+
+[node name="Team" type="Node3D"]
+script = ExtResource("1_8loyy")
+team = 2

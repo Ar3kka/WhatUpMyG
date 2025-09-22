@@ -1,0 +1,7 @@
+[gd_scene load_steps=2 format=3 uid="uid://dxfkxdyxpicyy"]
+
+[ext_resource type="Script" uid="uid://6byb163onpt6" path="res://Scripts/PieceComponents/selectable.gd" id="1_3jeyn"]
+
+[node name="Selectable" type="Node3D"]
+script = ExtResource("1_3jeyn")
+active = false

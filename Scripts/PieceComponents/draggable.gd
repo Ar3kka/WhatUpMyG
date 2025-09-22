@@ -1,11 +1,14 @@
 class_name DraggableComponent extends Node3D
 
-signal drag(horizontal : bool, vertical : bool, target : Vector3, strength : float)
+signal drag(horizontal : bool, vertical : bool, target : Vector3, strength : float, player_requested_to_drag : bool)
 
 ## RECOMMENDED SETTINGS
 const ROTATION_STRENGTH : float = 0.05
 const DRAGGING_STRENGTH : float = 0.1
 const X_LIMIT : float = 0.0
+const FREEZABLE_NODE = "Freezable"
+
+var player_manipulation : bool = true
 
 @export var body : RigidBody3D
 @export var dragging_strength : float = DRAGGING_STRENGTH
@@ -31,34 +34,45 @@ var body_rotation : Vector3 :
 	get(): return body.rotation_degrees
 
 func stop_dragging() :
+	if body == null : return
 	horizontal_drag = false
 	vertical_drag = false
 	target_point = Vector3.ZERO
+	_freeze(false)
 
 func dragged() -> bool : return horizontal_drag || vertical_drag
 
 func double_dragged() -> bool : return horizontal_drag && vertical_drag 
 
+func _freeze(freeze_value : bool):
+	if body == null : return
+	var freezable_component : FreezableComponent = body.get_node(FREEZABLE_NODE)
+	if freezable_component != null: freezable_component.freeze.emit(freeze_value, player_manipulation)
+
 func _ready() -> void:
-	if !body : body = get_parent_node_3d()
-	drag.connect(func(horizontal : bool, vertical : bool, target : Vector3, strength : float):
+	if body == null : body = get_parent_node_3d()
+	drag.connect(func(horizontal : bool, vertical : bool, target : Vector3, strength : float, player_requested_to_drag : bool):
 		horizontal_drag = horizontal
 		vertical_drag = vertical
 		target_point = target
+		player_manipulation = player_requested_to_drag
 		if override_drag_strength : _custom_dragging_strength = strength)
 
-func _process(delta: float) -> void:
+func _process(_delta: float) -> void:
 	if !active: return
 	
-	if body == null: 
-		print("I have no body bro")
+	if body == null:
+		print("I have no body bro, I'm all alone with my thoughts")
 		return
-	#if freeze && lookable != null && lookable.looked_at:
-	#	var freezable : FreezableComponent = body.get_node("Freezable")
-	#	if freezable != null && freezable.active : freezable.freeze.emit(true, RigidBody3D.FREEZE_MODE_KINEMATIC)
+	
 	if !dragged() : return
 	
-	## DRAG ACTION
+	#print("I'm being dragged, please god, help")
+	# Freeze in case intended
+	_freeze(freeze)
+	
+	## DRAG CALCULATION ##
+	
 	var final_y_z : Vector2 = Vector2(target_point.y, target_point.z)
 	
 	# Check if the object is being dragged in both axes

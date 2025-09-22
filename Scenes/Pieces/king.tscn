@@ -1,7 +1,12 @@
-[gd_scene load_steps=5 format=4 uid="uid://cfqxcsswpttwe"]
+[gd_scene load_steps=10 format=4 uid="uid://cfqxcsswpttwe"]
 
 [ext_resource type="PackedScene" uid="uid://bwwfrec8ecw56" path="res://Meshes/Pieces/King.glb" id="1_u63x5"]
 [ext_resource type="PackedScene" uid="uid://dlp8m3k2m3qns" path="res://Scenes/Components/draggable.tscn" id="2_huec1"]
+[ext_resource type="PackedScene" uid="uid://depnx2by2pk0h" path="res://Scenes/Components/lookable.tscn" id="3_518ce"]
+[ext_resource type="PackedScene" uid="uid://c31ejrrbumpwa" path="res://Scenes/Components/freezable.tscn" id="4_8u800"]
+[ext_resource type="PackedScene" uid="uid://dxfkxdyxpicyy" path="res://Scenes/Components/selectable.tscn" id="5_3flaa"]
+[ext_resource type="PackedScene" uid="uid://2bji2dbrhdop" path="res://Scenes/Components/team.tscn" id="6_dndfw"]
+[ext_resource type="PackedScene" uid="uid://dfjvv6pbb18hp" path="res://Scenes/Components/rotatable.tscn" id="7_1j5qe"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_n3uat"]
 size = Vector3(0.3, 1.25, 0.3)
@@ -36,5 +41,19 @@ mesh = SubResource("ArrayMesh_u63x5")
 skeleton = NodePath("../KING")
 
 [node name="Draggable" parent="." instance=ExtResource("2_huec1")]
+
+[node name="Lookable" parent="." node_paths=PackedStringArray("body") instance=ExtResource("3_518ce")]
+body = NodePath("..")
+
+[node name="Freezable" parent="." instance=ExtResource("4_8u800")]
+
+[node name="Selectable" parent="." node_paths=PackedStringArray("Outline") instance=ExtResource("5_3flaa")]
+active = true
+Outline = NodePath("../Mesh/Outline")
+
+[node name="Team" parent="." instance=ExtResource("6_dndfw")]
+team = 1
+
+[node name="Rotatable" parent="." instance=ExtResource("7_1j5qe")]
 
 [editable path="Mesh"]

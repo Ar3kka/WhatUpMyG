@@ -1,7 +1,12 @@
-[gd_scene load_steps=6 format=4 uid="uid://bk5q2sljd1bv7"]
+[gd_scene load_steps=11 format=4 uid="uid://bk5q2sljd1bv7"]
 
 [ext_resource type="PackedScene" uid="uid://rb6072na0ky6" path="res://Meshes/Pieces/Bishop.glb" id="1_5pmi2"]
 [ext_resource type="PackedScene" uid="uid://dlp8m3k2m3qns" path="res://Scenes/Components/draggable.tscn" id="2_u5b1v"]
+[ext_resource type="PackedScene" uid="uid://depnx2by2pk0h" path="res://Scenes/Components/lookable.tscn" id="3_u2fbb"]
+[ext_resource type="PackedScene" uid="uid://c31ejrrbumpwa" path="res://Scenes/Components/freezable.tscn" id="4_0semn"]
+[ext_resource type="PackedScene" uid="uid://dxfkxdyxpicyy" path="res://Scenes/Components/selectable.tscn" id="5_bg3bf"]
+[ext_resource type="PackedScene" uid="uid://2bji2dbrhdop" path="res://Scenes/Components/team.tscn" id="6_n2sq1"]
+[ext_resource type="PackedScene" uid="uid://dfjvv6pbb18hp" path="res://Scenes/Components/rotatable.tscn" id="7_dij6e"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_5pmi2"]
 size = Vector3(0.3, 0.963989, 0.3)
@@ -40,5 +45,19 @@ skeleton = NodePath("../BISHOP")
 surface_material_override/0 = SubResource("StandardMaterial3D_5pmi2")
 
 [node name="Draggable" parent="." instance=ExtResource("2_u5b1v")]
+
+[node name="Lookable" parent="." node_paths=PackedStringArray("body") instance=ExtResource("3_u2fbb")]
+body = NodePath("..")
+
+[node name="Freezable" parent="." instance=ExtResource("4_0semn")]
+
+[node name="Selectable" parent="." node_paths=PackedStringArray("Outline") instance=ExtResource("5_bg3bf")]
+active = true
+Outline = NodePath("../Mesh/Outline")
+
+[node name="Team" parent="." instance=ExtResource("6_n2sq1")]
+team = 1
+
+[node name="Rotatable" parent="." instance=ExtResource("7_dij6e")]
 
 [editable path="Mesh"]

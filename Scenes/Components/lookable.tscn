@@ -1,0 +1,7 @@
+[gd_scene load_steps=2 format=3 uid="uid://depnx2by2pk0h"]
+
+[ext_resource type="Script" uid="uid://bi5f7sapco8tk" path="res://Scripts/PieceComponents/lookable.gd" id="1_iqaf4"]
+
+[node name="Lookable" type="Node3D" node_paths=PackedStringArray("body")]
+script = ExtResource("1_iqaf4")
+body = NodePath("")

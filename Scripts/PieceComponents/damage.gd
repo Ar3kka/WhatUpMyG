@@ -1,5 +1,4 @@
-extends Node3D
-class_name DamageComponent
+class_name DamageComponent extends Node3D
 
 @export var body : RigidBody3D
 @export var damage_area : Area3D
@@ -18,4 +17,4 @@ func _on_damage_area_area_entered(area: Area3D):
 	#print(get_parent(), ": este es al que se supone que le puedo pegar: ", health_component.body)
 
 func _on_ready():
-	if !body : body = get_parent()
+	if body == null : body = get_parent_node_3d()
