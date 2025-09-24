@@ -2,7 +2,7 @@ class_name TeamComponent extends Node3D
 
 signal change_team(player_team : int, new_team_id : int)
 
-@export var body : RigidBody3D
+@export var body : Piece
 @export var active : bool = true
 ## The team ID for the given body, if set to 0, this object will count as teamless and any observer will be able to interact with it.
 @export var team : int = 1

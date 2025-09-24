@@ -1,7 +1,7 @@
 [gd_scene load_steps=19 format=3 uid="uid://b078atu5ef0dt"]
 
 [ext_resource type="Script" uid="uid://dxroe3qs8cilg" path="res://Scripts/World/edge_detection_compositor.gd" id="1_yrarp"]
-[ext_resource type="Script" uid="uid://b8rmjkdlmamtf" path="res://Scripts/PlayerInteraction/select_&_drag_new.gd" id="2_yrarp"]
+[ext_resource type="Script" uid="uid://b8rmjkdlmamtf" path="res://Scripts/PlayerInteraction/look_&_interact.gd" id="2_yrarp"]
 [ext_resource type="Script" uid="uid://b4ck42sr5p0qp" path="res://Scripts/PlayerInteraction/camera_movement.gd" id="3_bgy8c"]
 [ext_resource type="MeshLibrary" uid="uid://crvilvmqn1jsv" path="res://Meshes/Tiles/tiles.tres" id="4_dftws"]
 [ext_resource type="PackedScene" uid="uid://4dwhgmum18oq" path="res://Scenes/Pieces/tower.tscn" id="5_h2i6u"]
@@ -191,7 +191,7 @@ extra_cull_margin = 16384.0
 mesh = SubResource("QuadMesh_go701")
 surface_material_override/0 = SubResource("ShaderMaterial_5a7ea")
 
-[node name="Drag&Drop" type="Node3D" parent="SubViewportContainer/SubViewport/MainCamera" node_paths=PackedStringArray("camera")]
+[node name="Look&Interact" type="Node3D" parent="SubViewportContainer/SubViewport/MainCamera" node_paths=PackedStringArray("camera")]
 script = ExtResource("2_yrarp")
 camera = NodePath("..")
 team = 1

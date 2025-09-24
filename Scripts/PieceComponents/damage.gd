@@ -1,6 +1,6 @@
 class_name DamageComponent extends Node3D
 
-@export var body : RigidBody3D
+@export var body : Piece
 @export var damage_area : Area3D
 @export var active : bool = true
 @export var damage_points : float = 1.0

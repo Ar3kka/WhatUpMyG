@@ -1,5 +1,6 @@
-[gd_scene load_steps=10 format=4 uid="uid://cfqxcsswpttwe"]
+[gd_scene load_steps=11 format=4 uid="uid://cfqxcsswpttwe"]
 
+[ext_resource type="Script" uid="uid://bi2l7ixfw6ufq" path="res://Scripts/PieceComponents/piece.gd" id="1_o3ehe"]
 [ext_resource type="PackedScene" uid="uid://bwwfrec8ecw56" path="res://Meshes/Pieces/King.glb" id="1_u63x5"]
 [ext_resource type="PackedScene" uid="uid://dlp8m3k2m3qns" path="res://Scenes/Components/draggable.tscn" id="2_huec1"]
 [ext_resource type="PackedScene" uid="uid://depnx2by2pk0h" path="res://Scenes/Components/lookable.tscn" id="3_518ce"]
@@ -26,6 +27,7 @@ _surfaces = [{
 
 [node name="King" type="RigidBody3D"]
 collision_mask = 3
+script = ExtResource("1_o3ehe")
 
 [node name="CollisionHitbox" type="CollisionShape3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.62887, 0)

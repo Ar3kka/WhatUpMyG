@@ -1,6 +1,7 @@
-[gd_scene load_steps=11 format=4 uid="uid://d0dtjr43kx12f"]
+[gd_scene load_steps=12 format=4 uid="uid://d0dtjr43kx12f"]
 
 [ext_resource type="PackedScene" uid="uid://cuajmp8wq8orj" path="res://Meshes/Pieces/Queen.glb" id="1_cm4hx"]
+[ext_resource type="Script" uid="uid://bi2l7ixfw6ufq" path="res://Scripts/PieceComponents/piece.gd" id="1_ieefp"]
 [ext_resource type="PackedScene" uid="uid://dlp8m3k2m3qns" path="res://Scenes/Components/draggable.tscn" id="2_7vfvp"]
 [ext_resource type="PackedScene" uid="uid://depnx2by2pk0h" path="res://Scenes/Components/lookable.tscn" id="3_tqjti"]
 [ext_resource type="PackedScene" uid="uid://c31ejrrbumpwa" path="res://Scenes/Components/freezable.tscn" id="4_1x4ia"]
@@ -29,6 +30,7 @@ albedo_color = Color(0, 0, 0, 1)
 
 [node name="Queen" type="RigidBody3D"]
 collision_mask = 3
+script = ExtResource("1_ieefp")
 
 [node name="CollisionHitbox" type="CollisionShape3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.580669, 0)

@@ -1,13 +1,13 @@
-[gd_scene load_steps=12 format=4 uid="uid://doxoly2gci3e1"]
+[gd_scene load_steps=13 format=4 uid="uid://doxoly2gci3e1"]
 
 [ext_resource type="PackedScene" uid="uid://d1rhx3b2apwy6" path="res://Meshes/Pieces/Horse.glb" id="1_guxo3"]
+[ext_resource type="Script" uid="uid://bi2l7ixfw6ufq" path="res://Scripts/PieceComponents/piece.gd" id="1_w76fb"]
 [ext_resource type="PackedScene" uid="uid://dlp8m3k2m3qns" path="res://Scenes/Components/draggable.tscn" id="2_hj04a"]
 [ext_resource type="PackedScene" uid="uid://depnx2by2pk0h" path="res://Scenes/Components/lookable.tscn" id="3_2hong"]
 [ext_resource type="PackedScene" uid="uid://c31ejrrbumpwa" path="res://Scenes/Components/freezable.tscn" id="4_tiaxb"]
 [ext_resource type="PackedScene" uid="uid://dxfkxdyxpicyy" path="res://Scenes/Components/selectable.tscn" id="5_katly"]
 [ext_resource type="PackedScene" uid="uid://2bji2dbrhdop" path="res://Scenes/Components/team.tscn" id="6_b0usl"]
 [ext_resource type="PackedScene" uid="uid://dfjvv6pbb18hp" path="res://Scenes/Components/rotatable.tscn" id="7_1lect"]
-[ext_resource type="Script" uid="uid://cvhc35pkmkidm" path="res://Scripts/PieceComponents/piece_reader.gd" id="8_qdpku"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_3865y"]
 size = Vector3(0.3, 0.871646, 0.356396)
@@ -28,8 +28,200 @@ _surfaces = [{
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_8yyqj"]
 albedo_color = Color(0, 0, 0, 1)
 
+[sub_resource type="GDScript" id="GDScript_qdpku"]
+script/source = "class_name PieceReader extends Node3D
+
+## REGULAR COMPONENT NAMES
+const HEALTH_COMPONENT = \"Health\"
+const DAMAGE_COMPONENT = \"Damage\"
+const DRAGGABLE_COMPONENT = \"Draggable\"
+const FREEZABLE_COMPONENT = \"Freezable\"
+const LOOKABLE_COMPONENT = \"Lookable\"
+const SELECTABLE_COMPONENT = \"Selectable\"
+const TEAM_COMPONENT = \"Team\"
+const ROTATABLE_COMPONENT = \"Rotatable\"
+
+@export var body : RigidBody3D
+@export var active : bool = true
+
+## The component that makes this 3d rigidbody have health
+@export var health_component : HealthComponent :
+	set(new_health):
+		if !active: return
+		health_component = new_health
+## The component that makes this 3d rigidbody have and deal damage
+@export var damage_component : DamageComponent :
+	set(new_damage):
+			if !active: return
+			damage_component = new_damage
+## The component that makes this 3d rigidbody be lookable and interactable by the mouse pointer (player)
+@export var lookable_component : LookableComponent :
+	set(new_lookable):
+			if !active: return
+			lookable_component = new_lookable
+## The component that makes this 3d rigidbody have a set team (player assigned)
+@export var team_component : TeamComponent :
+	set(new_team):
+			if !active: return
+			team_component = new_team
+## The component that makes this 3d rigidbody selectable either by the player or environment
+@export var selectable_component : SelectableComponent :
+	set(new_selectable):
+			if !active: return
+			selectable_component = new_selectable
+## The component that makes this 3d rigidbody be frozen by the player or environment
+@export var freezable_component : FreezableComponent :
+	set(new_freezable):
+			if !active: return
+			freezable_component = new_freezable
+## The component that makes this 3d rigidbody be draggable by the player or environment
+@export var draggable_component : DraggableComponent :
+	set(new_draggable):
+			if !active: return
+			draggable_component = new_draggable
+## The component that makes this 3d rigidbody be rotatable by the player or environment
+@export var rotatable_component : RotatableComponent :
+	set(new_rotatable):
+		if !active: return
+		rotatable_component = new_rotatable
+
+## Auto populate using the given body and finding their children by class name
+@export var populate : bool = true
+## Auto populate using specific names for components
+@export var custom_names : bool = true
+## Custom name for the health component for auto population
+@export var health_name : String = HEALTH_COMPONENT
+## Custom name for the damage component for auto population
+@export var damage_name : String = DAMAGE_COMPONENT
+## Custom name for the lookable component for auto population
+@export var lookable_name : String = LOOKABLE_COMPONENT
+## Custom name for the team component for auto population
+@export var team_name : String = TEAM_COMPONENT
+## Custom name for the selectable component for auto population
+@export var selectable_name : String = SELECTABLE_COMPONENT
+## Custom name for the freezable component for auto population
+@export var freezable_name : String = FREEZABLE_COMPONENT
+## Custom name for the draggable component for auto population
+@export var draggable_name : String = DRAGGABLE_COMPONENT
+## Custom name for the rotatable component for auto population
+@export var rotatable_name : String = ROTATABLE_COMPONENT
+
+var components : Array[Node3D] = []
+
+func read_health_component() -> HealthComponent :
+	if body == null: return null
+	for node in body.get_children(): 
+		if node is HealthComponent:
+			if !custom_names || (custom_names && node.name == health_name):
+				health_component = node ; return node
+	return null
+
+func read_damage_component() -> DamageComponent :
+	if body == null: return null
+	for node in body.get_children(): 
+		if node is DamageComponent:
+			if !custom_names || (custom_names && node.name == damage_name):
+				damage_component = node ; return node
+	return null
+	
+func read_lookable_component() -> LookableComponent :
+	if body == null: return null
+	for node in body.get_children(): 
+		if node is LookableComponent: 
+			if !custom_names || (custom_names && node.name == lookable_name):
+				lookable_component = node ; return node
+	return null
+	
+func read_team_component() -> TeamComponent :
+	if body == null: return null
+	for node in body.get_children(): 
+		if node is TeamComponent:
+			if !custom_names || (custom_names && node.name == team_name):
+				team_component = node ; return node
+	return null
+	
+func read_selectable_component() -> SelectableComponent :
+	if body == null: return null
+	for node in body.get_children(): 
+		if node is SelectableComponent: 
+			if !custom_names || (custom_names && node.name == selectable_name):
+				selectable_component = node ; return node
+	return null
+	
+func read_freezable_component() -> FreezableComponent :
+	if body == null: return null
+	for node in body.get_children(): 
+		if node is FreezableComponent: 
+			if !custom_names || (custom_names && node.name == freezable_name):
+				freezable_component = node ; return node
+	return null
+
+func read_draggable_component() -> DraggableComponent :
+	if body == null: return null
+	for node in body.get_children(): 
+		if node is DraggableComponent: 
+			if !custom_names || (custom_names && node.name == draggable_name):
+				draggable_component = node ; return node
+	return null
+
+func read_rotatable_component() -> RotatableComponent :
+	if body == null: return null
+	for node in body.get_children(): 
+		if node is RotatableComponent: 
+			if !custom_names || (custom_names && node.name == rotatable_name):
+				rotatable_component = node ; return node
+	return null
+
+func _populate_components_array(restart : bool):
+	if !active: return
+	if restart : components = []
+	
+	if health_component && !components.has(health_component) : 
+		components.append(health_component)
+		
+	if damage_component && !components.has(damage_component) : 
+		components.append(damage_component)
+	
+	if lookable_component && !components.has(lookable_component) : 
+		components.append(lookable_component)
+	
+	if team_component && !components.has(team_component) : 
+		components.append(team_component)
+	
+	if selectable_component && !components.has(selectable_component) : 
+		components.append(selectable_component)
+	
+	if freezable_component && !components.has(freezable_component) : 
+		components.append(freezable_component)
+	
+	if draggable_component && !components.has(draggable_component) : 
+		components.append(draggable_component)
+	
+	if rotatable_component && !components.has(rotatable_component) : 
+		components.append(rotatable_component)
+
+func read_components():
+	if !active: return
+	read_health_component()
+	read_damage_component()
+	read_lookable_component()
+	read_team_component()
+	read_selectable_component()
+	read_freezable_component()
+	read_draggable_component()
+	read_rotatable_component()
+	
+	_populate_components_array(false)
+
+func _ready() -> void:
+	if !active : return
+	if body == null : body = get_parent_node_3d() 
+	if populate: read_components()
+"
+
 [node name="Horse" type="RigidBody3D"]
 collision_mask = 3
+script = ExtResource("1_w76fb")
 
 [node name="CollisionHitbox" type="CollisionShape3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.00236034, 0.445736, 0.0269087)
@@ -61,6 +253,6 @@ team = 1
 [node name="Rotatable" parent="." instance=ExtResource("7_1lect")]
 
 [node name="Reader" type="Node3D" parent="."]
-script = ExtResource("8_qdpku")
+script = SubResource("GDScript_qdpku")
 
 [editable path="Mesh"]

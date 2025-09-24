@@ -1,6 +1,7 @@
-[gd_scene load_steps=13 format=4 uid="uid://duf77tiua4n4i"]
+[gd_scene load_steps=14 format=4 uid="uid://duf77tiua4n4i"]
 
 [ext_resource type="PackedScene" uid="uid://bboni0qj12dw2" path="res://Meshes/Pieces/Pawn.glb" id="1_eu7ni"]
+[ext_resource type="Script" uid="uid://bi2l7ixfw6ufq" path="res://Scripts/PieceComponents/piece.gd" id="1_uhxor"]
 [ext_resource type="PackedScene" uid="uid://bm8ty1amlhee7" path="res://Scenes/Components/health.tscn" id="2_yp78i"]
 [ext_resource type="PackedScene" uid="uid://cp75tet6digbe" path="res://Scenes/Components/damage.tscn" id="3_04pu8"]
 [ext_resource type="PackedScene" uid="uid://dlp8m3k2m3qns" path="res://Scenes/Components/draggable.tscn" id="4_w368m"]
@@ -31,6 +32,7 @@ albedo_color = Color(0, 0, 0, 1)
 
 [node name="Pawn" type="RigidBody3D"]
 collision_mask = 3
+script = ExtResource("1_uhxor")
 
 [node name="CollisionHitbox" type="CollisionShape3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.38284, 0)

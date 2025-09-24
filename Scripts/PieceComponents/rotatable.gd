@@ -7,12 +7,9 @@ const FIXATED_AXIS : Vector3 = Vector3(0, 1, 0)
 const STANDARD_STRENGTH : float = 5.0
 const STANDARD_FIXATION_STRENGTH : float = 0.05
 
-const COMPONENT_READER = "PieceReader"
-@export var component_reader : PieceReader
-
 var player_manipulation : bool = true
-## The affected 3d rigidbody node.
-@export var body : RigidBody3D
+## The affected 3d rigidbody piece.
+@export var body : Piece
 @export var active : bool = true
 ## Freeze 3d node body when rotating
 @export var freeze : bool = true
@@ -35,15 +32,14 @@ func is_fixated() -> bool: return fixed_axis_vector != Vector3.ZERO
 
 func _ready():
 	if body == null : body = get_parent_node_3d()
-	if body && component_reader == null : component_reader = body.get_node(COMPONENT_READER)
 	rotate.connect(func(new_rotation_vector : Vector3, is_player_rotating : bool):
 		rotation_vector = new_rotation_vector
 		player_manipulation = is_player_rotating)
 
 func _freeze(freeze_value):
-	if body == null || component_reader == null : return
-	if freeze && component_reader.freezable_component: 
-		component_reader.freezable_component.freeze.emit(freeze_value, player_manipulation)
+	if body == null : return
+	if freeze && body.freezable_component: 
+		body.freezable_component.freeze.emit(freeze_value, player_manipulation)
 
 func get_standard_rotation() -> Vector3:
 	if body == null || fixed_axis_vector == Vector3.ZERO: return Vector3.ZERO
