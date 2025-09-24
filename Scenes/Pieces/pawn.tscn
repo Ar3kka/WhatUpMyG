@@ -70,9 +70,9 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.591265, 0)
 
 [node name="Freezable" parent="." instance=ExtResource("6_lc8uw")]
 
-[node name="Selectable" parent="." node_paths=PackedStringArray("Outline") instance=ExtResource("7_6bymd")]
+[node name="Selectable" parent="." node_paths=PackedStringArray("outline") instance=ExtResource("7_6bymd")]
 active = true
-Outline = NodePath("../Mesh/Outline")
+outline = NodePath("../Mesh/Outline")
 
 [node name="Team" parent="." instance=ExtResource("8_kuxq2")]
 team = 1

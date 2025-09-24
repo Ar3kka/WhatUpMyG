@@ -6,19 +6,19 @@ signal drag(horizontal : bool, vertical : bool, target : Vector3, strength : flo
 const ROTATION_STRENGTH : float = 0.05
 const DRAGGING_STRENGTH : float = 0.1
 const X_LIMIT : float = 0.0
-const FREEZABLE_NODE = "Freezable"
+const COMPONENT_READER = "PieceReader"
+@export var component_reader : PieceReader
 
 var player_manipulation : bool = true
 
 @export var body : RigidBody3D
-@export var dragging_strength : float = DRAGGING_STRENGTH
 @export var active : bool = true
-@export var freeze : bool = true
-@export var rotate : bool = true
-@export var rotation_strength : float = ROTATION_STRENGTH
-
+@export var dragging_strength : float = DRAGGING_STRENGTH
 @export var override_drag_strength : bool = true
 var _custom_dragging_strength : float
+
+@export var freeze : bool = true
+@export var fix_rotation : bool = true
 
 var horizontal_drag : bool = false
 var vertical_drag : bool = false
@@ -44,13 +44,14 @@ func dragged() -> bool : return horizontal_drag || vertical_drag
 
 func double_dragged() -> bool : return horizontal_drag && vertical_drag 
 
-func _freeze(freeze_value : bool):
-	if body == null : return
-	var freezable_component : FreezableComponent = body.get_node(FREEZABLE_NODE)
-	if freezable_component != null: freezable_component.freeze.emit(freeze_value, player_manipulation)
+func _freeze(freeze_value):
+	if body == null || component_reader == null : return
+	if freeze && component_reader.freezable_component: 
+		component_reader.freezable_component.freeze.emit(freeze_value, player_manipulation)
 
 func _ready() -> void:
 	if body == null : body = get_parent_node_3d()
+	if body && component_reader == null : component_reader = body.get_node(COMPONENT_READER)
 	drag.connect(func(horizontal : bool, vertical : bool, target : Vector3, strength : float, player_requested_to_drag : bool):
 		horizontal_drag = horizontal
 		vertical_drag = vertical
@@ -61,13 +62,10 @@ func _ready() -> void:
 func _process(_delta: float) -> void:
 	if !active: return
 	
-	if body == null:
-		print("I have no body bro, I'm all alone with my thoughts")
-		return
+	if body == null: return
 	
 	if !dragged() : return
 	
-	#print("I'm being dragged, please god, help")
 	# Freeze in case intended
 	_freeze(freeze)
 	
@@ -92,8 +90,5 @@ func _process(_delta: float) -> void:
 	
 	body_position = lerp(body_position, final_drag_point, final_strength) # change the body's position employing final calculations
 	
-	if !rotate : return
-	
-	var standard_rotation : Vector3 = Vector3(0, body_rotation.y, 0)
-	if body_rotation != standard_rotation : 
-		body_rotation = lerp(body_rotation, standard_rotation, rotation_strength)
+	if component_reader == null || component_reader.rotatable_component == null || !fix_rotation : return
+	component_reader.rotatable_component.fix_rotation()

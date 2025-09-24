@@ -106,9 +106,10 @@ func _process(_delta):
 	####### Checking inputs to manually rotate the SELECTED object
 	var rotatable_component : RotatableComponent = selected_object.get_node("Rotatable")
 	if rotatable_component != null:
-		if Input.is_action_pressed("Rotate Left"): rotatable_component.body.rotate_y(-manual_rotation_strength * _delta)
-		else: if Input.is_action_pressed("Rotate Right"): rotatable_component.body.rotate_y(manual_rotation_strength * _delta) 
-
+		if Input.is_action_pressed("Rotate Left"): rotatable_component.rotate.emit(Vector3(0, 1, 0), true)
+		else: if Input.is_action_pressed("Rotate Right"): rotatable_component.rotate.emit(Vector3(0, -1, 0), true)
+		if Input.is_action_just_released("Rotate Left") || Input.is_action_just_released("Rotate Right"): rotatable_component.stop_rotating()
+	
 	####### Checking drag inputs
 	if Input.is_action_pressed("Drag Vertical"): vertical_drag = true
 	if Input.is_action_pressed("Drag Horizontal"): horizontal_drag = true

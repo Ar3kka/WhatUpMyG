@@ -50,9 +50,9 @@ surface_material_override/0 = SubResource("StandardMaterial3D_gs1eq")
 
 [node name="Freezable" parent="." instance=ExtResource("4_1x4ia")]
 
-[node name="Selectable" parent="." node_paths=PackedStringArray("Outline") instance=ExtResource("5_ju2lr")]
+[node name="Selectable" parent="." node_paths=PackedStringArray("outline") instance=ExtResource("5_ju2lr")]
 active = true
-Outline = NodePath("../Mesh/Outline")
+outline = NodePath("../Mesh/Outline")
 
 [node name="Team" parent="." instance=ExtResource("6_dpgc3")]
 team = 1

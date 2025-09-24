@@ -51,9 +51,9 @@ body = NodePath("..")
 
 [node name="Freezable" parent="." instance=ExtResource("4_0semn")]
 
-[node name="Selectable" parent="." node_paths=PackedStringArray("Outline") instance=ExtResource("5_bg3bf")]
+[node name="Selectable" parent="." node_paths=PackedStringArray("outline") instance=ExtResource("5_bg3bf")]
 active = true
-Outline = NodePath("../Mesh/Outline")
+outline = NodePath("../Mesh/Outline")
 
 [node name="Team" parent="." instance=ExtResource("6_n2sq1")]
 team = 1

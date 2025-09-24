@@ -1,8 +1,7 @@
 class_name LookableComponent extends Node3D
 
-const FREEZABLE_NODE = "Freezable"
-const SELECTABLE_NODE = "Selectable"
-const DRAGGABLE_NODE = "Draggable"
+const COMPONENT_READER = "PieceReader"
+@export var component_reader : PieceReader
 
 signal look(value : bool)
 
@@ -16,23 +15,28 @@ var looked_at : bool = false :
 	set(new_value):
 		if !active || body == null || looked_at == new_value : return
 		looked_at = new_value
+		
+		if (component_reader == null 
+		|| component_reader.freezable_component == null 
+		|| _get_freeze_type() == 0): return
+		
 		var freeze_result : bool = false
-		var freezable_component : FreezableComponent = body.get_node(FREEZABLE_NODE)
-		if freezable_component == null || _freeze() == 0: return
-		if freeze_on_look: freeze_result = true # freeze when looked
-		if freeze_if_selectable:
-			var selectable_component : SelectableComponent = body.get_node(SELECTABLE_NODE)
-			if selectable_component != null && selectable_component.active : freeze_result = true
-		if freeze_if_draggable: # freeze when object being looked is selectable
-			var draggable_component : DraggableComponent = body.get_node(DRAGGABLE_NODE)
-			if draggable_component != null && draggable_component.active: freeze_result = true
-		if !looked_at: #print(body, ": I'm being looked at and it makes me uncomfortable: ", looked_at)
-		#else:
+		
+		if ((freeze_on_look) || # freeze when object is set to freeze on look
+		(freeze_if_selectable # freeze when object being looked is selectable
+		&& component_reader.selectable_component
+		&& component_reader.selectable_component.active) ||
+		(freeze_if_draggable # freeze when object being looked is draggable
+		&& component_reader.draggable_component
+		&& component_reader.draggable_component.active)): 
+			freeze_result = true
+		
+		if !looked_at: 
 			freeze_result = false 
-			#print(body, ": HELL YEAH IT STOPPED, THANK YOU MY GOD")
-		freezable_component.freeze.emit(freeze_result, true)
+		
+		component_reader.freezable_component.freeze.emit(freeze_result, true)
 
-func _freeze() -> int:
+func _get_freeze_type() -> int:
 	if freeze_on_look: return 1
 	if freeze_if_selectable: return 2
 	if freeze_if_draggable: return 3
@@ -40,4 +44,5 @@ func _freeze() -> int:
 
 func _ready() -> void:
 	if body == null: body = get_parent_node_3d()
+	if body && component_reader == null : component_reader = body.get_node(COMPONENT_READER)
 	look.connect(func(value : bool): looked_at = value)
