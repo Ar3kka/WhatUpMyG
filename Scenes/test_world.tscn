@@ -1,8 +1,8 @@
 [gd_scene load_steps=19 format=3 uid="uid://b078atu5ef0dt"]
 
 [ext_resource type="Script" uid="uid://dxroe3qs8cilg" path="res://Scripts/World/edge_detection_compositor.gd" id="1_yrarp"]
-[ext_resource type="Script" uid="uid://b8rmjkdlmamtf" path="res://Scripts/PlayerInteraction/look_&_interact.gd" id="2_yrarp"]
-[ext_resource type="Script" uid="uid://b4ck42sr5p0qp" path="res://Scripts/PlayerInteraction/camera_movement.gd" id="3_bgy8c"]
+[ext_resource type="PackedScene" uid="uid://ctumhks8h5tt2" path="res://Scenes/PlayerComponents/look&interact.tscn" id="2_yrarp"]
+[ext_resource type="PackedScene" uid="uid://cxgtaeo6opt03" path="res://Scenes/PlayerComponents/move_horizon.tscn" id="3_yrarp"]
 [ext_resource type="MeshLibrary" uid="uid://crvilvmqn1jsv" path="res://Meshes/Tiles/tiles.tres" id="4_dftws"]
 [ext_resource type="PackedScene" uid="uid://4dwhgmum18oq" path="res://Scenes/Pieces/tower.tscn" id="5_h2i6u"]
 [ext_resource type="PackedScene" uid="uid://cfqxcsswpttwe" path="res://Scenes/Pieces/king.tscn" id="6_6sxhy"]
@@ -191,14 +191,9 @@ extra_cull_margin = 16384.0
 mesh = SubResource("QuadMesh_go701")
 surface_material_override/0 = SubResource("ShaderMaterial_5a7ea")
 
-[node name="Look&Interact" type="Node3D" parent="SubViewportContainer/SubViewport/MainCamera" node_paths=PackedStringArray("camera")]
-script = ExtResource("2_yrarp")
-camera = NodePath("..")
-team = 1
+[node name="Look&Interact" parent="SubViewportContainer/SubViewport/MainCamera" instance=ExtResource("2_yrarp")]
 
-[node name="MoveHorizon" type="Node3D" parent="SubViewportContainer/SubViewport/MainCamera" node_paths=PackedStringArray("camera")]
-script = ExtResource("3_bgy8c")
-camera = NodePath("..")
+[node name="MoveHorizon" parent="SubViewportContainer/SubViewport/MainCamera" instance=ExtResource("3_yrarp")]
 
 [node name="BlueLight" type="DirectionalLight3D" parent="SubViewportContainer/SubViewport"]
 transform = Transform3D(0.906441, -0.183806, 0.380238, 5.45776e-09, 0.900326, 0.435216, -0.422333, -0.394497, 0.816092, 2.22688, 5.87193, 15.0536)

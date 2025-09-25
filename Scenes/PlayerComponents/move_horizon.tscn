@@ -1,0 +1,7 @@
+[gd_scene load_steps=2 format=3 uid="uid://cxgtaeo6opt03"]
+
+[ext_resource type="Script" uid="uid://b4ck42sr5p0qp" path="res://Scripts/PlayerInteraction/camera_movement.gd" id="1_6vsoy"]
+
+[node name="MoveHorizon" type="Node3D" node_paths=PackedStringArray("camera")]
+script = ExtResource("1_6vsoy")
+camera = NodePath("")

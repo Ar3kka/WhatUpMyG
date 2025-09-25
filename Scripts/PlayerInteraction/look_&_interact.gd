@@ -27,6 +27,7 @@ func _ready() -> void:
 
 func stop_dragging(draggable_component : DraggableComponent) :
 	draggable_component.stop_dragging()
+	if !dragging(): return
 	horizontal_drag = false
 	vertical_drag = false
 
@@ -86,7 +87,7 @@ func _process(_delta):
 		if draggable_component && draggable_component.active: draggable_object = selectable_object
 	else: if looked_at_nothing && Input.is_action_just_pressed("Select") && selected_object: _deselect()
 	
-	if Input.is_action_just_pressed("Deselect") && !dragging(): return _deselect()
+	if Input.is_action_just_pressed("Deselect"): return _deselect()
 	
 	# if the object IS NOT draggable or if there's not an already selected object, skip
 	if draggable_object == null || (selected_object != null && selected_object != draggable_object): return
@@ -103,21 +104,25 @@ func _process(_delta):
 	####### Checking inputs to manually rotate the SELECTED object
 	var rotatable_component : RotatableComponent = selected_object.rotatable_component
 	if rotatable_component != null:
-		if Input.is_action_pressed("Rotate Left"): rotatable_component.rotate.emit(Vector3(0, 1, 0), true)
-		else: if Input.is_action_pressed("Rotate Right"): rotatable_component.rotate.emit(Vector3(0, -1, 0), true)
+		if Input.is_action_just_pressed("Rotate Left"): rotatable_component.rotate.emit(Vector3(0, 1, 0), true)
+		else: if Input.is_action_just_pressed("Rotate Right"): rotatable_component.rotate.emit(Vector3(0, -1, 0), true)
 		if Input.is_action_just_released("Rotate Left") || Input.is_action_just_released("Rotate Right"): rotatable_component.stop_rotating()
 	
 	####### Checking drag inputs
-	if Input.is_action_pressed("Drag Vertical"): vertical_drag = true
-	if Input.is_action_pressed("Drag Horizontal"): horizontal_drag = true
+	if Input.is_action_just_pressed("Drag Vertical"): vertical_drag = true
+	if Input.is_action_just_pressed("Drag Horizontal"): horizontal_drag = true
+	
+
 	
 	# if draggable object is being dragged continue, if not, skip
 	if !dragging(): return 
 	
 	####### Checking undragging inputs
 	# checking if the object is still being dragged
-	if Input.is_action_just_released("Drag Vertical") || Input.is_action_just_released("Drag Horizontal"):
-		return stop_dragging(draggable_component) # If no dragging action is recorded, we stop dragging.
+	#if (Input.is_action_just_released("Drag Vertical") || Input.is_action_just_released("Drag Horizontal")) && !double_drag():
+	if !Input.is_action_pressed("Drag Vertical"): vertical_drag = false
+	if !Input.is_action_pressed("Drag Horizontal"): horizontal_drag = false
+	if !dragging(): return stop_dragging(draggable_component) # If no dragging action is recorded, we stop dragging.
 	
 	####### Calculating the position where the SELECTED object needs to move at
 	var ray_origin = camera.project_ray_origin(mouse_position)
