@@ -129,7 +129,7 @@ shader_parameter/useLighting = true
 shader_parameter/lineHighlight = 0.2
 shader_parameter/lineShadow = 0.55
 
-[node name="PixelArtShader" type="MeshInstance3D"]
+[node name="Imagination" type="MeshInstance3D"]
 extra_cull_margin = 16384.0
 mesh = SubResource("QuadMesh_go701")
 surface_material_override/0 = SubResource("ShaderMaterial_5a7ea")

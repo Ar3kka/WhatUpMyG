@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://ctumhks8h5tt2"]
+
+[ext_resource type="Script" uid="uid://b8rmjkdlmamtf" path="res://Scripts/PlayerInteraction/hand_interaction.gd" id="1_72ptc"]
+
+[node name="Hands" type="Node3D"]
+script = ExtResource("1_72ptc")

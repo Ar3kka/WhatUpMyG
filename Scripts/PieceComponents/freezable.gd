@@ -14,8 +14,8 @@ var freeze_by_player_manipulation : bool = false
 		if !active || body == null || freezing_value == body.freeze: return
 		if freeze_by_player_manipulation:
 			if body.team_component && !body.team_component.is_observed_by_same_team() : return
-		#if freezing_value: print("I'M FROZEN")
-		#else: print("I'M HOT")
+		if freezing_value: print("I'M FROZEN")
+		else: print("I'M HOT")
 		body.freeze = freezing_value
 	get(): return body.freeze
 @export var freeze_mode : RigidBody3D.FreezeMode :

@@ -1,15 +1,14 @@
-extends Node3D
+class_name Hands extends Node3D
 
-@export var camera : Camera3D
-@export var team : int = 0
+const DRAG_STRENGTH : float = 0.1
+const ROTATION_STRENGTH : float = 3.5
+const RAYCAST_DISTANCE : float = 250.0
+
+@export var manipulator : Manipulator
 @export var holding_drag : bool = true
-@export var drag_strength : float = 0.1
-@export var manual_rotation_strength : float = 3.5
-var raycast : RayCast3D
-@export var raycast_distance : float = 250.0
+@export var drag_strength : float = DRAG_STRENGTH
+@export var manual_rotation_strength : float = ROTATION_STRENGTH
 var mouse_position : Vector2
-
-var object : Piece
 
 var detected_object : Piece
 var lookable_object : Piece
@@ -23,12 +22,11 @@ var rotate_left : bool = false
 var rotate_right : bool = false
 
 func _ready() -> void:
-	raycast = RayCast3D.new()
-	add_child(raycast)
+	if !manipulator : manipulator = get_parent_node_3d()
 
 func stop_dragging(draggable_component : DraggableComponent) :
 	if !draggable_component : return
-	draggable_component.stop_dragging()
+	if draggable_component.dragged(): draggable_component.stop_dragging()
 	if !dragging(): return
 	horizontal_drag = false
 	vertical_drag = false
@@ -45,6 +43,13 @@ func dragging() -> bool: return horizontal_drag || vertical_drag
 func double_drag() -> bool: return horizontal_drag && vertical_drag
 
 func _process(_delta):
+	if !manipulator || !manipulator.eyes: return
+	
+	var camera = manipulator.eyes
+	var team = manipulator.team
+	var raycast = manipulator.raycast
+	var raycast_distance = manipulator.eye_sight_distance
+	
 	###### RAYCAST
 	mouse_position = get_viewport().get_mouse_position()
 	raycast.target_position = camera.project_local_ray_normal(mouse_position) * raycast_distance
@@ -75,7 +80,7 @@ func _process(_delta):
 			detected_object = null
 			selectable_object = null
 			draggable_object = null
-
+	
 	# if the object IS NOT selectable and there's not an object already selected, skip
 	if selectable_object == null && selected_object == null || lookable_object == null: return
 	
@@ -87,8 +92,6 @@ func _process(_delta):
 			selected_object = selectable_object
 		
 		# Checking if the selectable object IS draggable
-		#draggable_component = selectable_object.draggable_component
-		#if draggable_component && draggable_component.active: draggable_object = selectable_object
 	else: if looked_at_nothing && Input.is_action_just_pressed("Select") && selected_object: _deselect()
 	
 	# Checking if the object being looked at or selected IS draggable
@@ -102,7 +105,6 @@ func _process(_delta):
 		final_draggable_object = selected_object
 	
 	if draggable_component && draggable_component.active: draggable_object = final_draggable_object
-	#if draggable_component && draggable_component.active: draggable_object = selectable_object
 	
 	if Input.is_action_just_pressed("Deselect"): return _deselect()
 	
