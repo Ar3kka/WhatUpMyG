@@ -9,8 +9,10 @@ const LOOKABLE_COMPONENT = "Lookable"
 const SELECTABLE_COMPONENT = "Selectable"
 const TEAM_COMPONENT = "Team"
 const ROTATABLE_COMPONENT = "Rotatable"
+const SNAPPABLE_COMPONENT = "Snappable"
 
 @export var active : bool = true
+var manipulator : Manipulator
 
 ## The component that makes this 3d rigidbody have health
 @export var health_component : HealthComponent :
@@ -52,6 +54,10 @@ const ROTATABLE_COMPONENT = "Rotatable"
 	set(new_rotatable):
 		if !active: return
 		rotatable_component = new_rotatable
+@export var snappable_component : SnappableComponent :
+	set(new_snappable):
+		if !active: return
+		snappable_component = new_snappable
 
 ## Auto populate using the given body and finding their children by class name
 @export var populate : bool = true
@@ -73,6 +79,9 @@ const ROTATABLE_COMPONENT = "Rotatable"
 @export var draggable_name : String = DRAGGABLE_COMPONENT
 ## Custom name for the rotatable component for auto population
 @export var rotatable_name : String = ROTATABLE_COMPONENT
+## Custom name for the snappable component for auto population
+@export var snappable_name : String = SNAPPABLE_COMPONENT
+
 
 var components : Array[Node3D] = []
 
@@ -131,6 +140,13 @@ func read_rotatable_component() -> RotatableComponent :
 			if !custom_names || (custom_names && node.name == rotatable_name):
 				rotatable_component = node ; return node
 	return null
+	
+func read_snappable_component() -> SnappableComponent :
+	for node in get_children(): 
+		if node is SnappableComponent: 
+			if !custom_names || (custom_names && node.name == snappable_name):
+				snappable_component = node ; return node
+	return null
 
 func _populate_components_array(restart : bool):
 	if !active: return
@@ -159,6 +175,9 @@ func _populate_components_array(restart : bool):
 	
 	if rotatable_component && !components.has(rotatable_component) : 
 		components.append(rotatable_component)
+	
+	if snappable_component && !components.has(snappable_component) : 
+		components.append(snappable_component)
 
 func read_components():
 	if !active: return
@@ -170,6 +189,7 @@ func read_components():
 	read_freezable_component()
 	read_draggable_component()
 	read_rotatable_component()
+	read_snappable_component()
 	
 	_populate_components_array(false)
 

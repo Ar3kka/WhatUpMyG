@@ -2,6 +2,5 @@
 
 [ext_resource type="Script" uid="uid://bi5f7sapco8tk" path="res://Scripts/PieceComponents/lookable.gd" id="1_iqaf4"]
 
-[node name="Lookable" type="Node3D" node_paths=PackedStringArray("body")]
+[node name="Lookable" type="Node3D"]
 script = ExtResource("1_iqaf4")
-body = NodePath("")

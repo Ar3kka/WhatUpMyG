@@ -1,4 +1,4 @@
-[gd_scene load_steps=14 format=4 uid="uid://duf77tiua4n4i"]
+[gd_scene load_steps=15 format=4 uid="uid://duf77tiua4n4i"]
 
 [ext_resource type="PackedScene" uid="uid://bboni0qj12dw2" path="res://Meshes/Pieces/Pawn.glb" id="1_eu7ni"]
 [ext_resource type="Script" uid="uid://bi2l7ixfw6ufq" path="res://Scripts/PieceComponents/piece.gd" id="1_uhxor"]
@@ -10,6 +10,7 @@
 [ext_resource type="PackedScene" uid="uid://dxfkxdyxpicyy" path="res://Scenes/Components/selectable.tscn" id="7_6bymd"]
 [ext_resource type="PackedScene" uid="uid://2bji2dbrhdop" path="res://Scenes/Components/team.tscn" id="8_kuxq2"]
 [ext_resource type="PackedScene" uid="uid://dfjvv6pbb18hp" path="res://Scenes/Components/rotatable.tscn" id="9_wxs05"]
+[ext_resource type="PackedScene" uid="uid://ddpcdx1omf0vo" path="res://Scenes/Components/snappable.tscn" id="11_xj264"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_3865y"]
 size = Vector3(0.3, 0.751245, 0.3)
@@ -80,6 +81,8 @@ outline = NodePath("../Mesh/Outline")
 team = 1
 
 [node name="Rotatable" parent="." instance=ExtResource("9_wxs05")]
+
+[node name="Snappable" parent="." instance=ExtResource("11_xj264")]
 
 [editable path="Mesh"]
 [editable path="Health"]

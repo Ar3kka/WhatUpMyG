@@ -1,6 +1,6 @@
 class_name LookableComponent extends Node3D
 
-signal look(value : bool)
+signal look(new_look : bool, manipulator : Manipulator)
 
 @export var body : Piece
 @export var active : bool = true
@@ -8,10 +8,18 @@ signal look(value : bool)
 @export var freeze_if_selectable : bool = true
 @export var freeze_if_draggable : bool = false
 
+var observed_by : Manipulator
+var _observers_list : Array[Manipulator] = []
+
 var looked_at : bool = false :
 	set(new_value):
 		if !active || body == null || looked_at == new_value : return
 		looked_at = new_value
+		if looked_at && observed_by && !_observers_list.has(observed_by): 
+				_observers_list.append(observed_by)
+		else: if !looked_at && observed_by:
+			_observers_list.erase(observed_by)
+			observed_by = null
 		
 		if (body.freezable_component == null || _get_freeze_type() == 0): return
 		
@@ -29,7 +37,7 @@ var looked_at : bool = false :
 		if !looked_at: 
 			freeze_result = false 
 		
-		body.freezable_component.freeze.emit(freeze_result, true)
+		body.freezable_component.freeze.emit(freeze_result, observed_by)
 
 func _get_freeze_type() -> int:
 	if freeze_on_look: return 1
@@ -39,4 +47,6 @@ func _get_freeze_type() -> int:
 
 func _ready() -> void:
 	if body == null: body = get_parent_node_3d()
-	look.connect(func(value : bool): looked_at = value)
+	look.connect(func(new_look : bool, manipulator : Manipulator): 
+		observed_by = manipulator
+		looked_at = new_look)

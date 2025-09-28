@@ -3,14 +3,23 @@ class_name Hands extends Node3D
 const DRAG_STRENGTH : float = 0.1
 const ROTATION_STRENGTH : float = 3.5
 const RAYCAST_DISTANCE : float = 250.0
+const PALM_SIZE : float = 0.5
 
 @export var manipulator : Manipulator
 @export var holding_drag : bool = true
 @export var drag_strength : float = DRAG_STRENGTH
 @export var manual_rotation_strength : float = ROTATION_STRENGTH
 var mouse_position : Vector2
+@export var palm : Area3D
+@export var palm_size : float :
+	set(new_palm_size):
+		if palm == null : return
+		palm_size = new_palm_size
+		palm.scale = Vector3(palm_size, palm_size, palm_size)
+		
 
 var detected_object : Piece
+var last_lookable_object : Piece
 var lookable_object : Piece
 var selectable_object : Piece
 var selected_object : Piece
@@ -23,6 +32,8 @@ var rotate_right : bool = false
 
 func _ready() -> void:
 	if !manipulator : manipulator = get_parent_node_3d()
+	palm = %Palm
+	palm_size = PALM_SIZE
 
 func stop_dragging(draggable_component : DraggableComponent) :
 	if !draggable_component : return
@@ -33,7 +44,7 @@ func stop_dragging(draggable_component : DraggableComponent) :
 
 func _deselect():
 	if !selected_object : return
-	selected_object.selectable_component.select.emit(false, true)
+	selected_object.selectable_component.select.emit(false, manipulator)
 	var draggable_component : DraggableComponent = selected_object.draggable_component
 	if draggable_component != null && draggable_component.active && draggable_component.dragged(): stop_dragging(draggable_component)
 	selected_object = null
@@ -61,6 +72,7 @@ func _process(_delta):
 	###### DETECT LOOKABLE, SELECTABLE AND DRAGGABLE OBJECT
 	var looked_at_nothing : bool = true
 	if !dragging(): detected_object = raycast.get_collider()
+	
 	if detected_object != null:
 		looked_at_nothing = false
 		# Detect lookable object
@@ -68,7 +80,8 @@ func _process(_delta):
 		if lookable_component == null || !lookable_component.active: return
 		else:
 			lookable_object = detected_object
-			if !lookable_component.looked_at: lookable_component.look.emit(true)
+			last_lookable_object = lookable_object
+			if !lookable_component.looked_at: lookable_component.look.emit(true, manipulator)
 		# Detect selectable object in case there's no drag
 		if !dragging():
 			var selectable_component : SelectableComponent = lookable_object.selectable_component
@@ -76,30 +89,31 @@ func _process(_delta):
 	else: if lookable_object != null: 
 			# in case there is no detected object and there was a lookable object:
 			# let the lookable object know that it's not being looked at anymore and reset object variables
-			lookable_object.lookable_component.look.emit(false)
+			lookable_object.lookable_component.look.emit(false, manipulator)
+			lookable_object = null
 			detected_object = null
 			selectable_object = null
 			draggable_object = null
 	
 	# if the object IS NOT selectable and there's not an object already selected, skip
-	if selectable_object == null && selected_object == null || lookable_object == null: return
+	if selectable_object == null && selected_object == null || lookable_object == null && last_lookable_object == null: return
 	
 	###### Checking selection inputs
 	if selectable_object:
 		if Input.is_action_just_pressed("Select"):
 			if selectable_object != selected_object: _deselect()
-			selectable_object.selectable_component.select.emit(true, true)
+			selectable_object.selectable_component.select.emit(true, manipulator)
 			selected_object = selectable_object
 		
 		# Checking if the selectable object IS draggable
-	else: if looked_at_nothing && Input.is_action_just_pressed("Select") && selected_object: _deselect()
+	else: if selected_object && Input.is_action_just_pressed("Select") && looked_at_nothing: _deselect()
 	
 	# Checking if the object being looked at or selected IS draggable
 	var draggable_component : DraggableComponent
 	var final_draggable_object : Piece
 	if !selected_object: 
-		draggable_component = lookable_object.draggable_component
-		final_draggable_object = lookable_object
+		draggable_component = last_lookable_object.draggable_component
+		final_draggable_object = last_lookable_object
 	else: 
 		draggable_component = selected_object.draggable_component
 		final_draggable_object = selected_object
@@ -123,8 +137,8 @@ func _process(_delta):
 	####### Checking inputs to manually rotate the SELECTED object
 	var rotatable_component : RotatableComponent = selected_object.rotatable_component
 	if rotatable_component != null:
-		if Input.is_action_just_pressed("Rotate Left"): rotatable_component.rotate.emit(Vector3(0, 1, 0), true)
-		else: if Input.is_action_just_pressed("Rotate Right"): rotatable_component.rotate.emit(Vector3(0, -1, 0), true)
+		if Input.is_action_just_pressed("Rotate Left"): rotatable_component.rotate.emit(Vector3(0, 1, 0), manipulator)
+		else: if Input.is_action_just_pressed("Rotate Right"): rotatable_component.rotate.emit(Vector3(0, -1, 0), manipulator)
 		if Input.is_action_just_released("Rotate Left") || Input.is_action_just_released("Rotate Right"): rotatable_component.stop_rotating()
 	
 	####### Checking drag inputs
@@ -152,5 +166,11 @@ func _process(_delta):
 	var ray_depth = ray_origin.distance_to(draggable_component.body_position)
 	var final_ray_position = ray_origin + ray_end * ray_depth
 	
+	palm.global_position = final_ray_position
+	
+	var snappable_component : SnappableComponent = draggable_object.snappable_component
+	if snappable_component && snappable_component.active && snappable_component.snapping:
+		return
+	
 	# Emitting signal for the draggable, selected object to start being dragged towards the mouse position
-	draggable_component.drag.emit(horizontal_drag, vertical_drag, final_ray_position, drag_strength, true)
+	draggable_component.drag.emit(horizontal_drag, vertical_drag, final_ray_position, drag_strength, manipulator)

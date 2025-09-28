@@ -1,0 +1,35 @@
+[gd_scene load_steps=5 format=3 uid="uid://id780lmocm12"]
+
+[ext_resource type="Script" uid="uid://cmcksvu8hn86" path="res://Scripts/TileComponents/tile.gd" id="1_16m5o"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_16m5o"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_y18ax"]
+size = Vector3(1, 0.25, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_xsjyq"]
+size = Vector3(1, 0.25, 1)
+
+[node name="Tile" type="Node3D" node_paths=PackedStringArray("appearance")]
+script = ExtResource("1_16m5o")
+appearance = NodePath("Mesh")
+
+[node name="Snap" type="Area3D" parent="."]
+unique_name_in_owner = true
+collision_layer = 32
+collision_mask = 16
+
+[node name="area_shape" type="CollisionShape3D" parent="Snap"]
+transform = Transform3D(0.2, 0, 0, 0, 0.2, 0, 0, 0, 0.2, 0, 0.25, 0)
+shape = SubResource("BoxShape3D_16m5o")
+debug_color = Color(0.668545, 0.508794, 0.0919665, 0.42)
+
+[node name="Collider" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.00396161, -0.00237823, 0.00312006)
+collision_layer = 2
+
+[node name="Shape" type="CollisionShape3D" parent="Collider"]
+shape = SubResource("BoxShape3D_y18ax")
+
+[node name="Mesh" type="MeshInstance3D" parent="."]
+mesh = SubResource("BoxMesh_xsjyq")

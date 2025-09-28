@@ -106,3 +106,5 @@ Recover={
 3d_physics/layer_2="Tiles"
 3d_physics/layer_3="Health"
 3d_physics/layer_4="Damage"
+3d_physics/layer_5="Snap"
+3d_physics/layer_6="Tile_snap"

@@ -1,13 +1,14 @@
 class_name DraggableComponent extends Node3D
 
-signal drag(horizontal : bool, vertical : bool, target : Vector3, strength : float, player_requested_to_drag : bool)
+signal drag(horizontal : bool, vertical : bool, target : Vector3, strength : float, player_requested_to_drag : Manipulator)
 
 ## RECOMMENDED SETTINGS
 const ROTATION_STRENGTH : float = 0.05
 const DRAGGING_STRENGTH : float = 0.1
 const X_LIMIT : float = 0.0
 
-var player_manipulation : bool = true
+var current_manipulator : Manipulator
+var _manipulator_list : Array[Manipulator] = []
 
 @export var body : Piece
 @export var active : bool = true
@@ -32,10 +33,12 @@ var body_rotation : Vector3 :
 	get(): return body.rotation_degrees
 
 func stop_dragging() :
-	if body == null : return
+	if body == null: return
 	horizontal_drag = false
 	vertical_drag = false
 	target_point = Vector3.ZERO
+	if _manipulator_list.has(current_manipulator): _manipulator_list.erase(current_manipulator)
+	current_manipulator = null
 	_freeze(false)
 
 func dragged() -> bool : return horizontal_drag || vertical_drag
@@ -45,15 +48,17 @@ func double_dragged() -> bool : return horizontal_drag && vertical_drag
 func _freeze(freeze_value):
 	if body == null: return
 	if freeze && body.freezable_component:
-		body.freezable_component.freeze.emit(freeze_value, player_manipulation)
+		body.freezable_component.freeze.emit(freeze_value, current_manipulator)
 
 func _ready() -> void:
 	if body == null : body = get_parent_node_3d()
-	drag.connect(func(horizontal : bool, vertical : bool, target : Vector3, strength : float, player_requested_to_drag : bool):
+	drag.connect(func(horizontal : bool, vertical : bool, target : Vector3, strength : float, player_requested_to_drag : Manipulator):
 		horizontal_drag = horizontal
 		vertical_drag = vertical
 		target_point = target
-		player_manipulation = player_requested_to_drag
+		current_manipulator = player_requested_to_drag
+		if current_manipulator && !_manipulator_list.has(current_manipulator):
+			_manipulator_list.append(current_manipulator)
 		if override_drag_strength : _custom_dragging_strength = strength)
 
 func _process(_delta: float) -> void:

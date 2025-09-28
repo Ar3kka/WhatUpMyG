@@ -1,0 +1,18 @@
+[gd_scene load_steps=3 format=3 uid="uid://ddpcdx1omf0vo"]
+
+[ext_resource type="Script" uid="uid://bp7p6ixnuil88" path="res://Scripts/PieceComponents/snappable.gd" id="1_43m3h"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_43m3h"]
+
+[node name="Snappable" type="Node3D" node_paths=PackedStringArray("snap_area")]
+script = ExtResource("1_43m3h")
+snap_area = NodePath("Snap_area")
+
+[node name="Snap_area" type="Area3D" parent="."]
+collision_layer = 16
+collision_mask = 32
+
+[node name="area_shape" type="CollisionShape3D" parent="Snap_area"]
+transform = Transform3D(0.2, 0, 0, 0, 0.2, 0, 0, 0, 0.2, 0, 0, 0)
+shape = SubResource("BoxShape3D_43m3h")
+debug_color = Color(0.658324, 0.514197, 0.0946231, 0.42)
