@@ -10,7 +10,7 @@ snap_area = NodePath("Snap_area")
 
 [node name="Snap_area" type="Area3D" parent="."]
 collision_layer = 16
-collision_mask = 32
+collision_mask = 48
 
 [node name="area_shape" type="CollisionShape3D" parent="Snap_area"]
 transform = Transform3D(0.2, 0, 0, 0, 0.2, 0, 0, 0, 0.2, 0, 0, 0)

@@ -1,6 +1,6 @@
 class_name SnappableComponent extends Node3D
 
-const SNAP_FORCE : float = 0.2
+const SNAP_FORCE : float = 0.3
 const SNAP_Y_OFFSET : float = 0.125
 
 @export var body : Piece
@@ -18,22 +18,28 @@ var snapped_to : Tile :
 		snapped_to.occupier = body
 		snapping = true
 		snap_point = Vector3(snapped_to.global_position.x, snapped_to.global_position.y + SNAP_Y_OFFSET, snapped_to.global_position.z)
+var is_handled : bool = false
 
 func _ready() -> void:
 	if body == null: body = get_parent_node_3d()
 	snap_area.area_entered.connect(func (area : Area3D):
-		var tile : Tile = area.get_parent_node_3d()
-		if tile && tile.active && tile.snappable : snapped_to = tile)
+		var parent = area.get_parent_node_3d()
+		if parent is Hands: is_handled = true
+		if parent is Tile:
+			if parent.active && parent.snappable && is_handled : snapped_to = parent)
 	snap_area.area_exited.connect(func (area : Area3D):
-		var tile : Tile = area.get_parent_node_3d()
-		if tile : snapped_to = null)
+		var parent = area.get_parent_node_3d()
+		if parent is Hands: is_handled = false
+		if parent is Tile : 
+			if parent.occupier == body : parent.occupier = null
+			snapped_to = null)
 
 func stop_snapping():
 	if !active : return
 	if snapped_to: snapped_to = null
 
 func _process(delta: float) -> void:
-	if !active || body == null || !snapping : return
+	if !active || body == null || !snapping || !body.draggable_component.dragged(): return
 	
 	var draggable_component = body.draggable_component
 	if draggable_component == null : return

@@ -25,6 +25,7 @@ shape = SubResource("BoxShape3D_16m5o")
 debug_color = Color(0.668545, 0.508794, 0.0919665, 0.42)
 
 [node name="Collider" type="StaticBody3D" parent="."]
+unique_name_in_owner = true
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.00396161, -0.00237823, 0.00312006)
 collision_layer = 2
 
@@ -32,4 +33,5 @@ collision_layer = 2
 shape = SubResource("BoxShape3D_y18ax")
 
 [node name="Mesh" type="MeshInstance3D" parent="."]
+unique_name_in_owner = true
 mesh = SubResource("BoxMesh_xsjyq")
