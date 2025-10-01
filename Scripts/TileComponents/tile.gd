@@ -1,13 +1,9 @@
 class_name Tile extends Node3D
 
-signal translate(translation_vector : Vector3)
-
-signal raise(height : float)
+signal occupy(occupier : Piece)
 
 const SCENE : PackedScene = preload("res://Scenes/Tiles/tile.tscn")
-const STANDARD_UP_DOWN_DISTANCE : float = 0.250
-const STANDARD_LEFT_RIGHT_DISTANCE : float = 1.0
-const STANDARD_TRANSLATION_STRENGTH : float = 0.05
+const PUSH_DOWN_MULTIPLIER : float = 0.250
 
 var id : Vector2i = Vector2i.ZERO
 ## The meshinstance3D set for this tile.
@@ -25,20 +21,41 @@ var skin : StandardMaterial3D
 		visible = new_active_state
 ## Whether or not this tile can have a piece snapped to its snap area.
 @export var snappable : bool = true
-## Whether or not this tile is movable through its move and translation functions
-@export var movable : bool = true
-var occupier : Piece
+## If true: the tile will be pushed down the specified amount by the variable push_down_by when
+## it has been occupied by a piece that is grounded (not being dragged). Only works if this tile has a
+## movable component as a child node.
+@export var push_down_when_occupied : bool = true
+## The multiplication for the pushing (times its own size) where 1.0 is equal to its height (0.250)
+@export var push_down_by : float = PUSH_DOWN_MULTIPLIER
+## The movable component for this tile, this component aids moving the tile away and comunicate
+## with the occupier or any stimuli that might try to move this tile. If not set, the tile will automatically
+## look for a child node that is a movable component.
+@export var movable : MovableComponent
+var occupier : Piece :
+	set(new_occupier) :
+		if push_down_when_occupied:
+			if new_occupier != null:
+				var snappable_component: SnappableComponent = new_occupier.snappable_component
+				if snappable_component : snappable_component.grounded.connect(_push_down_callable)
+			else : if occupier :
+				var snappable_component: SnappableComponent = occupier.snappable_component
+				if snappable_component : snappable_component.grounded.disconnect(_push_down_callable)
+				if !snappable_component.is_grounded && movable && _push_down: 
+					movable.move_up(push_down_by)
+					_push_down = false
+		occupier = new_occupier
+var _push_down : bool = false
 var _snap_area : Area3D
 
-var _translation_vector : Vector3 = Vector3.ZERO :
-	set(new_vector) :
-		if new_vector == Vector3.ZERO :
-			_translation_vector = new_vector
-			return
-		new_vector.x += global_position.x
-		new_vector.y += global_position.y
-		new_vector.z += global_position.z
-		_translation_vector = new_vector
+func _push_down_callable():
+	if !movable : return
+	_push_down = true
+	movable.move_down(push_down_by)
+
+func get_movable() -> MovableComponent :
+	for node in get_children() :
+		if node is MovableComponent : movable = node
+	return movable
 
 func instantiate(new_active_state : bool = true, new_snappable_state : bool = true) -> Tile:
 	var new_tile : Tile = SCENE.instantiate()
@@ -47,10 +64,13 @@ func instantiate(new_active_state : bool = true, new_snappable_state : bool = tr
 	return new_tile
 
 func _ready() -> void:
-	translate.connect(translation)
+	get_movable()
 	appearance = %Mesh
 	_snap_area = %Snap
 	set_color(tint)
+	
+	occupy.connect(func (new_occupier : Piece) :
+		occupier = new_occupier)
 	
 	if !_snap_area : return
 	
@@ -58,7 +78,7 @@ func _ready() -> void:
 		var parent = area.get_parent_node_3d()
 		#if parent is Hands : return
 		if parent is SnappableComponent: 
-			occupier = parent.body)
+			occupy.emit(parent.body))
 	
 	_snap_area.area_exited.connect(func (area : Area3D):
 		var parent = area.get_parent_node_3d()
@@ -69,45 +89,10 @@ func _ready() -> void:
 		if parent is SnappableComponent : 
 			if occupier == null: return
 			occupier.snappable_component.stop_snapping()
-			occupier = null)
+			occupy.emit(null))
 
 func set_color(new_tint : Color):
 	if !appearance : return
 	skin = StandardMaterial3D.new()
 	skin.albedo_color = new_tint
 	appearance.set_surface_override_material(0, skin)
-
-func translation(translation_direction : Vector3 = Vector3.ZERO):
-	_translation_vector = translation_direction
-	
-func move_up(times : int = 1): _translation_vector = Vector3(0, STANDARD_UP_DOWN_DISTANCE * times, 0)
-
-func move_down(times : int = 1): _translation_vector = Vector3(0, -STANDARD_UP_DOWN_DISTANCE * times, 0)
-
-func move_left(times : int = 1): _translation_vector = Vector3(-STANDARD_LEFT_RIGHT_DISTANCE * times, 0, 0)
-
-func move_right(times : int = 1): _translation_vector = Vector3(STANDARD_LEFT_RIGHT_DISTANCE * times, 0, 0)
-
-func move_forth(times : int = 1): _translation_vector = Vector3(0, 0, STANDARD_LEFT_RIGHT_DISTANCE * times)
-
-func move_back(times : int = 1): _translation_vector = Vector3(0, 0, -STANDARD_LEFT_RIGHT_DISTANCE * times)
-
-func stop_translation():
-	_translation_vector = Vector3.ZERO
-
-func is_translating() -> bool : return _translation_vector != Vector3.ZERO
-
-func _has_translation_reached_goal() -> bool :
-	return _round_to_decimal(global_position) == _round_to_decimal(_translation_vector)
-
-func _round_to_decimal(num, digit : int = 2):
-	return round(num * pow(10.0, digit)) / pow(10.0, digit)
-	
-func _process(delta: float) -> void:
-	if !active || !movable: return
-	
-	if _has_translation_reached_goal() : stop_translation()
-	
-	if !is_translating() : return
-	
-	global_position = lerp(global_position, _translation_vector, STANDARD_TRANSLATION_STRENGTH)

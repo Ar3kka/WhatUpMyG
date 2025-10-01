@@ -1,8 +1,10 @@
-[gd_scene load_steps=5 format=3 uid="uid://id780lmocm12"]
+[gd_scene load_steps=6 format=3 uid="uid://id780lmocm12"]
 
 [ext_resource type="Script" uid="uid://cmcksvu8hn86" path="res://Scripts/TileComponents/tile.gd" id="1_16m5o"]
+[ext_resource type="PackedScene" uid="uid://bp35v3ssss4dv" path="res://Scenes/Components/movable.tscn" id="2_lghtw"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_16m5o"]
+size = Vector3(1, 1.97754, 1)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_y18ax"]
 size = Vector3(1, 0.25, 1)
@@ -20,7 +22,7 @@ collision_layer = 32
 collision_mask = 16
 
 [node name="area_shape" type="CollisionShape3D" parent="Snap"]
-transform = Transform3D(0.2, 0, 0, 0, 0.2, 0, 0, 0, 0.2, 0, 0.25, 0)
+transform = Transform3D(0.2, 0, 0, 0, 0.2, 0, 0, 0, 0.2, 0, 0.152246, 0)
 shape = SubResource("BoxShape3D_16m5o")
 debug_color = Color(0.668545, 0.508794, 0.0919665, 0.42)
 
@@ -35,3 +37,5 @@ shape = SubResource("BoxShape3D_y18ax")
 [node name="Mesh" type="MeshInstance3D" parent="."]
 unique_name_in_owner = true
 mesh = SubResource("BoxMesh_xsjyq")
+
+[node name="Movable" parent="." instance=ExtResource("2_lghtw")]

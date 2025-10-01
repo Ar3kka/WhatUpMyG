@@ -1,6 +1,7 @@
 class_name DraggableComponent extends Node3D
 
 signal drag(horizontal : bool, vertical : bool, target : Vector3, strength : float, player_requested_to_drag : Manipulator)
+signal stopped_dragging()
 
 ## RECOMMENDED SETTINGS
 const ROTATION_STRENGTH : float = 0.05
@@ -36,6 +37,7 @@ func stop_dragging() :
 	if body == null: return
 	horizontal_drag = false
 	vertical_drag = false
+	stopped_dragging.emit()
 	target_point = Vector3.ZERO
 	if _manipulator_list.has(current_manipulator): _manipulator_list.erase(current_manipulator)
 	current_manipulator = null
@@ -52,6 +54,12 @@ func _freeze(freeze_value):
 
 func _ready() -> void:
 	if body == null : body = get_parent_node_3d()
+	
+	stopped_dragging.connect(func (): 
+		if !body : return
+		var snappable_component : SnappableComponent = body.snappable_component
+		if snappable_component : snappable_component.grounded.emit())
+		
 	drag.connect(func(horizontal : bool, vertical : bool, target : Vector3, strength : float, player_requested_to_drag : Manipulator):
 		horizontal_drag = horizontal
 		vertical_drag = vertical

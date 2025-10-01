@@ -37,7 +37,7 @@ var tiles : Array[Array]
 func _ready() -> void:
 	if !tile_types.size(): _reset_tyle_types()
 	generate_tiles()
-	get_tile_at().move_back()
+	get_tile_at().movable.move_up(2)
 
 func _reset_tyle_types():
 	if !active : return
@@ -85,8 +85,3 @@ func generate_tiles():
 			%Tiles.add_child(new_tile)
 		# After finishing the array append it to the list of vertical arrays
 		if tile_array.size() != 0: tiles.append(tile_array)
-	
-
-func raise_tile(tile_coordinates : Vector2i = Vector2i.ZERO, height : float = STANDARD_RAISE_HEIGHT):
-	var tile_to_raise : Tile = get_tile_at(tile_coordinates)
-	tile_to_raise.translate.emit(Vector3(0, STANDARD_RAISE_HEIGHT, 0))

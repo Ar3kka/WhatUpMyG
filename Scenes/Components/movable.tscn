@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://bp35v3ssss4dv"]
+
+[ext_resource type="Script" uid="uid://tmje3aorucf7" path="res://Scripts/TileComponents/movable.gd" id="1_tal2h"]
+
+[node name="Movable" type="Node3D"]
+script = ExtResource("1_tal2h")
