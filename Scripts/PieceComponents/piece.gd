@@ -10,6 +10,7 @@ const SELECTABLE_COMPONENT = "Selectable"
 const TEAM_COMPONENT = "Team"
 const ROTATABLE_COMPONENT = "Rotatable"
 const SNAPPABLE_COMPONENT = "Snappable"
+const PLAYABLE_COMPONENT = "Playable"
 
 @export var active : bool = true
 var manipulator : Manipulator
@@ -22,33 +23,33 @@ var manipulator : Manipulator
 ## The component that makes this 3d rigidbody have and deal damage
 @export var damage_component : DamageComponent :
 	set(new_damage):
-			if !active: return
-			damage_component = new_damage
+		if !active: return
+		damage_component = new_damage
 ## The component that makes this 3d rigidbody be lookable and interactable by the mouse pointer (player)
 @export var lookable_component : LookableComponent :
 	set(new_lookable):
-			if !active: return
-			lookable_component = new_lookable
+		if !active: return
+		lookable_component = new_lookable
 ## The component that makes this 3d rigidbody have a set team (player assigned)
 @export var team_component : TeamComponent :
 	set(new_team):
-			if !active: return
-			team_component = new_team
+		if !active: return
+		team_component = new_team
 ## The component that makes this 3d rigidbody selectable either by the player or environment
 @export var selectable_component : SelectableComponent :
 	set(new_selectable):
-			if !active: return
-			selectable_component = new_selectable
+		if !active: return
+		selectable_component = new_selectable
 ## The component that makes this 3d rigidbody be frozen by the player or environment
 @export var freezable_component : FreezableComponent :
 	set(new_freezable):
-			if !active: return
-			freezable_component = new_freezable
+		if !active: return
+		freezable_component = new_freezable
 ## The component that makes this 3d rigidbody be draggable by the player or environment
 @export var draggable_component : DraggableComponent :
 	set(new_draggable):
-			if !active: return
-			draggable_component = new_draggable
+		if !active: return
+		draggable_component = new_draggable
 ## The component that makes this 3d rigidbody be rotatable by the player or environment
 @export var rotatable_component : RotatableComponent :
 	set(new_rotatable):
@@ -58,6 +59,10 @@ var manipulator : Manipulator
 	set(new_snappable):
 		if !active: return
 		snappable_component = new_snappable
+@export var playable_component : PlayableComponent :
+	set(new_playable):
+		if !active: return
+		playable_component = new_playable
 
 ## Auto populate using the given body and finding their children by class name
 @export var populate : bool = true
@@ -81,6 +86,8 @@ var manipulator : Manipulator
 @export var rotatable_name : String = ROTATABLE_COMPONENT
 ## Custom name for the snappable component for auto population
 @export var snappable_name : String = SNAPPABLE_COMPONENT
+## Custom name for the playable component for auto population
+@export var playable_name : String = PLAYABLE_COMPONENT
 
 
 var components : Array[Node3D] = []
@@ -148,6 +155,13 @@ func read_snappable_component() -> SnappableComponent :
 				snappable_component = node ; return node
 	return null
 
+func read_playable_component() -> PlayableComponent :
+	for node in get_children(): 
+		if node is PlayableComponent: 
+			if !custom_names || (custom_names && node.name == playable_name):
+				playable_component = node ; return node
+	return null
+
 func _populate_components_array(restart : bool):
 	if !active: return
 	if restart : components = []
@@ -178,6 +192,9 @@ func _populate_components_array(restart : bool):
 	
 	if snappable_component && !components.has(snappable_component) : 
 		components.append(snappable_component)
+		
+	if snappable_component && !components.has(playable_component) : 
+		components.append(snappable_component)
 
 func read_components():
 	if !active: return
@@ -190,6 +207,7 @@ func read_components():
 	read_draggable_component()
 	read_rotatable_component()
 	read_snappable_component()
+	read_playable_component()
 	
 	_populate_components_array(false)
 

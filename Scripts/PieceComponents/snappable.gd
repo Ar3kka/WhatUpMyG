@@ -1,5 +1,6 @@
 class_name SnappableComponent extends Node3D
 
+signal snap()
 signal grounded()
 
 const SNAP_FORCE : float = 0.3
@@ -10,7 +11,17 @@ const SNAP_Y_OFFSET : float = 0.125
 @export var snapping : bool = false
 @export var snap_area : Area3D
 @export var snap_force : float = SNAP_FORCE
-var snap_point : Vector3
+var _playable : PlayableComponent = null :
+	set(new_value) : return
+	get() :
+		if body == null : return
+		return body.playable_component
+var being_played : bool = false :
+	set(new_value) : return
+	get() :
+		if _playable == null : return false
+		return _playable.being_played
+var snap_point : Vector3 
 var snapped_to : Tile :
 	set(new_tile): 
 		snapped_to = new_tile
@@ -29,23 +40,37 @@ var is_grounded : bool = false :
 func _ready() -> void:
 	if body == null: body = get_parent_node_3d()
 	
+	grounded.connect(_set_playable_tile)
+	
 	snap_area.area_entered.connect(func (area : Area3D):
 		var parent = area.get_parent_node_3d()
 		if parent is Hands: is_handled = true
 		if parent is Tile:
-			if parent.active && parent.snappable && is_handled : snapped_to = parent)
+			# Check if the tile is snappable and if the piece is being handled directly
+			if ( parent.active && parent.snappable && is_handled
+			# Check if the piece is currently being played,
+			# and only let it snap if the tile is the current tile set in the playable component
+			# or its a new playable tile judged by the playable component.
+			&& (!being_played || (being_played && (_playable.current_tile == parent || _playable.is_tile_playable(parent))))
+			&& (!parent.has_playable || (parent.has_playable && parent.playable_piece == _playable))) :
+				snapped_to = parent )
 	
 	snap_area.area_exited.connect(func (area : Area3D):
 		var parent = area.get_parent_node_3d()
 		if parent is Hands: is_handled = false
-		if parent is Tile : if snapped_to == parent : snapped_to = null)
+		if parent is Tile : 
+			if snapped_to == parent : stop_snapping())
+
+func _set_playable_tile() :
+	if snapped_to == null || !active : return
+	snapped_to.playable_piece = _playable
 
 func stop_snapping():
 	if !active : return
 	if snapped_to: snapped_to = null
 
 func _process(delta: float) -> void:
-	if !active || body == null || !snapping || is_grounded: return
+	if !active || body == null || !snapping || is_grounded : return
 	
 	var draggable_component = body.draggable_component
 	if draggable_component == null : return

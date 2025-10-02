@@ -37,7 +37,6 @@ var tiles : Array[Array]
 func _ready() -> void:
 	if !tile_types.size(): _reset_tyle_types()
 	generate_tiles()
-	get_tile_at().movable.move_up(2)
 
 func _reset_tyle_types():
 	if !active : return
@@ -74,7 +73,7 @@ func generate_tiles():
 			var new_tile = Tile.new().instantiate()
 			new_tile.global_position = Vector3(global_position.x + x * generation_direction.x, global_position.y, global_position.z + z * generation_direction.y)
 			new_tile.id = Vector2i(z, x)
-			
+			new_tile.grid = self
 			# Check color replacement to follow given pattern
 			if force_pattern : new_tile.tint = color_pattern[color_index]
 			if color_index + 1 < color_pattern.size() : color_index += 1

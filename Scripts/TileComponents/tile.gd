@@ -5,6 +5,9 @@ signal occupy(occupier : Piece)
 const SCENE : PackedScene = preload("res://Scenes/Tiles/tile.tscn")
 const PUSH_DOWN_MULTIPLIER : float = 0.250
 
+## The grid this tile belongs to, in case it does.
+var grid : TileGrid
+## The id of the tile in the grid.
 var id : Vector2i = Vector2i.ZERO
 ## The meshinstance3D set for this tile.
 @export var appearance : MeshInstance3D
@@ -44,6 +47,10 @@ var occupier : Piece :
 					movable.move_up(push_down_by)
 					_push_down = false
 		occupier = new_occupier
+var has_playable : bool :
+	set(new_value) : return
+	get() : return playable_piece != null && playable_piece.active
+var playable_piece : PlayableComponent
 var _push_down : bool = false
 var _snap_area : Area3D
 
@@ -70,24 +77,27 @@ func _ready() -> void:
 	set_color(tint)
 	
 	occupy.connect(func (new_occupier : Piece) :
-		occupier = new_occupier)
+		occupier = new_occupier )
 	
 	if !_snap_area : return
 	
 	_snap_area.area_entered.connect(func (area : Area3D):
 		var parent = area.get_parent_node_3d()
 		#if parent is Hands : return
-		if parent is SnappableComponent: 
+		if parent is SnappableComponent:
+			# Check if the tile already has a playable piece saved,
+			# and if the entering piece is another one that is not the playable piece.
+			if has_playable && playable_piece != parent._playable : return
 			occupy.emit(parent.body))
 	
 	_snap_area.area_exited.connect(func (area : Area3D):
 		var parent = area.get_parent_node_3d()
 		if parent is Hands :
-			if parent.draggable_object != occupier || !occupier : return
+			if parent.draggable_object != occupier || occupier == null : return
 			occupier.snappable_component.stop_snapping()
 			return
 		if parent is SnappableComponent : 
-			if occupier == null: return
+			if occupier == null : return
 			occupier.snappable_component.stop_snapping()
 			occupy.emit(null))
 

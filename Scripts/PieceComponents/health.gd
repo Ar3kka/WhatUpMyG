@@ -2,6 +2,7 @@ class_name HealthComponent extends Node3D
 
 signal hit(damage_points : float)
 
+@export var active : bool = true
 @export var body : Piece
 @export var body_area : Area3D
 @export var alive : bool = true
