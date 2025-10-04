@@ -71,6 +71,11 @@ team = 1
 
 [node name="Playable" type="Node3D" parent="."]
 script = ExtResource("10_0ro88")
-standard_reach = 2
+uniform_movement = true
+uniform_reach = 15
+lock_frontal_left_diagonal = true
+lock_frontal_right_diagonal = true
+lock_rear_left_diagonal = true
+lock_rear_right_diagonal = true
 
 [editable path="Mesh"]

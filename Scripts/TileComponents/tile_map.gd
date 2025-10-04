@@ -37,14 +37,81 @@ var tiles : Array[Array]
 func _ready() -> void:
 	if !tile_types.size(): _reset_tyle_types()
 	generate_tiles()
+	#print(get_tiles_from(Vector2i.ZERO, Vector2i(1, 1), 10))
+	#print(get_specific_tile_from(Vector2i(1, 1), Vector2i(1, 2)))
+	#print(get_tiles_following_pattern(Vector2i(2, 3), Vector2i(2, -1), true))
 
 func _reset_tyle_types():
 	if !active : return
 	tile_types = []
 	tile_types.append(Tile.new())
 
-func get_tile_at(tile_coordinates : Vector2 = Vector2.ZERO) -> Tile:
-	return tiles.get(tile_coordinates.x).get(tile_coordinates.y)
+## Get tiles in set direction within the grid from an specified coordinate location.
+## and returns the specified number of tiles in that direction set by the reach variable.
+## the direction vector works as follows: 
+## 
+## If a direction is not given, a single tile will be returned as part of the array, ignoring the reach given.
+func get_tiles_from(origin_coordinates : Vector2i = Vector2i.ZERO, direction : Vector2i = Vector2i(1, 0), reach : int = 1, ) -> Array[Tile] :
+	var result_tiles : Array[Tile]
+	if direction == Vector2i.ZERO : 
+		tiles.append(get_tile_at(origin_coordinates))
+		return result_tiles
+	if origin_coordinates.x > grid_size.x : origin_coordinates.x = grid_size.x
+	if origin_coordinates.y > grid_size.y : origin_coordinates.y = grid_size.y
+	var final_reach = reach
+	if final_reach > tiles.size() : final_reach = tiles.size()
+	for id in range(final_reach) :
+		var final_id = id + 1
+		var final_coordinates = origin_coordinates
+		if direction.x > 0 : final_coordinates.x += final_id # front
+		else : if direction.x < 0 : final_coordinates.x -= final_id # rear
+		if direction.y > 0 : final_coordinates.y += final_id # left
+		else: if direction.y < 0 : final_coordinates.y -= final_id # right
+		var tile : Tile = get_tile_at(final_coordinates)
+		if tile != null : result_tiles.append(tile)
+	return result_tiles
+
+## Get tiles following an especific direction pattern provided from an origin point,
+## rounds of patterns can be set, if mirror is true the rounds will be duplicated and 
+## the algorithm will be adapted to scan all possible combinations around the origin tile using the given rounds.
+## if pattern is not given, a single tile will be returned from the provided origin coordinates.
+func get_tiles_following_pattern(origin_coordinates : Vector2i = Vector2i.ZERO, pattern : Vector2i = Vector2i(1, 0), mirror : bool = true, rounds : int = 4) :
+		var result_tiles : Array[Tile]
+		if pattern == Vector2i.ZERO :
+			result_tiles.append(get_tile_at(origin_coordinates))
+			return result_tiles
+		var final_pattern : Vector2i = pattern
+		if mirror : rounds *= 2
+		for round in range(rounds):
+			var tile : Tile = get_specific_tile_from(origin_coordinates, final_pattern)
+			## Horse algorithm example: 
+			# swap, y *= -1 gets negative
+			#(2, -1) (2, 1) horse front
+			# swap, y *= -1 gets negative
+			#(-1, -2) (1, -2) horse right
+			# swap, y *= -1 gets positive
+			#(-2, 1) (-2, -1) horse rear
+			# swap, y *= -1 gets positive
+			#(1, 2) (-1, 2) horse left
+			# swap, y *= -1 gets negative
+			final_pattern = Vector2i(final_pattern.y, final_pattern.x)
+			if !mirror || (mirror && round != (rounds / 2) - 1): final_pattern.y *= -1
+			result_tiles.append(tile)
+		return result_tiles
+
+## Get a single tile following an specific direction starting from the origin coordinates provided where direction is:
+## Vector2i(up(1) or down(-1), left (1) or right (-1)).
+func get_specific_tile_from(origin_coordinates : Vector2i = Vector2i.ZERO, direction : Vector2i = Vector2i(1, 0)):
+	var final_coordinates = Vector2i(origin_coordinates.x + direction.x, origin_coordinates.y + direction.y)
+	var result_tile : Tile = get_tile_at(final_coordinates)
+	return result_tile
+
+## Get the tile in the coordinates given, returns null if coordinates aren't following
+## the current grid size parameters.
+func get_tile_at(tile_coordinates : Vector2i = Vector2i.ZERO) -> Tile:
+	var supposed_horizontal = tiles.get(tile_coordinates.x)
+	if supposed_horizontal == null : return
+	return supposed_horizontal.get(tile_coordinates.y)
 	
 func generate_tiles():
 	if !active : return

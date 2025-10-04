@@ -66,8 +66,7 @@ func _ready() -> void:
 	stopped_dragging.connect(func (): 
 		if !body : return
 		var snappable_component : SnappableComponent = body.snappable_component
-		if snappable_component : snappable_component.grounded.emit()
-		if snappable_component._playable && snappable_component.snapped_to : snappable_component.snap.emit())
+		if snappable_component : snappable_component.grounded.emit())
 		
 	drag.connect(func(horizontal : bool, vertical : bool, target : Vector3, strength : float, player_requested_to_drag : Manipulator):
 		if !manipulable && player_requested_to_drag : return

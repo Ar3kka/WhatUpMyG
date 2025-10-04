@@ -39,23 +39,28 @@ var occupier : Piece :
 		if push_down_when_occupied:
 			if new_occupier != null:
 				var snappable_component: SnappableComponent = new_occupier.snappable_component
-				if snappable_component : snappable_component.grounded.connect(_push_down_callable)
+				if snappable_component : snappable_component.connected.connect(_push_down_callable)
 			else : if occupier :
 				var snappable_component: SnappableComponent = occupier.snappable_component
-				if snappable_component : snappable_component.grounded.disconnect(_push_down_callable)
+				if snappable_component : snappable_component.connected.disconnect(_push_down_callable)
 				if !snappable_component.is_grounded && movable && _push_down: 
 					movable.move_up(push_down_by)
 					_push_down = false
 		occupier = new_occupier
+@export var is_playable : bool = true
 var has_playable : bool :
 	set(new_value) : return
 	get() : return playable_piece != null && playable_piece.active
-var playable_piece : PlayableComponent
+var playable_piece : PlayableComponent :
+	set(new_value) :
+		if !is_playable : return
+		playable_piece = new_value
+
 var _push_down : bool = false
 var _snap_area : Area3D
 
 func _push_down_callable():
-	if !movable : return
+	if !movable || _push_down : return
 	_push_down = true
 	movable.move_down(push_down_by)
 

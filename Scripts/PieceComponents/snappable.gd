@@ -2,6 +2,8 @@ class_name SnappableComponent extends Node3D
 
 signal snap()
 signal grounded()
+signal connected()
+signal disconnected()
 
 const SNAP_FORCE : float = 0.3
 const SNAP_Y_OFFSET : float = 0.125
@@ -27,7 +29,10 @@ var snapped_to : Tile :
 		snapped_to = new_tile
 		snapping = false
 		snap_point = Vector3.ZERO
-		if snapped_to == null : return
+		if snapped_to == null :
+			disconnected.emit()
+			return
+		snap.emit()
 		snapping = true
 		snap_point = Vector3(snapped_to.global_position.x, snapped_to.global_position.y + SNAP_Y_OFFSET, snapped_to.global_position.z)
 var is_handled : bool = false
@@ -37,10 +42,25 @@ var is_grounded : bool = false :
 		if !body.draggable_component : return false
 		return !body.draggable_component.dragged()
 
+func _is_tile_playable(supposed_tile : Tile) -> bool :
+	# Check if the piece is currently being played,
+	# and only let it snap if the tile is the current tile set in the playable component
+	# or its a new playable tile judged by the playable component.
+	return (!being_played || (being_played && (_playable.current_tile == supposed_tile || _playable.is_tile_playable(supposed_tile))))
+
+func _is_tile_not_being_played(supposed_tile : Tile) -> bool :
+	return (!supposed_tile.has_playable || (supposed_tile.has_playable && supposed_tile.playable_piece == _playable))
+
 func _ready() -> void:
 	if body == null: body = get_parent_node_3d()
 	
-	grounded.connect(_set_playable_tile)
+	disconnected.connect(func () : 
+		if snapped_to == null || !active : return
+		snapped_to.playable_piece = null)
+	connected.connect( func () : 
+		if snapped_to == null || !active : return
+		snapped_to.playable_piece = _playable)
+	grounded.connect( func () : if _playable && snapped_to != null : connected.emit())
 	
 	snap_area.area_entered.connect(func (area : Area3D):
 		var parent = area.get_parent_node_3d()
@@ -48,11 +68,8 @@ func _ready() -> void:
 		if parent is Tile:
 			# Check if the tile is snappable and if the piece is being handled directly
 			if ( parent.active && parent.snappable && is_handled
-			# Check if the piece is currently being played,
-			# and only let it snap if the tile is the current tile set in the playable component
-			# or its a new playable tile judged by the playable component.
-			&& (!being_played || (being_played && (_playable.current_tile == parent || _playable.is_tile_playable(parent))))
-			&& (!parent.has_playable || (parent.has_playable && parent.playable_piece == _playable))) :
+			&& _is_tile_playable(parent)
+			&& _is_tile_not_being_played(parent)) :
 				snapped_to = parent )
 	
 	snap_area.area_exited.connect(func (area : Area3D):
@@ -60,10 +77,6 @@ func _ready() -> void:
 		if parent is Hands: is_handled = false
 		if parent is Tile : 
 			if snapped_to == parent : stop_snapping())
-
-func _set_playable_tile() :
-	if snapped_to == null || !active : return
-	snapped_to.playable_piece = _playable
 
 func stop_snapping():
 	if !active : return
