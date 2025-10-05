@@ -53,10 +53,7 @@ func _is_tile_not_being_played(supposed_tile : Tile) -> bool :
 
 func _ready() -> void:
 	if body == null: body = get_parent_node_3d()
-	
-	disconnected.connect(func () : 
-		if snapped_to == null || !active : return
-		snapped_to.playable_piece = null)
+
 	connected.connect( func () : 
 		if snapped_to == null || !active : return
 		snapped_to.playable_piece = _playable)

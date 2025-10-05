@@ -1,6 +1,7 @@
 class_name DraggableComponent extends Node3D
 
 signal drag(horizontal : bool, vertical : bool, target : Vector3, strength : float, player_requested_to_drag : Manipulator)
+signal started_dragging()
 signal stopped_dragging()
 
 ## RECOMMENDED SETTINGS
@@ -70,6 +71,8 @@ func _ready() -> void:
 		
 	drag.connect(func(horizontal : bool, vertical : bool, target : Vector3, strength : float, player_requested_to_drag : Manipulator):
 		if !manipulable && player_requested_to_drag : return
+		if !vertical_drag && !horizontal_drag && (vertical || horizontal) : 
+			started_dragging.emit()
 		horizontal_drag = horizontal
 		vertical_drag = vertical
 		target_point = target

@@ -3,19 +3,19 @@ class_name Hands extends Node3D
 const DRAG_STRENGTH : float = 0.1
 const ROTATION_STRENGTH : float = 3.5
 const RAYCAST_DISTANCE : float = 250.0
-const PALM_SIZE : float = 0.5
+const FINGER_SIZE : float = 0.5
 
 @export var manipulator : Manipulator
 @export var holding_drag : bool = true
 @export var drag_strength : float = DRAG_STRENGTH
 @export var manual_rotation_strength : float = ROTATION_STRENGTH
 var mouse_position : Vector2
-@export var palm : Area3D
-@export var palm_size : float :
-	set(new_palm_size):
-		if palm == null : return
-		palm_size = new_palm_size
-		palm.scale = Vector3(palm_size, palm_size, palm_size)
+@export var finger : Area3D
+@export var finger_size : float :
+	set(new_finger_size):
+		if finger == null : return
+		finger_size = new_finger_size
+		finger.scale = Vector3(finger_size, finger_size, finger_size)
 		
 
 var detected_object : Piece
@@ -32,8 +32,8 @@ var rotate_right : bool = false
 
 func _ready() -> void:
 	if !manipulator : manipulator = get_parent_node_3d()
-	palm = %Palm
-	palm_size = PALM_SIZE
+	finger = %Finger
+	finger_size = FINGER_SIZE
 
 func stop_dragging(draggable_component : DraggableComponent) :
 	if !draggable_component : return
@@ -166,7 +166,7 @@ func _process(_delta):
 	var ray_depth = ray_origin.distance_to(draggable_component.body_position)
 	var final_ray_position = ray_origin + ray_end * ray_depth
 	
-	palm.global_position = final_ray_position
+	finger.global_position = final_ray_position
 	
 	var snappable_component : SnappableComponent = draggable_object.snappable_component
 	if snappable_component && snappable_component.active && snappable_component.snapping:
@@ -174,3 +174,4 @@ func _process(_delta):
 	
 	# Emitting signal for the draggable, selected object to start being dragged towards the mouse position
 	draggable_component.drag.emit(horizontal_drag, vertical_drag, final_ray_position, drag_strength, manipulator)
+	

@@ -1,4 +1,4 @@
-[gd_scene load_steps=14 format=4 uid="uid://doxoly2gci3e1"]
+[gd_scene load_steps=15 format=4 uid="uid://doxoly2gci3e1"]
 
 [ext_resource type="PackedScene" uid="uid://d1rhx3b2apwy6" path="res://Meshes/Pieces/Horse.glb" id="1_guxo3"]
 [ext_resource type="Script" uid="uid://bi2l7ixfw6ufq" path="res://Scripts/PieceComponents/piece.gd" id="1_w76fb"]
@@ -9,6 +9,7 @@
 [ext_resource type="PackedScene" uid="uid://2bji2dbrhdop" path="res://Scenes/Components/team.tscn" id="6_b0usl"]
 [ext_resource type="PackedScene" uid="uid://dfjvv6pbb18hp" path="res://Scenes/Components/rotatable.tscn" id="7_1lect"]
 [ext_resource type="PackedScene" uid="uid://ddpcdx1omf0vo" path="res://Scenes/Components/snappable.tscn" id="9_w76fb"]
+[ext_resource type="PackedScene" uid="uid://bj8c5n2moabr6" path="res://Scenes/Components/playable.tscn" id="10_ph717"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_3865y"]
 size = Vector3(0.3, 0.871646, 0.356396)
@@ -257,5 +258,11 @@ team = 1
 script = SubResource("GDScript_qdpku")
 
 [node name="Snappable" parent="." instance=ExtResource("9_w76fb")]
+
+[node name="Playable" parent="." instance=ExtResource("10_ph717")]
+standard_reach = 0
+follow_uniform_pattern = true
+mirror_uniform_pattern = true
+uniform_pattern = Vector2i(2, -1)
 
 [editable path="Mesh"]

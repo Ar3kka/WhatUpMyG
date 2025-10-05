@@ -1,4 +1,4 @@
-[gd_scene load_steps=13 format=4 uid="uid://bk5q2sljd1bv7"]
+[gd_scene load_steps=14 format=4 uid="uid://bk5q2sljd1bv7"]
 
 [ext_resource type="PackedScene" uid="uid://rb6072na0ky6" path="res://Meshes/Pieces/Bishop.glb" id="1_5pmi2"]
 [ext_resource type="Script" uid="uid://bi2l7ixfw6ufq" path="res://Scripts/PieceComponents/piece.gd" id="1_y6o4j"]
@@ -9,6 +9,7 @@
 [ext_resource type="PackedScene" uid="uid://2bji2dbrhdop" path="res://Scenes/Components/team.tscn" id="6_n2sq1"]
 [ext_resource type="PackedScene" uid="uid://dfjvv6pbb18hp" path="res://Scenes/Components/rotatable.tscn" id="7_dij6e"]
 [ext_resource type="PackedScene" uid="uid://ddpcdx1omf0vo" path="res://Scenes/Components/snappable.tscn" id="9_035gs"]
+[ext_resource type="PackedScene" uid="uid://bj8c5n2moabr6" path="res://Scenes/Components/playable.tscn" id="10_icwx2"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_5pmi2"]
 size = Vector3(0.3, 0.963989, 0.3)
@@ -64,5 +65,13 @@ team = 1
 [node name="Rotatable" parent="." instance=ExtResource("7_dij6e")]
 
 [node name="Snappable" parent="." instance=ExtResource("9_035gs")]
+
+[node name="Playable" parent="." instance=ExtResource("10_icwx2")]
+uniform_movement = true
+uniform_reach = 15
+lock_left = true
+lock_right = true
+lock_front = true
+lock_rear = true
 
 [editable path="Mesh"]

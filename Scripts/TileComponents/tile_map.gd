@@ -76,6 +76,7 @@ func get_tiles_from(origin_coordinates : Vector2i = Vector2i.ZERO, direction : V
 ## the algorithm will be adapted to scan all possible combinations around the origin tile using the given rounds.
 ## if pattern is not given, a single tile will be returned from the provided origin coordinates.
 func get_tiles_following_pattern(origin_coordinates : Vector2i = Vector2i.ZERO, pattern : Vector2i = Vector2i(1, 0), mirror : bool = true, rounds : int = 4) :
+		print(pattern, mirror, rounds)
 		var result_tiles : Array[Tile]
 		if pattern == Vector2i.ZERO :
 			result_tiles.append(get_tile_at(origin_coordinates))
