@@ -4,6 +4,7 @@ signal look(new_look : bool, manipulator : Manipulator)
 
 @export var body : Piece
 @export var active : bool = true
+@export_group("Reaction Settings")
 @export var freeze_on_look : bool = false
 @export var freeze_if_selectable : bool = true
 @export var freeze_if_draggable : bool = false

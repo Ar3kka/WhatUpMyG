@@ -70,6 +70,7 @@ team = 1
 [node name="Snappable" parent="." instance=ExtResource("9_0ro88")]
 
 [node name="Playable" parent="." instance=ExtResource("10_0ro88")]
+highlight_color = Color(0.27381, 0.601549, 0.806063, 1)
 uniform_movement = true
 uniform_reach = 15
 lock_frontal_left_diagonal = true

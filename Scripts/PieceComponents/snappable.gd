@@ -32,6 +32,7 @@ var snapped_to : Tile :
 		if snapped_to == null :
 			disconnected.emit()
 			return
+		snapped_to.snap.emit()
 		snap.emit()
 		snapping = true
 		snap_point = Vector3(snapped_to.global_position.x, snapped_to.global_position.y + SNAP_Y_OFFSET, snapped_to.global_position.z)
@@ -79,7 +80,7 @@ func stop_snapping():
 	if !active : return
 	if snapped_to: snapped_to = null
 
-func _process(delta: float) -> void:
+func _process(_delta: float) -> void:
 	if !active || body == null || !snapping || is_grounded : return
 	
 	var draggable_component = body.draggable_component

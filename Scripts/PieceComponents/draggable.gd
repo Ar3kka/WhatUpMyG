@@ -9,14 +9,10 @@ const ROTATION_STRENGTH : float = 0.05
 const DRAGGING_STRENGTH : float = 0.1
 const X_LIMIT : float = 0.0
 
+## The piece this component belongs to.
 @export var body : Piece
+## Whether or not this piece is active and functional.
 @export var active : bool = true
-## The dragging strength for when this piece is being dragged
-@export var dragging_strength : float = DRAGGING_STRENGTH
-## Whether or not the individual drag strength set for each piece should be overwritten by the dragging
-## strength of the manipulator
-@export var override_drag_strength : bool = true
-var _custom_dragging_strength : float
 ## Whether or not this tile is draggable by the means of manipulation (by a player with the mouse)
 @export var manipulable : bool = true
 var current_manipulator : Manipulator
@@ -24,10 +20,18 @@ var _manipulator_list : Array[Manipulator] = []
 var being_manipulated : bool :
 	set(new_value) : return
 	get(): return _manipulator_list.size() > 0 || current_manipulator
+@export_group("Reaction Settings")
 ## Freeze all physics interaction to kinematic when the piece is being dragged
 @export var freeze : bool = true
 ## Fix the rotation by the standard rotation set in the rotatable component (only works if piece is rotatable)
 @export var fix_rotation : bool = true
+@export_group("Dragging Settings")
+## The dragging strength for when this piece is being dragged
+@export var dragging_strength : float = DRAGGING_STRENGTH
+## Whether or not the individual drag strength set for each piece should be overwritten by the dragging
+## strength of the manipulator
+@export var override_drag_strength : bool = true
+var _custom_dragging_strength : float
 
 var horizontal_drag : bool = false
 var vertical_drag : bool = false

@@ -1,15 +1,18 @@
 class_name Tile extends Node3D
 
 signal occupy(occupier : Piece)
-signal highlight(new_highlight_value : bool)
+signal snap()
+signal highlight(new_raise_value : bool, new_highlight_value : bool, new_highlight_color : Color)
 signal connected()
 signal disconnected()
 signal press(new_press_value : bool)
+signal instantiated()
 
 const SCENE : PackedScene = preload("res://Scenes/Tiles/tile.tscn")
 const PUSH_STANDARD_MULTIPLIER : float = 0.250
 const PUSH_DOWN_MULTIPLIER : float = PUSH_STANDARD_MULTIPLIER
 const RAISE_UP_MULTIPLIER : float = PUSH_STANDARD_MULTIPLIER
+const HIGHLIGHT_STRENGTH : float = 0.5
 
 @export_category("General Tile Settings")
 ## The grid this tile belongs to, in case it does.
@@ -53,6 +56,15 @@ var _pressing_down : bool = false
 ## it its been deemed playable by the currently dragged playable piece (not grounded). Only works if this tile has a
 ## movable component as a child node.
 @export var highlightable : bool = true
+## When true, the highlight color will be the one set before it's been locked, and will not be altered until lock color is false.
+@export var lock_color : bool = false
+## The color that the tile will change to whenever it's being highlighted.
+## The default color is the same as for the tint.
+@export var highlight_color : Color = tint:
+	set(new_value) :
+		if lock_color : return
+		highlight_color = new_value 
+@export var highlight_strength : float = HIGHLIGHT_STRENGTH
 ## The multiplication for the highlight push (times its own size) where 1.0 is equal to its height (0.250)
 @export var raise_up_by : float = RAISE_UP_MULTIPLIER
 var _highlight_push : bool = false
@@ -91,32 +103,46 @@ func _ready() -> void:
 	_snap_area = %Snap
 	set_color(tint)
 	
-	occupy.connect(func (new_occupier : Piece) :
+	occupy.connect(func (new_occupier : Piece) : 
+		if _highlight_push: 
+			if new_occupier != null && new_occupier != occupier : movable.reset_translation()
+			else : if !movable._reset : movable.move_up(raise_up_by)
 		occupier = new_occupier )
-	highlight.connect(func (new_highlight_value : bool) :
-		if new_highlight_value == false && _highlight_push: 
-			movable.move_down(raise_up_by)
-			_highlight_push = new_highlight_value
+		
+	highlight.connect(func (new_raise_value: bool, new_highlight_value : bool, new_highlight_color : Color, new_highlight_strength : float = highlight_strength) :
+		if !new_highlight_value && _highlight_push:
+			movable.reset_translation()
+			_highlight_push = new_raise_value
+			highlight_color = tint
+			set_color(tint)
 			return
 		if _highlight_push && new_highlight_value : return
-		_highlight_push = new_highlight_value
+		_highlight_push = new_raise_value
+		if new_highlight_value : 
+			highlight_color = new_highlight_color
+			highlight_strength = new_highlight_strength
+			set_color(lerp(tint, highlight_color, highlight_strength))
 		raise_up())
+	
 	press.connect(func (new_press_value : bool) :
+		if !pressable || movable == null : return
 		if new_press_value == false && _pressing_down: 
-			movable.move_up(press_down_by)
+			movable.reset_translation()
 			_pressing_down = new_press_value
 			return
 		if _pressing_down && new_press_value : return
 		_pressing_down = new_press_value
 		press_down())
 	connected.connect(func () : press.emit(true))
-	disconnected.connect(func () : press.emit(false))
+	disconnected.connect(func () : 
+		press.emit(false)
+		playable_piece = null)
 	
 	if !_snap_area : return
 	
 	_snap_area.area_entered.connect(func (area : Area3D):
 		var parent = area.get_parent_node_3d()
-		#if parent is Hands : return
+		#if parent is Hands :
 		if parent is SnappableComponent:
 			# Check if the tile already has a playable piece saved,
 			# and if the entering piece is another one that is not the playable piece.

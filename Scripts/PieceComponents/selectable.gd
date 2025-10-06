@@ -5,10 +5,13 @@ signal select(new_selection_value : bool, was_a_player_selection : Manipulator)
 var current_manipulator : Manipulator
 var _manipulator_list : Array[Manipulator] = []
 
+## The piece that this component belongs to.
 @export var body : Piece
+## Whether or not this component is active and functional.
 @export var active : bool = true
+## Freeze when selected.
 @export var freeze : bool = false
-@export var selected : bool = false :
+var selected : bool = false :
 	set(new_selection_value):
 		if !active || body == null || new_selection_value == selected : return
 		selected = new_selection_value
@@ -24,7 +27,10 @@ var _manipulator_list : Array[Manipulator] = []
 			current_manipulator = null
 		if !freeze || body.freezable_component == null: return
 		body.freezable_component.freeze.emit(selected, current_manipulator)
+@export_group("Outline Settings")
+## Whenever this piece is selected, outline it using the outline MeshInstance3D set below
 @export var outline_when_selected : bool = true
+## The outline itself.
 @export var outline : MeshInstance3D
 
 func _ready():

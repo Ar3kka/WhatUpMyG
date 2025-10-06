@@ -6,19 +6,32 @@ signal finished_translation()
 const STANDARD_UP_DOWN_DISTANCE : float = 0.250
 const STANDARD_LEFT_RIGHT_DISTANCE : float = 1.0
 const STANDARD_TRANSLATION_STRENGTH : float = 0.05
+const STANDARD_MULTIPLIER : float = 1.0
+const STANDARD_GLOBAL_POSITION : Vector3 = Vector3.ZERO
 
 @export var active : bool = true
-@export var node : Node3D
-var _global_position : Vector3 = Vector3.ZERO :
+@export var node : Node3D :
+	set(new_node):
+		node = new_node
+		if node == null : 
+			standard_position = STANDARD_GLOBAL_POSITION
+			return
+		standard_position = node.global_position
+@export var standard_position : Vector3
+var _global_position : Vector3 :
 	set(new_position):
 		if node == null : return
 		node.global_position = new_position
 	get():
-		if node == null : return Vector3.ZERO
+		if node == null : return standard_position
 		return node.global_position
-var _translation_vector : Vector3 = Vector3.ZERO :
+var _reset : bool = false :
+	set(new_reset) : 
+		_reset = new_reset
+		if _reset : _translation_vector = standard_position
+var _translation_vector : Vector3 :
 	set(new_vector) :
-		if new_vector == Vector3.ZERO :
+		if new_vector == standard_position :
 			_translation_vector = new_vector
 			return
 		new_vector.x += global_position.x
@@ -28,28 +41,34 @@ var _translation_vector : Vector3 = Vector3.ZERO :
 
 func _ready() -> void:
 	if node == null: node = get_parent_node_3d()
+	standard_position = _global_position
+	_translation_vector = standard_position
 	translate.connect(translation)
+	finished_translation.connect(stop_translation)
+
+func reset_translation(): _reset = true
 
 func translation(translation_direction : Vector3 = Vector3.ZERO):
 	_translation_vector = translation_direction
 	
-func move_up(times : float = 1.0): _translation_vector = Vector3(0, STANDARD_UP_DOWN_DISTANCE * times, 0)
+func move_up(times : float = STANDARD_MULTIPLIER, reset : bool = false): _translation_vector = Vector3(0, STANDARD_UP_DOWN_DISTANCE * times, 0)
 
-func move_down(times : float = 1.0): _translation_vector = Vector3(0, -STANDARD_UP_DOWN_DISTANCE * times, 0)
+func move_down(times : float = STANDARD_MULTIPLIER, reset : bool = false): _translation_vector = Vector3(0, -STANDARD_UP_DOWN_DISTANCE * times, 0)
 
-func move_left(times : float = 1.0): _translation_vector = Vector3(-STANDARD_LEFT_RIGHT_DISTANCE * times, 0, 0)
+func move_left(times : float = STANDARD_MULTIPLIER, reset : bool = false): _translation_vector = Vector3(-STANDARD_LEFT_RIGHT_DISTANCE * times, 0, 0)
 
-func move_right(times : float = 1.0): _translation_vector = Vector3(STANDARD_LEFT_RIGHT_DISTANCE * times, 0, 0)
+func move_right(times : float = STANDARD_MULTIPLIER, reset : bool = false): _translation_vector = Vector3(STANDARD_LEFT_RIGHT_DISTANCE * times, 0, 0)
 
-func move_forth(times : float = 1.0): _translation_vector = Vector3(0, 0, STANDARD_LEFT_RIGHT_DISTANCE * times)
+func move_forth(times : float = STANDARD_MULTIPLIER, reset : bool = false): _translation_vector = Vector3(0, 0, STANDARD_LEFT_RIGHT_DISTANCE * times)
 
-func move_back(times : float = 1.0): _translation_vector = Vector3(0, 0, -STANDARD_LEFT_RIGHT_DISTANCE * times)
+func move_back(times : float = STANDARD_MULTIPLIER, reset : bool = false): _translation_vector = Vector3(0, 0, -STANDARD_LEFT_RIGHT_DISTANCE * times)
 
 func stop_translation():
-	_translation_vector = Vector3.ZERO
-	finished_translation.emit()
+	_translation_vector = standard_position
+	_reset = false
 
-func is_translating() -> bool : return _translation_vector != Vector3.ZERO
+func is_translating() -> bool : 
+	return _translation_vector != standard_position || _reset
 
 func _has_translation_reached_goal() -> bool :
 	return _round_to_decimal(_global_position) == _round_to_decimal(_translation_vector)
@@ -60,7 +79,7 @@ func _round_to_decimal(num, digit : int = 2):
 func _process(delta: float) -> void:
 	if !active || node == null : return
 	
-	if _has_translation_reached_goal() : stop_translation()
+	if _has_translation_reached_goal() : finished_translation.emit()
 	
 	if !is_translating() : return
 	

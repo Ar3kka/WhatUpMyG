@@ -8,6 +8,7 @@ signal play(new_tile : Tile)
 ## This is the recommended rounds for a full 360 degrees pattern to be applied around surrounding tiles.
 const STANDARD_UNIFORM_PATTERN_ROUNDS : int = 4
 const STANDARD_SPECIFIC_PATTERN_ROUNDS : int = 1
+const STANDARD_HIGHLIGHT_STRENGTH : float = 0.5
 
 ## If not active, no built in components will interact with it, as if it
 ## didn't exist.
@@ -23,9 +24,6 @@ const STANDARD_SPECIFIC_PATTERN_ROUNDS : int = 1
 @export var draggable_component : DraggableComponent
 
 @export_category("General Settings")
-## When on, all playable tiles will be raised up to highlight their availability
-## whenever this piece is being dragged.
-@export var highlight_tiles : bool = true
 ## When updated, all reach variables will be set to this standard reach.
 @export var standard_reach : int = 1 :
 	set(new_reach) :
@@ -38,6 +36,17 @@ const STANDARD_SPECIFIC_PATTERN_ROUNDS : int = 1
 ## When true, the reach will not be interrupted by obsctruction, 
 ## allowing the piece to phase through and jump over unplayable tiles
 @export var ignore_blockage : bool = false
+
+@export_group("Highlight Settings")
+## When on, all playable tiles will be raised up to highlight their availability
+## whenever this piece is being dragged.
+@export var raise_tiles : bool = true
+## When on, all playable tiles will be highlighted with the set highlight color.
+@export var highlight_tiles : bool = true
+## The weight the highlight color will have on the highlighted tile.
+@export var highlight_strength : float = STANDARD_HIGHLIGHT_STRENGTH
+## The color overlay the tiles will have whenever they are selected.
+@export var highlight_color : Color = Color.DEEP_PINK
 @export_group("Pattern Settings")
 ## When true, all reach will be considered as specific coordinates, 
 ## ignoring the tiles in its path.
@@ -206,10 +215,6 @@ var rear_diagonal_playable_tiles : Array[Tile] :
 	set(new_value) : return
 	get() : return get_rear_diagonal_tiles()
 
-## Returns all playable tiles, cannot be set.
-var playable_tiles : Array [Tile] :
-	set(new_value) : return
-	get() : return get_playable_tiles()
 ## Returns if dependencies are found, cannot be set.
 var _has_dependencies : bool :
 	set(new_value) : return
@@ -227,18 +232,65 @@ var current_tile : Tile :
 			current_tile.disconnected.emit()
 		current_tile = new_value
 		current_tile.connected.emit()
+		get_playable_tiles()
 ## The current grid the currently played tile belongs to.
 var current_grid : TileGrid :
 	set(new_value) : return
 	get() :
 		if current_tile == null : return 
 		return current_tile.grid
+## Returns all stored playable tiles.
+var playable_tiles : Array [Tile] :
+	set(new_tiles) :
+		if new_tiles != null && playable_tiles != null && raise_tiles:
+			_highlight_playables(false, false)
+		playable_tiles = new_tiles
+
+func _highlight_playables(highlight : bool = true, color : bool = true):
+	if body == null || !current_grid : return
+	for tile in playable_tiles:
+		if tile is Tile: tile.highlight.emit(highlight, color, highlight_color, highlight_strength)
+
+func _ready():
+	if body == null : body = get_parent_node_3d()
+	_get_snappable()
+	_get_draggable()
+	if !_has_dependencies : return
+	play.connect( func (new_tile : Tile) :
+		current_tile = new_tile)
+	snappable_component.connected.connect(func () : 
+		current_tile = snappable_component.snapped_to)
+	if !raise_tiles : return 
+	draggable_component.started_dragging.connect(func () : 
+		get_playable_tiles()
+		_highlight_playables(raise_tiles, highlight_tiles))
+	snappable_component.grounded.connect(func () : _highlight_playables(false, false))
+
+## Returns all playable tiles following all reach settings.
+func get_playable_tiles(store_tiles : bool = true) -> Array[Tile]:
+	if current_grid == null || !active || uniform_lock : return []
+	
+	var playables : Array[Tile] = []
+
+	if follow_uniform_pattern : 
+		playables.append_array(get_uniform_pattern_tiles())
+		if store_tiles : playable_tiles = playables
+		return playables
+	
+	playables.append_array(horizontal_playable_tiles)
+	playables.append_array(depth_playable_tiles)
+	playables.append_array(frontal_diagonal_playable_tiles)
+	playables.append_array(rear_diagonal_playable_tiles)
+	
+	if store_tiles : playable_tiles = playables
+	
+	return playables
 
 ## Judges whether or not the provided tile is playable by searching it within the
 ## currently playable tiles.
 func is_tile_playable(current_tile_wannabe : Tile) -> bool:
 	if current_grid == null || !active: return false
-	return playable_tiles.has(current_tile_wannabe)
+	return get_playable_tiles(false).has(current_tile_wannabe)
 
 ## Returns the playable tiles from a provided Array[Tile].
 ## It can be set to ignore any blockage (played tiles), or if returning a found playable tile within the list.
@@ -248,23 +300,6 @@ func playable_tiles_from(tile_list : Array[Tile], ignore_block : bool = ignore_b
 		if tile is Tile:
 			if !tile.has_playable || (tile.has_playable && get_played_tile) : playables.append(tile)
 			if tile.has_playable && !ignore_block : return playables
-	return playables
-
-## Returns all playable tiles following all reach settings.
-func get_playable_tiles() -> Array[Tile]:
-	if current_grid == null || !active || uniform_lock : return []
-	
-	var playables : Array[Tile] = []
-
-	if follow_uniform_pattern : 
-		playables.append_array(get_uniform_pattern_tiles())
-		return playables
-	
-	playables.append_array(horizontal_playable_tiles)
-	playables.append_array(depth_playable_tiles)
-	playables.append_array(frontal_diagonal_playable_tiles)
-	playables.append_array(rear_diagonal_playable_tiles)
-	
 	return playables
 
 func get_uniform_pattern_tiles() -> Array[Tile] :
@@ -367,21 +402,3 @@ func _get_snappable():
 func _get_draggable():
 	if body == null : return 
 	draggable_component = body.read_draggable_component()
-
-func _highlight_playables(highlight : bool = true):
-	if body == null || !current_grid : return
-	for tile in playable_tiles:
-		tile.highlight.emit(highlight)
-
-func _ready():
-	if body == null : body = get_parent_node_3d()
-	_get_snappable()
-	_get_draggable()
-	if !_has_dependencies : return
-	play.connect( func (new_tile : Tile) :
-		current_tile = new_tile)
-	snappable_component.connected.connect(func () : 
-		current_tile = snappable_component.snapped_to)
-	if !highlight_tiles : return 
-	draggable_component.started_dragging.connect(_highlight_playables)
-	draggable_component.stopped_dragging.connect(func () : _highlight_playables(false))

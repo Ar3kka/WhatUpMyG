@@ -12,7 +12,7 @@ var debug : bool = false
 var current_manipulator : Manipulator
 var _manipulator_list : Array[Manipulator] = []
 
-@export var frozen : bool :
+var frozen : bool :
 	set(freezing_value): 
 		if !active || body == null || freezing_value == body.freeze: return
 		if current_manipulator && body.team_component && !body.team_component.is_observed_by_same_team() : return

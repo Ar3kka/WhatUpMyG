@@ -146,7 +146,7 @@ func generate_tiles():
 			if force_pattern : new_tile.tint = color_pattern[color_index]
 			if color_index + 1 < color_pattern.size() : color_index += 1
 			else: color_index = 0
-			
+			new_tile.instantiated.emit()
 			# Append to array and add child to scene
 			tile_array.append(new_tile)
 			%Tiles.add_child(new_tile)

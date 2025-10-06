@@ -13,15 +13,20 @@ var _manipulator_list : Array[Manipulator] = []
 ## The affected 3d rigidbody piece.
 @export var body : Piece
 @export var active : bool = true
-## Freeze 3d node body when rotating
+## Freeze rigid body when rotating.
 @export var freeze : bool = true
+@export var rotation_vector : Vector3 = Vector3.ZERO
+## Set the general strength applying it to the complete strength vector.
+
+@export_group("Fixed Rotation Settings")
 ## Fixate the altered axis in the vector with the body's 3d node rotation degrees, any alterations to the fixated rotation axis will be restored
 @export var fixed_axis_vector : Vector3 = FIXATED_AXIS
 ## Set the custom strength for fixing the rotation towards the set standard rotation in the fixed axis vector.
 @export var fix_rotation_strength : float = STANDARD_FIXATION_STRENGTH 
-## Select in which direction the set 3d node body has to rotate to. Positive = one side. Negative = opposite side. Zero = no rotation in corresponding axis.
-@export var rotation_vector : Vector3 = Vector3.ZERO
-## Set the general strength applying it to the complete strength vector.
+
+@export_group("Rotation Strength Settings")
+## Select in which direction the set 3d node body has to rotate to. Positive = one side. 
+##Negative = opposite side. Zero = no rotation in corresponding axis.
 @export var general_strength : float = STANDARD_STRENGTH :
 	set(new_general_strength): rotation_strength_vector = Vector3(general_strength, general_strength, general_strength)
 ## Set custom strength ignoring the general strength, in case of custom axis strength is intended

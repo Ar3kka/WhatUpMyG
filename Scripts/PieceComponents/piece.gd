@@ -13,8 +13,8 @@ const SNAPPABLE_COMPONENT = "Snappable"
 const PLAYABLE_COMPONENT = "Playable"
 
 @export var active : bool = true
-var manipulator : Manipulator
-
+@export var manipulator : Manipulator
+@export_group("Set Components") 
 ## The component that makes this 3d rigidbody have health
 @export var health_component : HealthComponent :
 	set(new_health):
@@ -63,11 +63,12 @@ var manipulator : Manipulator
 	set(new_playable):
 		if !active: return
 		playable_component = new_playable
-
+@export_category("Auto Population Settings")
 ## Auto populate using the given body and finding their children by class name
 @export var populate : bool = true
 ## Auto populate using specific names for components
 @export var custom_names : bool = true
+@export_group("Custom name settings")
 ## Custom name for the health component for auto population
 @export var health_name : String = HEALTH_COMPONENT
 ## Custom name for the damage component for auto population
