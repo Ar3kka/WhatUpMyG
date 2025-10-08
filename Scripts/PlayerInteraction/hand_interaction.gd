@@ -158,6 +158,12 @@ func _process(_delta):
 	####### RECOVER DRAG OBJECT INPUTS
 	if Input.is_action_pressed("Recover") && !dragging(): vertical_drag = true
 	
+	if Input.is_action_pressed("Recover Playable") && !dragging() : 
+		var playable_component : PlayableComponent = selected_object.playable_component
+		if playable_component && playable_component.being_played : 
+			playable_component.reset_to_playable_position()
+			return
+	
 	if !dragging(): return stop_dragging(draggable_component) # If no dragging action is recorded, we stop dragging.
 	
 	####### Calculating the position where the SELECTED object needs to move at

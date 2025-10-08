@@ -4,15 +4,26 @@ signal snap()
 signal grounded()
 signal connected()
 signal disconnected()
+signal recover(new_tile : Tile)
 
 const SNAP_FORCE : float = 0.3
 const SNAP_Y_OFFSET : float = 0.125
 
+## The piece this component belongs to.
 @export var body : Piece
+## Whether or not this component is active and other components can interact with it.
 @export var active : bool = true
-@export var snapping : bool = false
+var snapping : bool = false
+## The snapping area that will allow this piece to collide and snap to snappable objects.
 @export var snap_area : Area3D
+## The snap force which the piece will feel when snapping with a snappable object, such as a tile.
 @export var snap_force : float = SNAP_FORCE
+## Whether or not this piece is recoverable whenever it's a playable piece through the means of manipulation.
+@export var recoverable : bool = true
+## The recovery snap force. (It should always be lower than the regular snap force since the piece
+## will have to travel longer distances, if maintaining a strong pull force, it will cause a mess
+## along its path to the played tile).
+@export var recovery_snap_force : float = SNAP_FORCE * 0.10
 var _playable : PlayableComponent = null :
 	set(new_value) : return
 	get() :
@@ -42,6 +53,7 @@ var is_grounded : bool = false :
 	get() :
 		if !body.draggable_component : return false
 		return !body.draggable_component.dragged()
+var is_recovering : bool = false
 
 func _is_tile_playable(supposed_tile : Tile) -> bool :
 	# Check if the piece is currently being played,
@@ -57,8 +69,15 @@ func _ready() -> void:
 
 	connected.connect( func () : 
 		if snapped_to == null || !active : return
+		is_recovering = false
 		snapped_to.playable_piece = _playable)
+	
 	grounded.connect( func () : if _playable && snapped_to != null : connected.emit())
+	
+	recover.connect( func ( new_tile : Tile ) : 
+		if !recoverable : return
+		is_recovering = true 
+		snapped_to = new_tile)
 	
 	snap_area.area_entered.connect(func (area : Area3D):
 		var parent = area.get_parent_node_3d()
@@ -78,13 +97,18 @@ func _ready() -> void:
 
 func stop_snapping():
 	if !active : return
-	if snapped_to: snapped_to = null
+	if snapped_to: 
+		is_recovering = false
+		snapped_to = null
 
 func _process(_delta: float) -> void:
-	if !active || body == null || !snapping || is_grounded : return
+	if !active || body == null || !snapping || ( is_grounded && !is_recovering ) : return
 	
 	var draggable_component = body.draggable_component
 	if draggable_component == null : return
 	
-	draggable_component.drag.emit(true, true, snap_point, snap_force, draggable_component.current_manipulator)
+	var final_snap_force : float = snap_force
+	if is_recovering : final_snap_force = recovery_snap_force
+	
+	draggable_component.drag.emit(true, true, snap_point, final_snap_force, draggable_component.current_manipulator)
 	

@@ -27,6 +27,7 @@ var _global_position : Vector3 :
 		return node.global_position
 var _reset : bool = false :
 	set(new_reset) : 
+		print(node, ": ", new_reset, "   ", _translation_vector)
 		_reset = new_reset
 		if _reset : _translation_vector = standard_position
 var _translation_vector : Vector3 :
@@ -46,29 +47,31 @@ func _ready() -> void:
 	translate.connect(translation)
 	finished_translation.connect(stop_translation)
 
-func reset_translation(): _reset = true
+func reset_translation(): 
+	print("reset")
+	_reset = true
 
 func translation(translation_direction : Vector3 = Vector3.ZERO):
 	_translation_vector = translation_direction
 	
-func move_up(times : float = STANDARD_MULTIPLIER, reset : bool = false): _translation_vector = Vector3(0, STANDARD_UP_DOWN_DISTANCE * times, 0)
+func move_up(times : float = STANDARD_MULTIPLIER): _translation_vector = Vector3(0, STANDARD_UP_DOWN_DISTANCE * times, 0)
 
-func move_down(times : float = STANDARD_MULTIPLIER, reset : bool = false): _translation_vector = Vector3(0, -STANDARD_UP_DOWN_DISTANCE * times, 0)
+func move_down(times : float = STANDARD_MULTIPLIER): _translation_vector = Vector3(0, -STANDARD_UP_DOWN_DISTANCE * times, 0)
 
-func move_left(times : float = STANDARD_MULTIPLIER, reset : bool = false): _translation_vector = Vector3(-STANDARD_LEFT_RIGHT_DISTANCE * times, 0, 0)
+func move_left(times : float = STANDARD_MULTIPLIER): _translation_vector = Vector3(-STANDARD_LEFT_RIGHT_DISTANCE * times, 0, 0)
 
-func move_right(times : float = STANDARD_MULTIPLIER, reset : bool = false): _translation_vector = Vector3(STANDARD_LEFT_RIGHT_DISTANCE * times, 0, 0)
+func move_right(times : float = STANDARD_MULTIPLIER): _translation_vector = Vector3(STANDARD_LEFT_RIGHT_DISTANCE * times, 0, 0)
 
-func move_forth(times : float = STANDARD_MULTIPLIER, reset : bool = false): _translation_vector = Vector3(0, 0, STANDARD_LEFT_RIGHT_DISTANCE * times)
+func move_forth(times : float = STANDARD_MULTIPLIER): _translation_vector = Vector3(0, 0, STANDARD_LEFT_RIGHT_DISTANCE * times)
 
-func move_back(times : float = STANDARD_MULTIPLIER, reset : bool = false): _translation_vector = Vector3(0, 0, -STANDARD_LEFT_RIGHT_DISTANCE * times)
+func move_back(times : float = STANDARD_MULTIPLIER): _translation_vector = Vector3(0, 0, -STANDARD_LEFT_RIGHT_DISTANCE * times)
 
 func stop_translation():
 	_translation_vector = standard_position
 	_reset = false
 
 func is_translating() -> bool : 
-	return _translation_vector != standard_position || _reset
+	return _round_to_decimal(_translation_vector) != _round_to_decimal(standard_position) || _reset
 
 func _has_translation_reached_goal() -> bool :
 	return _round_to_decimal(_global_position) == _round_to_decimal(_translation_vector)
@@ -79,7 +82,7 @@ func _round_to_decimal(num, digit : int = 2):
 func _process(delta: float) -> void:
 	if !active || node == null : return
 	
-	if _has_translation_reached_goal() : finished_translation.emit()
+	if _has_translation_reached_goal() && is_translating() : finished_translation.emit()
 	
 	if !is_translating() : return
 	

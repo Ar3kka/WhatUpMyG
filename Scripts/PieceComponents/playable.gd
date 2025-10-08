@@ -393,6 +393,10 @@ func get_rear_diagonal_tiles() -> Array[Tile] :
 	
 	return playables
 
+func reset_to_playable_position() :
+	if !_has_dependencies : return
+	snappable_component.recover.emit(current_tile)
+
 ## Internal function to retrieve snappable dependency from given body.
 func _get_snappable():
 	if body == null : return 

@@ -14,7 +14,6 @@ const PUSH_DOWN_MULTIPLIER : float = PUSH_STANDARD_MULTIPLIER
 const RAISE_UP_MULTIPLIER : float = PUSH_STANDARD_MULTIPLIER
 const HIGHLIGHT_STRENGTH : float = 0.5
 
-@export_category("General Tile Settings")
 ## The grid this tile belongs to, in case it does.
 var grid : TileGrid
 ## The id of the tile in the grid.
@@ -68,6 +67,7 @@ var _pressing_down : bool = false
 ## The multiplication for the highlight push (times its own size) where 1.0 is equal to its height (0.250)
 @export var raise_up_by : float = RAISE_UP_MULTIPLIER
 var _highlight_push : bool = false
+var highlight_press : bool = false
 
 var occupier : Piece
 var has_playable : bool :
@@ -105,13 +105,19 @@ func _ready() -> void:
 	
 	occupy.connect(func (new_occupier : Piece) : 
 		if _highlight_push: 
-			if new_occupier != null && new_occupier != occupier : movable.reset_translation()
-			else : if !movable._reset : movable.move_up(raise_up_by)
+			if new_occupier != null && new_occupier != occupier :
+				if new_occupier.snappable_component && new_occupier.snappable_component.is_handled : 
+					movable.reset_translation()
+					highlight_press = true
+			else : if highlight_press :
+					movable.move_up(raise_up_by)
+					highlight_press = false
 		occupier = new_occupier )
-		
+	
 	highlight.connect(func (new_raise_value: bool, new_highlight_value : bool, new_highlight_color : Color, new_highlight_strength : float = highlight_strength) :
-		if !new_highlight_value && _highlight_push:
-			movable.reset_translation()
+		if !highlightable || movable == null : return
+		if !new_highlight_value && _highlight_push :
+			if playable_piece == null && !_pressing_down : movable.reset_translation()
 			_highlight_push = new_raise_value
 			highlight_color = tint
 			set_color(tint)
@@ -122,17 +128,19 @@ func _ready() -> void:
 			highlight_color = new_highlight_color
 			highlight_strength = new_highlight_strength
 			set_color(lerp(tint, highlight_color, highlight_strength))
+		if playable_piece && _pressing_down : return
 		raise_up())
 	
 	press.connect(func (new_press_value : bool) :
 		if !pressable || movable == null : return
-		if new_press_value == false && _pressing_down: 
+		if !new_press_value && _pressing_down: 
 			movable.reset_translation()
 			_pressing_down = new_press_value
 			return
 		if _pressing_down && new_press_value : return
 		_pressing_down = new_press_value
 		press_down())
+	
 	connected.connect(func () : press.emit(true))
 	disconnected.connect(func () : 
 		press.emit(false)
