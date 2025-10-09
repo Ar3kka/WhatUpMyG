@@ -107,7 +107,7 @@ func _ready() -> void:
 		if _highlight_push: 
 			if new_occupier != null && new_occupier != occupier :
 				if new_occupier.snappable_component && new_occupier.snappable_component.is_handled : 
-					movable.reset_translation()
+					movable.reset.emit(true)
 					highlight_press = true
 			else : if highlight_press :
 					movable.move_up(raise_up_by)
@@ -117,7 +117,7 @@ func _ready() -> void:
 	highlight.connect(func (new_raise_value: bool, new_highlight_value : bool, new_highlight_color : Color, new_highlight_strength : float = highlight_strength) :
 		if !highlightable || movable == null : return
 		if !new_highlight_value && _highlight_push :
-			if playable_piece == null && !_pressing_down : movable.reset_translation()
+			if playable_piece == null && !_pressing_down : movable.reset.emit(true)
 			_highlight_push = new_raise_value
 			highlight_color = tint
 			set_color(tint)
@@ -134,7 +134,7 @@ func _ready() -> void:
 	press.connect(func (new_press_value : bool) :
 		if !pressable || movable == null : return
 		if !new_press_value && _pressing_down: 
-			movable.reset_translation()
+			movable.reset.emit(true)
 			_pressing_down = new_press_value
 			return
 		if _pressing_down && new_press_value : return

@@ -12,12 +12,16 @@ const EYES_DISTANCE : float = 250.0
 @export var eye_sight_distance : float = EYES_DISTANCE
 @export var pieces : Array[Piece]
 @export var hands : Hands
+@export var feet : Feet
+@export var nervous_system : MovableComponent
 var raycast : RayCast3D = RayCast3D.new()
 var mouse_position : Vector3
 
 func _ready():
 	if !eyes : _find_eyes()
 	if !hands : _find_hands()
+	if !feet : _find_feet()
+	if !nervous_system : _find_nervous_system()
 	eyes.add_child(raycast)
 
 func _find_eyes():
@@ -30,3 +34,11 @@ func _find_eyes():
 func _find_hands():
 	for organ in get_children():
 		if organ is Hands : hands = organ
+
+func _find_feet():
+	for appendage in get_children():
+		if appendage is Feet : feet = appendage
+
+func _find_nervous_system():
+	for organ in get_children():
+		if organ is MovableComponent : nervous_system = organ

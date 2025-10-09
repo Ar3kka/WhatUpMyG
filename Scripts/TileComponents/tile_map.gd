@@ -1,5 +1,7 @@
 class_name TileGrid extends Node3D
 
+signal generate()
+
 const STANDARD_SIZE : int = 8
 const STANDARD_DIRECTION : Vector2i = Vector2i(-1, -1)
 const STANDARD_COLOR_PATTERN : Array[Color] = [Color.WHITE, Color.BLACK]
@@ -41,10 +43,19 @@ func _ready() -> void:
 	#print(get_specific_tile_from(Vector2i(1, 1), Vector2i(1, 2)))
 	#print(get_tiles_following_pattern(Vector2i(2, 3), Vector2i(2, -1), true))
 
+func read_grid():
+	if tiles == null || tiles.size() < 1 : return
+	var coordinates : Vector2i = Vector2i.ZERO
+	for row in tiles:
+		for tile in row:
+			tile.id = coordinates
+			coordinates.y += 1
+	coordinates.x += 1
+
 func _reset_tyle_types():
 	if !active : return
 	tile_types = []
-	tile_types.append(Tile.new())
+	tile_types.append(Tile.new().instantiate())
 
 ## Get tiles in set direction within the grid from an specified coordinate location.
 ## and returns the specified number of tiles in that direction set by the reach variable.
@@ -116,7 +127,7 @@ func get_tile_at(tile_coordinates : Vector2i = Vector2i.ZERO) -> Tile:
 	
 func generate_tiles():
 	if !active : return
-	
+	generate.emit()
 	# Check and initialize the final size of the desired grid
 	var final_size : Vector2i = grid_size
 	if randomize : final_size = Vector2i(randi_range(grid_size.x, grid_size.y), randi_range(grid_size.x, grid_size.y)) 
