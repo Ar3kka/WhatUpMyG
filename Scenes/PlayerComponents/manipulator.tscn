@@ -2,19 +2,14 @@
 
 [ext_resource type="Script" uid="uid://d0citqljt5ugg" path="res://Scripts/PlayerInteraction/manipulator.gd" id="1_66ekc"]
 [ext_resource type="PackedScene" uid="uid://ctumhks8h5tt2" path="res://Scenes/PlayerComponents/hands.tscn" id="2_01x3t"]
+[ext_resource type="PackedScene" uid="uid://7725558gj7rr" path="res://Scenes/PlayerComponents/eyes.tscn" id="2_66ekc"]
 [ext_resource type="PackedScene" uid="uid://cxgtaeo6opt03" path="res://Scenes/PlayerComponents/feet.tscn" id="3_wte6m"]
-[ext_resource type="PackedScene" uid="uid://bgwk42bj7v6vk" path="res://Scenes/PlayerComponents/imagination.tscn" id="4_q8olk"]
 
-[node name="Manipulator" type="Node3D" node_paths=PackedStringArray("eyes")]
+[node name="Manipulator" type="Node3D"]
 script = ExtResource("1_66ekc")
-eyes = NodePath("Eyes")
 
-[node name="Eyes" type="Camera3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 0.707107, 0.707107, 0, -0.707107, 0.707107, -3.799, 2.5, 6.669)
-
-[node name="Imagination" parent="Eyes" instance=ExtResource("4_q8olk")]
-transform = Transform3D(1, 0, 0, 0, 0.707107, -0.707107, 0, 0.707107, 0.707107, 3.799, 2.94793, -6.48346)
-skeleton = NodePath("../..")
+[node name="Eyes" parent="." instance=ExtResource("2_66ekc")]
+transform = Transform3D(1, 0, 0, 0, 0.707107, 0.707107, 0, -0.707107, 0.707107, -3.799, 8.79662, 6.70071)
 
 [node name="Feet" parent="." node_paths=PackedStringArray("body") instance=ExtResource("3_wte6m")]
 body = NodePath("..")

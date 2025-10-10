@@ -2,7 +2,7 @@ class_name MovableComponent extends Node3D
 
 signal translate(translation_vector : Vector3)
 signal finished_translation()
-signal reset()
+signal reset(new_reset_value : bool)
 
 const SCENE : PackedScene = preload("res://Scenes/Components/movable.tscn")
 const STANDARD_UP_DOWN_DISTANCE : float = 0.250
@@ -19,6 +19,7 @@ const STANDARD_GLOBAL_POSITION : Vector3 = Vector3.ZERO
 			standard_position = STANDARD_GLOBAL_POSITION
 			return
 		standard_position = node.global_position
+@export var weight : float = STANDARD_TRANSLATION_STRENGTH
 @export var standard_position : Vector3 :
 	get():
 		if standard_position == null : return Vector3.ZERO
@@ -56,8 +57,9 @@ func set_standard(add_to_states : bool = false):
 	standard_position = _global_position
 	if add_to_states : vector_states.append(standard_position)
 
-func change_standard_to_state(state_number : int):
+func change_standard_to_state(state_number : int, reset_after : bool = false):
 	standard_position = vector_states[state_number]
+	if reset_after : reset.emit()
 
 func change_to_state(state_number : int):
 	_translation_vector = vector_states[state_number]
@@ -113,12 +115,9 @@ func _has_translation_reached_goal() -> bool :
 func _round_to_decimal(num, digit : int = 2):
 	return round(num * pow(10.0, digit)) / pow(10.0, digit)
 
-func instantiate(initial_node_to_move : Node3D, new_active_state : bool = true) -> MovableComponent:
+func instantiate(initial_node_to_move : Node3D) -> MovableComponent:
 	var new_movable : MovableComponent = SCENE.instantiate()
-	new_movable.active = new_active_state
 	new_movable.node = initial_node_to_move
-	new_movable.global_position = new_movable.node.global_position
-	new_movable.position = new_movable.node.position
 	return new_movable
 
 func _process(delta: float) -> void:
@@ -128,4 +127,4 @@ func _process(delta: float) -> void:
 	
 	if !is_translating() : return
 	
-	_global_position = lerp(_global_position, _translation_vector, STANDARD_TRANSLATION_STRENGTH)
+	_global_position = lerp(_global_position, _translation_vector, weight)

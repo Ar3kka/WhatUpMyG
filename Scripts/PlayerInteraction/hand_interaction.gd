@@ -9,9 +9,11 @@ const FINGER_SIZE : float = 0.5
 @export var holding_drag : bool = true
 @export var drag_strength : float = DRAG_STRENGTH
 @export var manual_rotation_strength : float = ROTATION_STRENGTH
-var mouse_position : Vector2
-@export var finger : Area3D
-@export var finger_size : float :
+var mouse_position : Vector2 :
+	set(new_value) : return
+	get() : return get_viewport().get_mouse_position()
+var finger : Area3D
+@export var finger_size : float = FINGER_SIZE :
 	set(new_finger_size):
 		if finger == null : return
 		finger_size = new_finger_size
@@ -56,22 +58,18 @@ func double_drag() -> bool: return horizontal_drag && vertical_drag
 func _process(_delta):
 	if !manipulator || !manipulator.eyes: return
 	
-	var camera = manipulator.eyes
+	var camera : Eyes = manipulator.eyes
 	var team = manipulator.team
-	var raycast = manipulator.raycast
-	var raycast_distance = manipulator.eye_sight_distance
 	
 	###### RAYCAST
-	mouse_position = get_viewport().get_mouse_position()
-	raycast.target_position = camera.project_local_ray_normal(mouse_position) * raycast_distance
-	raycast.force_raycast_update()
+	camera.blink()
 	
 	###### SWITCH DRAGGING TYPE
 	if Input.is_action_just_pressed("Switch Drag Mode"): holding_drag = !holding_drag
 	
 	###### DETECT LOOKABLE, SELECTABLE AND DRAGGABLE OBJECT
 	var looked_at_nothing : bool = true
-	if !dragging(): detected_object = raycast.get_collider()
+	if !dragging(): detected_object = camera.potential_momma
 	
 	if detected_object != null:
 		looked_at_nothing = false
@@ -118,7 +116,9 @@ func _process(_delta):
 		draggable_component = selected_object.draggable_component
 		final_draggable_object = selected_object
 	
-	if draggable_component && draggable_component.active: draggable_object = final_draggable_object
+	if draggable_component && draggable_component.active: 
+		camera.big_momma = draggable_component
+		draggable_object = final_draggable_object
 	
 	if Input.is_action_just_pressed("Deselect"): return _deselect()
 	
@@ -167,17 +167,13 @@ func _process(_delta):
 	if !dragging(): return stop_dragging(draggable_component) # If no dragging action is recorded, we stop dragging.
 	
 	####### Calculating the position where the SELECTED object needs to move at
-	var ray_origin = camera.project_ray_origin(mouse_position)
-	var ray_end = camera.project_ray_normal(mouse_position)
-	var ray_depth = ray_origin.distance_to(draggable_component.body_position)
-	var final_ray_position = ray_origin + ray_end * ray_depth
 	
-	finger.global_position = final_ray_position
+	finger.global_position = camera.sight
 	
 	var snappable_component : SnappableComponent = draggable_object.snappable_component
 	if snappable_component && snappable_component.active && snappable_component.snapping:
 		return
 	
 	# Emitting signal for the draggable, selected object to start being dragged towards the mouse position
-	draggable_component.drag.emit(horizontal_drag, vertical_drag, final_ray_position, drag_strength, manipulator)
+	draggable_component.drag.emit(horizontal_drag, vertical_drag, camera.sight, drag_strength, manipulator)
 	

@@ -53,10 +53,6 @@ transform = Transform3D(1, 0, 0, 0, 0.707107, 0.707107, 0, -0.707107, 0.707107, 
 
 [node name="Hands" parent="SubViewportContainer/SubViewport/Manipulator" index="2"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.00577164, -2.38419e-07, 0.00413203)
-holding_drag = null
-drag_strength = null
-manual_rotation_strength = null
-finger_size = null
 
 [node name="WorldShader" type="WorldEnvironment" parent="SubViewportContainer/SubViewport"]
 environment = SubResource("Environment_fo5ed")
