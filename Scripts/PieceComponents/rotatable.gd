@@ -2,6 +2,8 @@ class_name RotatableComponent extends Node3D
 
 signal rotate(new_rotation_vector : Vector3, is_player_rotating : Manipulator)
 
+const SCENE : PackedScene = preload("res://Scenes/Components/rotatable.tscn")
+
 ## RECOMMENDED SETTINGS
 const FIXATED_AXIS : Vector3 = Vector3(0, 1, 0)
 const STANDARD_STRENGTH : float = 5.0
@@ -11,12 +13,13 @@ var current_manipulator : Manipulator
 var _manipulator_list : Array[Manipulator] = []
 
 ## The affected 3d rigidbody piece.
-@export var body : Piece
+@export var body : Node3D
 @export var active : bool = true
 ## Freeze rigid body when rotating.
 @export var freeze : bool = true
+## Select in which direction the set 3d node body has to rotate to. Positive = one side. 
+##Negative = opposite side. Zero = no rotation in corresponding axis.
 @export var rotation_vector : Vector3 = Vector3.ZERO
-## Set the general strength applying it to the complete strength vector.
 
 @export_group("Fixed Rotation Settings")
 ## Fixate the altered axis in the vector with the body's 3d node rotation degrees, any alterations to the fixated rotation axis will be restored
@@ -25,8 +28,7 @@ var _manipulator_list : Array[Manipulator] = []
 @export var fix_rotation_strength : float = STANDARD_FIXATION_STRENGTH 
 
 @export_group("Rotation Strength Settings")
-## Select in which direction the set 3d node body has to rotate to. Positive = one side. 
-##Negative = opposite side. Zero = no rotation in corresponding axis.
+## Set the general strength applying it to the complete strength vector.
 @export var general_strength : float = STANDARD_STRENGTH :
 	set(new_general_strength): rotation_strength_vector = Vector3(general_strength, general_strength, general_strength)
 ## Set custom strength ignoring the general strength, in case of custom axis strength is intended
@@ -73,6 +75,11 @@ func fix_rotation():
 	var standard_rotation = get_standard_rotation()
 	if body.rotation_degrees == standard_rotation : return
 	body.rotation_degrees = lerp(body.rotation_degrees, standard_rotation, STANDARD_FIXATION_STRENGTH)
+
+func instantiate(initial_body_to_rotate : Node3D) -> RotatableComponent:
+	var new_rotatable : RotatableComponent = SCENE.instantiate()
+	new_rotatable.body = initial_body_to_rotate
+	return new_rotatable
 
 func _process(delta: float):
 	if !active || body == null || !is_rotating() : return

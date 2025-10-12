@@ -6,7 +6,7 @@ signal connected()
 signal disconnected()
 signal recover(new_tile : Tile)
 
-const SNAP_FORCE : float = 0.3
+const SNAP_FORCE : float = 35
 const SNAP_Y_OFFSET : float = 0.125
 
 ## The piece this component belongs to.

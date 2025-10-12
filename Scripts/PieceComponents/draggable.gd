@@ -6,7 +6,7 @@ signal stopped_dragging()
 
 ## RECOMMENDED SETTINGS
 const ROTATION_STRENGTH : float = 0.05
-const DRAGGING_STRENGTH : float = 0.1
+const DRAGGING_STRENGTH : float = 17.5
 const X_LIMIT : float = 0.0
 
 ## The piece this component belongs to.
@@ -85,7 +85,7 @@ func _ready() -> void:
 			_manipulator_list.append(current_manipulator)
 		if override_drag_strength : _custom_dragging_strength = strength)
 
-func _process(_delta: float) -> void:
+func _process(delta: float) -> void:
 	if !active: return
 	
 	if body == null: return
@@ -114,7 +114,7 @@ func _process(_delta: float) -> void:
 	var final_strength : float = dragging_strength
 	if override_drag_strength : final_strength = _custom_dragging_strength # Check if we respect own strength or accept outside manipulation strength 
 	
-	body_position = lerp(body_position, final_drag_point, final_strength) # change the body's position employing final calculations
+	body_position = lerp(body_position, final_drag_point, final_strength * delta) # change the body's position employing final calculations
 	
 	if body.rotatable_component == null || !fix_rotation : return
 	body.rotatable_component.fix_rotation()

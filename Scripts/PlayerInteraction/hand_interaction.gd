@@ -1,6 +1,6 @@
 class_name Hands extends Node3D
 
-const DRAG_STRENGTH : float = 0.1
+const DRAG_STRENGTH : float = 17.5
 const ROTATION_STRENGTH : float = 3.5
 const RAYCAST_DISTANCE : float = 250.0
 const FINGER_SIZE : float = 0.5

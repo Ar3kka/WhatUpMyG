@@ -8,8 +8,9 @@
 [node name="Manipulator" type="Node3D"]
 script = ExtResource("1_66ekc")
 
-[node name="Eyes" parent="." instance=ExtResource("2_66ekc")]
+[node name="Eyes" parent="." node_paths=PackedStringArray("body") instance=ExtResource("2_66ekc")]
 transform = Transform3D(1, 0, 0, 0, 0.707107, 0.707107, 0, -0.707107, 0.707107, -3.799, 8.79662, 6.70071)
+body = NodePath("..")
 
 [node name="Feet" parent="." node_paths=PackedStringArray("body") instance=ExtResource("3_wte6m")]
 body = NodePath("..")

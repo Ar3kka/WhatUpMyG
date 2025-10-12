@@ -4,14 +4,33 @@ signal locked_in()
 
 const IMAGINATION_SCENE : PackedScene = preload("res://Scenes/PlayerComponents/imagination.tscn")
 
+const ROTATION_FORCE : float = 10.0
+const ROTATION_SMOOTHNESS : float = 0.05
+const EYES_BACKWARD_ROTATION_LIMIT : float = -90.0
+const EYES_FORWARD_ROTATION_LIMIT : float = -8.3
 const EYES_ROTATION : float = -45.0
 const EYES_ALTITUDE : float = 2.5
 const EYES_DISTANCE : float = 250.0
 
-@export var body : Manipulator
 @export var active : bool = true
+@export var body : Manipulator
 @export var pupils : RayCast3D 
+var feet : Feet :
+	set(new_feet) : return
+	get() : 
+		if body : return body.feet
+		return feet
 @export var eye_sight_distance : float = EYES_DISTANCE
+## Follows the finger of the manipulator (mouse_position)
+@export var pay_attention : bool = true
+@export_group("Rotation")
+@export var rotation_force : float = ROTATION_FORCE
+@export var smoothness : float = ROTATION_SMOOTHNESS
+@export var forward_rotation_limit : float = EYES_FORWARD_ROTATION_LIMIT
+@export var backward_rotation_limit : float = EYES_BACKWARD_ROTATION_LIMIT
+
+var final_x_rotation : float = EYES_ROTATION
+var has_started_rotating : bool = false
 
 ## Potentially an interactable object.
 var potential_momma : 
@@ -46,7 +65,7 @@ var lens :
 ## The final ray's position
 var sight :
 	set(new_value) : return
-	get() : return optic_nerve + cornea * lens # final_ray_position
+	get() : return optic_nerve + cornea * lens
 
 func _ready():
 	if !body : body = get_parent_node_3d()
@@ -62,4 +81,21 @@ func blink(force : bool = true):
 	if force : pupils.force_raycast_update()
 
 func _process(delta: float) -> void:
-	if !active : return
+	if !active || feet == null : return
+	
+	if Input.is_action_just_pressed("Scroll In"):
+		if feet.at_proximity_limit :
+			if rotation_degrees.x + rotation_force < forward_rotation_limit:
+				has_started_rotating = true
+				final_x_rotation = rotation_degrees.x + rotation_force
+		if feet.at_remoteness_limit : final_x_rotation = EYES_ROTATION
+	else : if Input.is_action_just_pressed("Scroll Back") : 
+		if feet.at_remoteness_limit :
+			if rotation_degrees.x + -rotation_force > backward_rotation_limit:
+				has_started_rotating = true
+				final_x_rotation = rotation_degrees.x - rotation_force
+		if feet.at_proximity_limit : final_x_rotation = EYES_ROTATION
+	
+	if !has_started_rotating : return
+	
+	rotation_degrees.x = lerp(rotation_degrees.x, final_x_rotation, smoothness)
