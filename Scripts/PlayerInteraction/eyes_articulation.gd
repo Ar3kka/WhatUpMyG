@@ -4,11 +4,11 @@ signal locked_in()
 
 const IMAGINATION_SCENE : PackedScene = preload("res://Scenes/PlayerComponents/imagination.tscn")
 
-const ROTATION_FORCE : float = 10.0
-const ROTATION_SMOOTHNESS : float = 0.05
-const EYES_BACKWARD_ROTATION_LIMIT : float = -90.0
+const ROTATION_FORCE : float = 2125.0
+const ROTATION_SMOOTHNESS : float = 0.04
+const EYES_BACKWARD_ROTATION_LIMIT : float = -92.0
 const EYES_FORWARD_ROTATION_LIMIT : float = -8.3
-const EYES_ROTATION : float = -45.0
+const EYES_ROTATION : float = -58.3
 const EYES_ALTITUDE : float = 2.5
 const EYES_DISTANCE : float = 250.0
 
@@ -85,15 +85,15 @@ func _process(delta: float) -> void:
 	
 	if Input.is_action_just_pressed("Scroll In"):
 		if feet.at_proximity_limit :
-			if rotation_degrees.x + rotation_force < forward_rotation_limit:
+			if rotation_degrees.x + rotation_force * delta < forward_rotation_limit:
 				has_started_rotating = true
-				final_x_rotation = rotation_degrees.x + rotation_force
+				final_x_rotation = rotation_degrees.x + rotation_force * delta
 		if feet.at_remoteness_limit : final_x_rotation = EYES_ROTATION
 	else : if Input.is_action_just_pressed("Scroll Back") : 
 		if feet.at_remoteness_limit :
-			if rotation_degrees.x + -rotation_force > backward_rotation_limit:
+			if rotation_degrees.x + -rotation_force * delta > backward_rotation_limit:
 				has_started_rotating = true
-				final_x_rotation = rotation_degrees.x - rotation_force
+				final_x_rotation = rotation_degrees.x - rotation_force * delta
 		if feet.at_proximity_limit : final_x_rotation = EYES_ROTATION
 	
 	if !has_started_rotating : return

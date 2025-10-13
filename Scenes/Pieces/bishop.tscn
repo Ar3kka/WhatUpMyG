@@ -68,7 +68,7 @@ team = 1
 
 [node name="Playable" parent="." instance=ExtResource("10_icwx2")]
 uniform_movement = true
-uniform_reach = 15
+uniform_reach = 7
 lock_left = true
 lock_right = true
 lock_front = true

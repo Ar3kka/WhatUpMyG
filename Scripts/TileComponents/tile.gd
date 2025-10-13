@@ -95,6 +95,7 @@ func instantiate(new_active_state : bool = true, new_snappable_state : bool = tr
 	var new_tile : Tile = SCENE.instantiate()
 	new_tile.active = new_active_state
 	new_tile.snappable = new_snappable_state
+	new_tile.instantiated.emit()
 	return new_tile
 
 func _ready() -> void:

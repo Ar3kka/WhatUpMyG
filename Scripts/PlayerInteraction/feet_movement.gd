@@ -7,6 +7,8 @@ const STANDARD_SPEED : float = 7.5
 const STANDARD_SMOOTHNESS : float = 0.03
 const STANDARD_PROXIMITY : float = 1.75
 const STANDARD_REMOTENESS : float = 6.0
+const STANDARD_VERTICAL_LIMIT : Vector2 = Vector2(7.0, -20.0)
+const STANDARD_HORIZONTAL_LIMIT : Vector2 = Vector2(-8.50, 1.75)
 
 @export var active : bool = true :
 	get(): 
@@ -22,6 +24,13 @@ const STANDARD_REMOTENESS : float = 6.0
 		else : if new_value < 0.0 : new_value = 0.0
 		smoothness = new_value
 		if nervous_signals : nervous_signals.weight = smoothness
+@export_group("Delimitations")
+@export var lock_left : bool = true
+@export var lock_right : bool = true
+@export var vertical_limit : Vector2 = STANDARD_VERTICAL_LIMIT
+@export var lock_back : bool = true
+@export var lock_forth : bool = true
+@export var horizontal_limit : Vector2 = STANDARD_HORIZONTAL_LIMIT
 @export_group("Focus")
 ## The overall speed of focus.
 @export var focus_force : float = STANDARD_FOCUS_FORCE
@@ -75,9 +84,13 @@ func _process(delta):
 	
 	if input_dir == Vector2.UP || Vector2.DOWN:
 		var final_z : float = input_dir.y * speed * delta
-		global_position.z += final_z
+		if (((lock_back && global_position.z + final_z < vertical_limit.x) || (!lock_back)) &&
+			((lock_forth && global_position.z + final_z > vertical_limit.y) || (!lock_forth))) : 
+				global_position.z += final_z
 	if input_dir == Vector2.RIGHT || Vector2.LEFT:
 		var final_x : float = input_dir.x * speed * delta
-		global_position.x += final_x
+		if (((lock_left && global_position.x + final_x > horizontal_limit.x) || (!lock_left)) &&
+			((lock_right && global_position.x + final_x < horizontal_limit.y) || (!lock_right))) : 
+				global_position.x += final_x
 	
 	if nervous_signals: nervous_signals.translate.emit(global_position)

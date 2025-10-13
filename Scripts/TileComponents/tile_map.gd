@@ -34,14 +34,53 @@ const STANDARD_RAISE_HEIGHT : float = 0.250
 ## Switch the color palette every other row in case the color palette matches the grid size
 ## causing it to merge, turn on or off this variable to change when to skip a color every other row.
 @export var color_switch : bool = true
-var tiles : Array[Array] 
+var tiles : Array[Array]
+var last_row : Array :
+	set(new_value) : return
+	get() : return tiles.get(tiles.size() - 1)
+var last_tile : Tile :
+	set (new_value) : return
+	get() : return last_row[last_row.size() - 1]
 
 func _ready() -> void:
 	if !tile_types.size(): _reset_tyle_types()
 	generate_tiles()
+	print(get_tile_at(Vector2i(8, 0)))
+	#add_row()
+	#read_grid()
 	#print(get_tiles_from(Vector2i.ZERO, Vector2i(1, 1), 10))
 	#print(get_specific_tile_from(Vector2i(1, 1), Vector2i(1, 2)))
 	#print(get_tiles_following_pattern(Vector2i(2, 3), Vector2i(2, -1), true))
+
+func add_row():
+	
+	var switch_pattern : bool = color_switch
+	var color_index = 0
+	if color_pattern.size() < 1 : force_pattern = false
+	
+	if color_switch:
+		switch_pattern = !switch_pattern
+		if switch_pattern && color_index + 1 < color_pattern.size() : color_index += 1
+		else: color_index = 0
+	
+	# Initialize the new row of vertical tiles.
+	var tile_array : Array = []
+	
+	for index in range(grid_size.x):
+	# Instantiate the new tile and set its position and id.
+		var new_tile = Tile.new().instantiate()
+		new_tile.global_position = Vector3(last_row[0].global_position.x - index, last_row[0].global_position.y, last_row[0].global_position.z - 1)
+		new_tile.id = Vector2i(grid_size.y, index)
+		new_tile.grid = self
+		# Check color replacement to follow given pattern
+		if force_pattern : new_tile.tint = color_pattern[color_index]
+		if color_index + 1 < color_pattern.size() : color_index += 1
+		else: color_index = 0
+		# Append to array and add child to scene
+		tile_array.append(new_tile)
+		%Tiles.add_child(new_tile)
+	
+	if tile_array.size() != 0: tiles.append(tile_array)
 
 func read_grid():
 	if tiles == null || tiles.size() < 1 : return
@@ -62,13 +101,13 @@ func _reset_tyle_types():
 ## the direction vector works as follows: 
 ## 
 ## If a direction is not given, a single tile will be returned as part of the array, ignoring the reach given.
-func get_tiles_from(origin_coordinates : Vector2i = Vector2i.ZERO, direction : Vector2i = Vector2i(1, 0), reach : int = 1, ) -> Array[Tile] :
+func get_tiles_from(origin_coordinates : Vector2i = Vector2i.ZERO, direction : Vector2i = Vector2i(1, 0), reach : int = 1) -> Array[Tile] :
 	var result_tiles : Array[Tile]
 	if direction == Vector2i.ZERO : 
 		tiles.append(get_tile_at(origin_coordinates))
 		return result_tiles
-	if origin_coordinates.x > grid_size.x : origin_coordinates.x = grid_size.x
-	if origin_coordinates.y > grid_size.y : origin_coordinates.y = grid_size.y
+	if origin_coordinates.x > grid_size.y : origin_coordinates.x = grid_size.x
+	if origin_coordinates.y > grid_size.x : origin_coordinates.y = grid_size.y
 	var final_reach = reach
 	if final_reach > tiles.size() : final_reach = tiles.size()
 	for id in range(final_reach) :
@@ -156,7 +195,6 @@ func generate_tiles():
 			if force_pattern : new_tile.tint = color_pattern[color_index]
 			if color_index + 1 < color_pattern.size() : color_index += 1
 			else: color_index = 0
-			new_tile.instantiated.emit()
 			# Append to array and add child to scene
 			tile_array.append(new_tile)
 			%Tiles.add_child(new_tile)

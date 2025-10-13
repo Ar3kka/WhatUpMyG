@@ -67,6 +67,6 @@ team = 1
 
 [node name="Playable" parent="." instance=ExtResource("10_5wri7")]
 uniform_movement = true
-uniform_reach = 15
+uniform_reach = 7
 
 [editable path="Mesh"]
