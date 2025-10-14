@@ -5,7 +5,7 @@ class_name PlayableComponent extends Node3D
 
 signal play(new_tile : Tile)
 
-## This is the recommended rounds for a full 360 degrees pattern to be applied around surrounding tiles.
+## These are the recommended rounds for a full 360 degrees pattern to be applied around surrounding tiles.
 const STANDARD_UNIFORM_PATTERN_ROUNDS : int = 4
 const STANDARD_SPECIFIC_PATTERN_ROUNDS : int = 1
 const STANDARD_HIGHLIGHT_STRENGTH : float = 0.5

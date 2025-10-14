@@ -67,6 +67,8 @@ team = 1
 [node name="Snappable" parent="." instance=ExtResource("9_035gs")]
 
 [node name="Playable" parent="." instance=ExtResource("10_icwx2")]
+
+[node name="Movement Reach" parent="Playable" index="0"]
 uniform_movement = true
 uniform_reach = 7
 lock_left = true
@@ -74,4 +76,9 @@ lock_right = true
 lock_front = true
 lock_rear = true
 
+[node name="Attack Reach" parent="Playable" index="1" node_paths=PackedStringArray("mimic_reach_of")]
+active = true
+mimic_reach_of = NodePath("../Movement Reach")
+
 [editable path="Mesh"]
+[editable path="Playable"]

@@ -260,9 +260,15 @@ script = SubResource("GDScript_qdpku")
 [node name="Snappable" parent="." instance=ExtResource("9_w76fb")]
 
 [node name="Playable" parent="." instance=ExtResource("10_ph717")]
-standard_reach = 0
+
+[node name="Movement Reach" parent="Playable" index="0"]
 follow_uniform_pattern = true
 mirror_uniform_pattern = true
 uniform_pattern = Vector2i(2, -1)
 
+[node name="Attack Reach" parent="Playable" index="1" node_paths=PackedStringArray("mimic_reach_of")]
+active = true
+mimic_reach_of = NodePath("../Movement Reach")
+
 [editable path="Mesh"]
+[editable path="Playable"]

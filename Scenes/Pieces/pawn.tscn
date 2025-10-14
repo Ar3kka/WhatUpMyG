@@ -86,6 +86,8 @@ team = 1
 [node name="Snappable" parent="." instance=ExtResource("11_xj264")]
 
 [node name="Playable" parent="." instance=ExtResource("12_l25yr")]
+
+[node name="Movement Reach" parent="Playable" index="0"]
 uniform_movement = true
 uniform_reach = 1
 lock_left = true
@@ -96,6 +98,18 @@ lock_frontal_right_diagonal = true
 lock_rear_left_diagonal = true
 lock_rear_right_diagonal = true
 
+[node name="Attack Reach" parent="Playable" index="1"]
+active = true
+uniform_movement = true
+uniform_reach = 1
+lock_left = true
+lock_right = true
+lock_front = true
+lock_rear = true
+lock_rear_left_diagonal = true
+lock_rear_right_diagonal = true
+
 [editable path="Mesh"]
 [editable path="Health"]
 [editable path="Damage"]
+[editable path="Playable"]
