@@ -77,6 +77,11 @@ var playable_piece : PlayableComponent :
 	set(new_value) :
 		if !is_playable : return
 		playable_piece = new_value
+var current_team : TeamComponent :
+	set(new_value) : return
+	get() :
+		if !has_playable : return
+		return playable_piece.body.team_component
 
 func raise_up():
 	if !movable || !highlightable || !_highlight_push: return

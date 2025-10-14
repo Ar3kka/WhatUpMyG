@@ -37,59 +37,20 @@ const STANDARD_RAISE_HEIGHT : float = 0.250
 var tiles : Array[Array]
 var last_row : Array :
 	set(new_value) : return
-	get() : return tiles.get(tiles.size() - 1)
+	get() : 
+		if tiles.size() < 1 : return []
+		return tiles.get(tiles.size() - 1)
 var last_tile : Tile :
 	set (new_value) : return
 	get() : return last_row[last_row.size() - 1]
 
 func _ready() -> void:
 	if !tile_types.size(): _reset_tyle_types()
-	generate_tiles()
-	print(get_tile_at(Vector2i(8, 0)))
-	#add_row()
-	#read_grid()
+	generate_rows()
+	generate_rows(Vector2i(grid_size.x, 5))
 	#print(get_tiles_from(Vector2i.ZERO, Vector2i(1, 1), 10))
 	#print(get_specific_tile_from(Vector2i(1, 1), Vector2i(1, 2)))
 	#print(get_tiles_following_pattern(Vector2i(2, 3), Vector2i(2, -1), true))
-
-func add_row():
-	
-	var switch_pattern : bool = color_switch
-	var color_index = 0
-	if color_pattern.size() < 1 : force_pattern = false
-	
-	if color_switch:
-		switch_pattern = !switch_pattern
-		if switch_pattern && color_index + 1 < color_pattern.size() : color_index += 1
-		else: color_index = 0
-	
-	# Initialize the new row of vertical tiles.
-	var tile_array : Array = []
-	
-	for index in range(grid_size.x):
-	# Instantiate the new tile and set its position and id.
-		var new_tile = Tile.new().instantiate()
-		new_tile.global_position = Vector3(last_row[0].global_position.x - index, last_row[0].global_position.y, last_row[0].global_position.z - 1)
-		new_tile.id = Vector2i(grid_size.y, index)
-		new_tile.grid = self
-		# Check color replacement to follow given pattern
-		if force_pattern : new_tile.tint = color_pattern[color_index]
-		if color_index + 1 < color_pattern.size() : color_index += 1
-		else: color_index = 0
-		# Append to array and add child to scene
-		tile_array.append(new_tile)
-		%Tiles.add_child(new_tile)
-	
-	if tile_array.size() != 0: tiles.append(tile_array)
-
-func read_grid():
-	if tiles == null || tiles.size() < 1 : return
-	var coordinates : Vector2i = Vector2i.ZERO
-	for row in tiles:
-		for tile in row:
-			tile.id = coordinates
-			coordinates.y += 1
-	coordinates.x += 1
 
 func _reset_tyle_types():
 	if !active : return
@@ -162,39 +123,43 @@ func get_tile_at(tile_coordinates : Vector2i = Vector2i.ZERO) -> Tile:
 	var supposed_horizontal = tiles.get(tile_coordinates.x)
 	if supposed_horizontal == null : return
 	return supposed_horizontal.get(tile_coordinates.y)
-	
-func generate_tiles():
+
+var current_switch_pattern : bool = color_switch
+var color_switch_index : int = 0
+
+func generate_rows(final_size : Vector2i = grid_size, custom_generation_direction : Vector2i = generation_direction, randomize_size : bool = randomize):
 	if !active : return
 	generate.emit()
 	# Check and initialize the final size of the desired grid
-	var final_size : Vector2i = grid_size
-	if randomize : final_size = Vector2i(randi_range(grid_size.x, grid_size.y), randi_range(grid_size.x, grid_size.y)) 
-	# Initialize and calculate the color index in case needed
-	# Boolean to check if the color pattern is even and switch accordingly
-	var switch_pattern : bool = color_switch
-	var color_index = 0
-	if color_pattern.size() < 1 : force_pattern = false
+	if randomize_size : final_size = Vector2i(randi_range(grid_size.x, grid_size.y), randi_range(grid_size.x, grid_size.y)) 
+	
+	if tiles.size() < 1 && color_pattern.size() < 1 : force_pattern = false
+	# Check if the new size is an addition, in the case of it being an addition, the grid size will be changed to fit.
+	if final_size.x > tiles.size() : grid_size.y += final_size.x
+	if tiles && tiles[0] && final_size.y > tiles[0].size() : grid_size.x += final_size.y
 	
 	## Vertical Tiles
 	for z in range(final_size.y):
 		# Check if the color patterns are even or odd.
 		if color_switch:
-			switch_pattern = !switch_pattern
-			if switch_pattern && color_index + 1 < color_pattern.size() : color_index += 1
-			else: color_index = 0
+			current_switch_pattern = !current_switch_pattern
+			if current_switch_pattern && color_switch_index + 1 < color_pattern.size() : color_switch_index += 1
+			else: color_switch_index = 0
 		# Initialize the new row of vertical tiles.
 		var tile_array : Array = []
 		## Horizontal Tiles
 		for x in range(final_size.x):
 			# Instantiate the new tile and set its position and id.
 			var new_tile = Tile.new().instantiate()
-			new_tile.global_position = Vector3(global_position.x + x * generation_direction.x, global_position.y, global_position.z + z * generation_direction.y)
-			new_tile.id = Vector2i(z, x)
+			var last_position : Vector3 = global_position
+			if tiles.size() != 0 : last_position = last_row[0].global_position
+			new_tile.global_position = Vector3(last_position.x + x * custom_generation_direction.x, last_position.y, last_position.z + 1 * custom_generation_direction.y)
+			new_tile.id = Vector2i(tiles.size(), x)
 			new_tile.grid = self
 			# Check color replacement to follow given pattern
-			if force_pattern : new_tile.tint = color_pattern[color_index]
-			if color_index + 1 < color_pattern.size() : color_index += 1
-			else: color_index = 0
+			if force_pattern : new_tile.tint = color_pattern[color_switch_index]
+			if color_switch_index + 1 < color_pattern.size() : color_switch_index += 1
+			else: color_switch_index = 0
 			# Append to array and add child to scene
 			tile_array.append(new_tile)
 			%Tiles.add_child(new_tile)

@@ -6,7 +6,7 @@ const IMAGINATION_SCENE : PackedScene = preload("res://Scenes/PlayerComponents/i
 
 const ROTATION_FORCE : float = 2125.0
 const ROTATION_SMOOTHNESS : float = 0.04
-const EYES_BACKWARD_ROTATION_LIMIT : float = -92.0
+const EYES_BACKWARD_ROTATION_LIMIT : float = -90.0
 const EYES_FORWARD_ROTATION_LIMIT : float = -8.3
 const EYES_ROTATION : float = -58.3
 const EYES_ALTITUDE : float = 2.5
@@ -73,8 +73,8 @@ func _ready():
 	add_child(IMAGINATION_SCENE.instantiate())
 	add_child(pupils)
 
-	rotation.x = EYES_ROTATION
-	position.y = EYES_ALTITUDE
+	rotation_degrees.x = EYES_ROTATION
+	global_position.y = EYES_ALTITUDE
 
 func blink(force : bool = true): 
 	pupils.target_position = project_local_ray_normal(focus_point) * eye_sight_distance
@@ -88,12 +88,14 @@ func _process(delta: float) -> void:
 			if rotation_degrees.x + rotation_force * delta < forward_rotation_limit:
 				has_started_rotating = true
 				final_x_rotation = rotation_degrees.x + rotation_force * delta
+			else : final_x_rotation = forward_rotation_limit
 		if feet.at_remoteness_limit : final_x_rotation = EYES_ROTATION
 	else : if Input.is_action_just_pressed("Scroll Back") : 
 		if feet.at_remoteness_limit :
 			if rotation_degrees.x + -rotation_force * delta > backward_rotation_limit:
 				has_started_rotating = true
 				final_x_rotation = rotation_degrees.x - rotation_force * delta
+			else : final_x_rotation = backward_rotation_limit
 		if feet.at_proximity_limit : final_x_rotation = EYES_ROTATION
 	
 	if !has_started_rotating : return
