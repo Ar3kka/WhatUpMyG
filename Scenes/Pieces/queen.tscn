@@ -71,9 +71,11 @@ team = 1
 uniform_movement = true
 uniform_reach = 7
 
-[node name="Attack Reach" parent="Playable" index="1" node_paths=PackedStringArray("mimic_reach_of")]
+[node name="Attack Reach" parent="Playable" index="1"]
 active = true
-mimic_reach_of = NodePath("../Movement Reach")
+get_only_played_tiles = true
+uniform_movement = true
+uniform_reach = 7
 
 [editable path="Mesh"]
 [editable path="Playable"]

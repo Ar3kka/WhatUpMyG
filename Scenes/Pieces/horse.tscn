@@ -266,9 +266,12 @@ follow_uniform_pattern = true
 mirror_uniform_pattern = true
 uniform_pattern = Vector2i(2, -1)
 
-[node name="Attack Reach" parent="Playable" index="1" node_paths=PackedStringArray("mimic_reach_of")]
+[node name="Attack Reach" parent="Playable" index="1"]
 active = true
-mimic_reach_of = NodePath("../Movement Reach")
+get_only_played_tiles = true
+follow_uniform_pattern = true
+mirror_uniform_pattern = true
+uniform_pattern = Vector2i(2, -1)
 
 [editable path="Mesh"]
 [editable path="Playable"]

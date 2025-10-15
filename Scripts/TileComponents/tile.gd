@@ -130,7 +130,7 @@ func _ready() -> void:
 			return
 		if _highlight_push && new_highlight_value : return
 		_highlight_push = new_raise_value
-		if new_highlight_value : 
+		if new_highlight_value :
 			highlight_color = new_highlight_color
 			highlight_strength = new_highlight_strength
 			set_color(lerp(tint, highlight_color, highlight_strength))

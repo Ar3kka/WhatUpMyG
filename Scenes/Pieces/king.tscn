@@ -65,12 +65,16 @@ team = 1
 [node name="Playable" parent="." instance=ExtResource("10_pq2iy")]
 
 [node name="Movement Reach" parent="Playable" index="0"]
+horizontal_reach = Vector2i(1, 1)
+depth_reach = Vector2i(1, 1)
+frontal_diagonal_reach = Vector2i(1, 1)
+rear_diagonal_reach = Vector2i(1, 1)
+
+[node name="Attack Reach" parent="Playable" index="1"]
+active = true
+get_only_played_tiles = true
 uniform_movement = true
 uniform_reach = 1
-
-[node name="Attack Reach" parent="Playable" index="1" node_paths=PackedStringArray("mimic_reach_of")]
-active = true
-mimic_reach_of = NodePath("../Movement Reach")
 
 [editable path="Mesh"]
 [editable path="Playable"]

@@ -100,6 +100,7 @@ lock_rear_right_diagonal = true
 
 [node name="Attack Reach" parent="Playable" index="1"]
 active = true
+get_only_played_tiles = true
 uniform_movement = true
 uniform_reach = 1
 lock_left = true

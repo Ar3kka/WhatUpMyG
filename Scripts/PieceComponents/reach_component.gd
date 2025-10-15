@@ -51,6 +51,8 @@ var current_team : TeamComponent :
 @export var ignore_blockage : bool = false
 ## When true, in case the blockage is not ignored, the colliding piece will be returned as playable.
 @export var get_colliding_piece : bool = false
+## When true, only played tiles (tiles with playables) will be returned as playable tiles.
+@export var get_only_played_tiles : bool = false
 
 @export_group("Highlight Settings")
 ## When on, all playable tiles will be raised up to highlight their availability
@@ -312,10 +314,6 @@ var current_grid : TileGrid :
 		return current_tile.grid
 ## Returns all stored playable tiles.
 var playable_tiles : Array [Tile] :
-	set(new_tiles) :
-		if new_tiles != null && playable_tiles != null && raise_tiles:
-			_highlight_playables(false, false)
-		playable_tiles = new_tiles
 	get() :
 		if mimic_reach_of : return mimic_reach_of.playable_tiles
 		return playable_tiles
@@ -326,10 +324,12 @@ func _ready() -> void:
 		playable.draggable_component.started_dragging.connect(func () : 
 			get_playable_tiles()
 			_highlight_playables(raise_tiles, highlight_tiles))
-		playable.snappable_component.grounded.connect(func () : _highlight_playables(false, false)))
+		playable.snappable_component.grounded.connect(func () : _highlight_playables(false, false))
+		playable.snappable_component.connected.connect(func () : _highlight_playables(false, false)))
 
 func _highlight_playables(highlight : bool = true, color : bool = true):
 	if body == null || !current_grid : return
+	print(body, ": ", self , " highlight: ", highlight)
 	for tile in playable_tiles:
 		if tile is Tile: tile.highlight.emit(highlight, color, highlight_color, highlight_strength)
 
@@ -341,11 +341,11 @@ func is_tile_playable(current_tile_wannabe : Tile) -> bool:
 
 ## Returns the playable tiles from a provided Array[Tile].
 ## It can be set to ignore any blockage (played tiles), or if returning a found playable tile within the list.
-func playable_tiles_from(tile_list : Array[Tile], ignore_block : bool = ignore_blockage, get_played_tile : bool = get_colliding_piece) -> Array[Tile]:
+func playable_tiles_from(tile_list : Array[Tile], ignore_block : bool = ignore_blockage, get_played_tile : bool = get_colliding_piece, get_played_tiles : bool = get_only_played_tiles) -> Array[Tile]:
 	var playables : Array[Tile] = []
 	for tile in tile_list :
 		if tile is Tile:
-			if !tile.has_playable || ( get_played_tile && tile.has_playable ) : playables.append(tile)
+			if ( !get_only_played_tiles && !tile.has_playable ) || ( ( get_only_played_tiles || get_played_tile) && tile.has_playable ) : playables.append(tile)
 			if tile.has_playable && !ignore_block : return playables
 	return playables
 
@@ -355,7 +355,7 @@ func get_playable_tiles(store_tiles : bool = true) -> Array[Tile]:
 	var playables : Array[Tile] = []
 
 	if follow_uniform_pattern : 
-		playables.append_array(get_tiles_from_pattern())
+		playables.append_array(playable_tiles_from(get_tiles_from_pattern(), true, false, true))
 		if store_tiles : playable_tiles = playables
 		return playables
 	

@@ -1,7 +1,7 @@
 ## Piece component that allows a piece to be playable with its own personalized reach pattern,
 ## this component is dependant on the piece being draggable, manipulable and snappable.
 ## For this component to work, the body piece has to have an active draggable component and snappable component.
-class_name PlayableComponent extends Node3D
+class_name PlayableComponents extends Node3D
 
 signal play(new_tile : Tile)
 

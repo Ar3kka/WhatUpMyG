@@ -76,9 +76,15 @@ lock_right = true
 lock_front = true
 lock_rear = true
 
-[node name="Attack Reach" parent="Playable" index="1" node_paths=PackedStringArray("mimic_reach_of")]
+[node name="Attack Reach" parent="Playable" index="1"]
 active = true
-mimic_reach_of = NodePath("../Movement Reach")
+get_only_played_tiles = true
+uniform_movement = true
+uniform_reach = 7
+lock_left = true
+lock_right = true
+lock_front = true
+lock_rear = true
 
 [editable path="Mesh"]
 [editable path="Playable"]
