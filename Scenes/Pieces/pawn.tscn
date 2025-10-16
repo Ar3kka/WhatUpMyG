@@ -57,7 +57,7 @@ body = NodePath("..")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.990104, 0)
 
 [node name="CollisionShape" parent="Health/HealthArea" index="0"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.699421, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.003479, 0.376095, 0)
 
 [node name="Damage" parent="." node_paths=PackedStringArray("body") instance=ExtResource("3_04pu8")]
 body = NodePath("..")
@@ -66,7 +66,7 @@ body = NodePath("..")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.29836, 0)
 
 [node name="CollisionShape" parent="Damage/DamageArea" index="0"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.591265, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.00354001, 0.591265, 0)
 
 [node name="Draggable" parent="." instance=ExtResource("4_w368m")]
 
@@ -88,10 +88,9 @@ team = 1
 [node name="Playable" parent="." instance=ExtResource("12_l25yr")]
 
 [node name="Movement Reach" parent="Playable" index="0"]
-uniform_movement = true
-uniform_reach = 1
 lock_left = true
 lock_right = true
+depth_reach = Vector2i(1, 0)
 lock_rear = true
 lock_frontal_left_diagonal = true
 lock_frontal_right_diagonal = true

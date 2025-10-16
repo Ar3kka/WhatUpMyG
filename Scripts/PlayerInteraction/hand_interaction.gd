@@ -158,8 +158,8 @@ func _process(_delta):
 	####### RECOVER DRAG OBJECT INPUTS
 	if Input.is_action_pressed("Recover") && !dragging(): vertical_drag = true
 	
-	if Input.is_action_pressed("Recover Playable") && !dragging() : 
-		var playable_component : PlayableComponent = selected_object.playable_component
+	var playable_component : PlayableComponent = selected_object.playable_component
+	if (Input.is_action_pressed("Recover Playable") || playable_component.attacking_snap ) && !dragging() : 
 		if playable_component && playable_component.being_played : 
 			playable_component.reset_to_playable_position()
 			return

@@ -1,4 +1,4 @@
-[gd_scene load_steps=14 format=4 uid="uid://bk5q2sljd1bv7"]
+[gd_scene load_steps=16 format=4 uid="uid://bk5q2sljd1bv7"]
 
 [ext_resource type="PackedScene" uid="uid://rb6072na0ky6" path="res://Meshes/Pieces/Bishop.glb" id="1_5pmi2"]
 [ext_resource type="Script" uid="uid://bi2l7ixfw6ufq" path="res://Scripts/PieceComponents/piece.gd" id="1_y6o4j"]
@@ -10,6 +10,8 @@
 [ext_resource type="PackedScene" uid="uid://dfjvv6pbb18hp" path="res://Scenes/Components/rotatable.tscn" id="7_dij6e"]
 [ext_resource type="PackedScene" uid="uid://ddpcdx1omf0vo" path="res://Scenes/Components/snappable.tscn" id="9_035gs"]
 [ext_resource type="PackedScene" uid="uid://bj8c5n2moabr6" path="res://Scenes/Components/playable.tscn" id="10_icwx2"]
+[ext_resource type="PackedScene" uid="uid://bm8ty1amlhee7" path="res://Scenes/Components/health.tscn" id="11_p6t58"]
+[ext_resource type="PackedScene" uid="uid://cp75tet6digbe" path="res://Scenes/Components/damage.tscn" id="12_0otbx"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_5pmi2"]
 size = Vector3(0.3, 0.963989, 0.3)
@@ -69,12 +71,13 @@ team = 1
 [node name="Playable" parent="." instance=ExtResource("10_icwx2")]
 
 [node name="Movement Reach" parent="Playable" index="0"]
-uniform_movement = true
-uniform_reach = 7
+standard_reach = 7
 lock_left = true
 lock_right = true
 lock_front = true
 lock_rear = true
+frontal_diagonal_reach = Vector2i(7, 7)
+rear_diagonal_reach = Vector2i(7, 7)
 
 [node name="Attack Reach" parent="Playable" index="1"]
 active = true
@@ -86,5 +89,17 @@ lock_right = true
 lock_front = true
 lock_rear = true
 
+[node name="Health" parent="." instance=ExtResource("11_p6t58")]
+
+[node name="CollisionShape" parent="Health/HealthArea" index="0"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.0106659, 1.63367, 0)
+
+[node name="Damage" parent="." instance=ExtResource("12_0otbx")]
+
+[node name="CollisionShape" parent="Damage/DamageArea" index="0"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.00509644, 0.336893, 0)
+
 [editable path="Mesh"]
 [editable path="Playable"]
+[editable path="Health"]
+[editable path="Damage"]

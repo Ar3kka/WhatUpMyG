@@ -39,6 +39,12 @@ var vertical_drag : bool = false
 var target_point : Vector3 = Vector3.ZERO
 var dragging_x_limit : float = X_LIMIT
 
+var snappable_component : SnappableComponent :
+	set(new_value) : return
+	get() :
+		if body == null : return
+		return body.snappable_component
+
 var body_position : Vector3 : 
 	set(new_position): body.global_position = new_position
 	get(): return body.global_position
@@ -56,7 +62,7 @@ func stop_dragging() :
 	current_manipulator = null
 	_freeze(false)
 
-func dragged() -> bool : return horizontal_drag || vertical_drag
+func dragged() -> bool : return horizontal_drag || vertical_drag # || (snappable_component && snappable_component.attacking_snap)
 
 func double_dragged() -> bool : return horizontal_drag && vertical_drag 
 
@@ -69,13 +75,11 @@ func _ready() -> void:
 	if body == null : body = get_parent_node_3d()
 	
 	stopped_dragging.connect(func (): 
-		if !body : return
-		var snappable_component : SnappableComponent = body.snappable_component
-		if snappable_component : snappable_component.grounded.emit())
-		
+		if !body || snappable_component == null : return
+		snappable_component.grounded.emit())
 	drag.connect(func(horizontal : bool, vertical : bool, target : Vector3, strength : float, player_requested_to_drag : Manipulator):
 		if !manipulable && player_requested_to_drag : return
-		if !vertical_drag && !horizontal_drag && (vertical || horizontal) : 
+		if !vertical_drag && !horizontal_drag && (vertical || horizontal) && ( snappable_component && !snappable_component.attacking_snap ): 
 			started_dragging.emit()
 		horizontal_drag = horizontal
 		vertical_drag = vertical

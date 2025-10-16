@@ -1,4 +1,4 @@
-[gd_scene load_steps=13 format=4 uid="uid://cfqxcsswpttwe"]
+[gd_scene load_steps=15 format=4 uid="uid://cfqxcsswpttwe"]
 
 [ext_resource type="Script" uid="uid://bi2l7ixfw6ufq" path="res://Scripts/PieceComponents/piece.gd" id="1_o3ehe"]
 [ext_resource type="PackedScene" uid="uid://bwwfrec8ecw56" path="res://Meshes/Pieces/King.glb" id="1_u63x5"]
@@ -10,6 +10,8 @@
 [ext_resource type="PackedScene" uid="uid://dfjvv6pbb18hp" path="res://Scenes/Components/rotatable.tscn" id="7_1j5qe"]
 [ext_resource type="PackedScene" uid="uid://ddpcdx1omf0vo" path="res://Scenes/Components/snappable.tscn" id="9_e5tll"]
 [ext_resource type="PackedScene" uid="uid://bj8c5n2moabr6" path="res://Scenes/Components/playable.tscn" id="10_pq2iy"]
+[ext_resource type="PackedScene" uid="uid://bm8ty1amlhee7" path="res://Scenes/Components/health.tscn" id="11_2ukj5"]
+[ext_resource type="PackedScene" uid="uid://cp75tet6digbe" path="res://Scenes/Components/damage.tscn" id="12_3nxrr"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_n3uat"]
 size = Vector3(0.3, 1.25, 0.3)
@@ -32,6 +34,7 @@ collision_mask = 3
 script = ExtResource("1_o3ehe")
 
 [node name="CollisionHitbox" type="CollisionShape3D" parent="."]
+unique_name_in_owner = true
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.62887, 0)
 shape = SubResource("BoxShape3D_n3uat")
 
@@ -76,5 +79,18 @@ get_only_played_tiles = true
 uniform_movement = true
 uniform_reach = 1
 
+[node name="Health" parent="." node_paths=PackedStringArray("body") instance=ExtResource("11_2ukj5")]
+body = NodePath("..")
+
+[node name="CollisionShape" parent="Health/HealthArea" index="0"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.08863, 0)
+
+[node name="Damage" parent="." instance=ExtResource("12_3nxrr")]
+
+[node name="CollisionShape" parent="Damage/DamageArea" index="0"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.0219955, 0.403741, 0)
+
 [editable path="Mesh"]
 [editable path="Playable"]
+[editable path="Health"]
+[editable path="Damage"]

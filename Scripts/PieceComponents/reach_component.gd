@@ -329,7 +329,6 @@ func _ready() -> void:
 
 func _highlight_playables(highlight : bool = true, color : bool = true):
 	if body == null || !current_grid : return
-	print(body, ": ", self , " highlight: ", highlight)
 	for tile in playable_tiles:
 		if tile is Tile: tile.highlight.emit(highlight, color, highlight_color, highlight_strength)
 

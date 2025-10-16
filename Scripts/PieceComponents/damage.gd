@@ -11,6 +11,7 @@ func hit(health_component : HealthComponent):
 	print(body, ": toma mis: ", damage_points, " pinchi burroide menso: ", health_component.body)
 
 func _on_damage_area_area_entered(area: Area3D):
+	return
 	var health_component := area.get_parent_node_3d()
 	if health_component.body == body: return
 	hit(health_component)

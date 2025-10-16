@@ -1,4 +1,4 @@
-[gd_scene load_steps=14 format=4 uid="uid://d0dtjr43kx12f"]
+[gd_scene load_steps=16 format=4 uid="uid://d0dtjr43kx12f"]
 
 [ext_resource type="PackedScene" uid="uid://cuajmp8wq8orj" path="res://Meshes/Pieces/Queen.glb" id="1_cm4hx"]
 [ext_resource type="Script" uid="uid://bi2l7ixfw6ufq" path="res://Scripts/PieceComponents/piece.gd" id="1_ieefp"]
@@ -10,6 +10,8 @@
 [ext_resource type="PackedScene" uid="uid://dfjvv6pbb18hp" path="res://Scenes/Components/rotatable.tscn" id="7_kd7fw"]
 [ext_resource type="PackedScene" uid="uid://ddpcdx1omf0vo" path="res://Scenes/Components/snappable.tscn" id="9_tk0wl"]
 [ext_resource type="PackedScene" uid="uid://bj8c5n2moabr6" path="res://Scenes/Components/playable.tscn" id="10_5wri7"]
+[ext_resource type="PackedScene" uid="uid://cp75tet6digbe" path="res://Scenes/Components/damage.tscn" id="11_pls4v"]
+[ext_resource type="PackedScene" uid="uid://bm8ty1amlhee7" path="res://Scenes/Components/health.tscn" id="12_q07mo"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_3865y"]
 size = Vector3(0.3, 1.15641, 0.356396)
@@ -76,6 +78,10 @@ active = true
 get_only_played_tiles = true
 uniform_movement = true
 uniform_reach = 7
+
+[node name="Damage" parent="." instance=ExtResource("11_pls4v")]
+
+[node name="Health" parent="." instance=ExtResource("12_q07mo")]
 
 [editable path="Mesh"]
 [editable path="Playable"]

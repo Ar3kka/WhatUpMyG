@@ -5,6 +5,7 @@ class_name PlayableComponent extends Node3D
 
 signal play(new_tile : Tile)
 signal loaded_dependencies()
+signal attacked(attacked_by : DamageComponent)
 
 ## If not active, no built in components will interact with it, as if it
 ## didn't exist.
@@ -20,11 +21,26 @@ signal loaded_dependencies()
 @export var draggable_component : DraggableComponent
 @export var movement_reach : ReachComponent
 @export var attack_reach : ReachComponent
+@export var health_component : HealthComponent :
+	set(new_value) : return
+	get() :
+		if body == null : return
+		return body.health_component
+@export var damage_component : DamageComponent :
+	set(new_value) : return
+	get() :
+		if body == null : return
+		return body.damage_component
 var current_team : TeamComponent :
 	set(new_value) : return
 	get() :
 		if body == null : return
 		return body.team_component
+var attacking_snap : bool :
+	set(new_value) : return
+	get() :
+		if !_has_dependencies : return false
+		return snappable_component.attacking_snap
 
 ## Returns if dependencies are found, cannot be set.
 var _has_dependencies : bool :
@@ -76,6 +92,9 @@ func _ready():
 	_get_draggable()
 	if !_has_dependencies : return
 	loaded_dependencies.emit()
+	attacked.connect( func(attacked_by : DamageComponent) : 
+		if health_component == null : return
+		attacked_by.hit( health_component ))
 	play.connect( func (new_tile : Tile) :
 		current_tile = new_tile)
 	snappable_component.connected.connect(func () : 
@@ -89,7 +108,11 @@ func is_tile_playable(current_tile_wannabe : Tile) -> bool:
 
 func is_tile_attackable(attacked_tile : Tile) -> bool:
 	if !active || current_grid == null || attack_reach == null : return false
-	return attack_reach.is_tile_playable(attacked_tile)
+	return ( attack_reach.is_tile_playable(attacked_tile) 
+	&& attacked_tile.playable_piece
+	&& attacked_tile.playable_piece.health_component
+	&& attacked_tile.playable_piece.health_component.active
+	&& !attacked_tile.playable_piece.health_component.invincible )
 
 func reset_to_playable_position() :
 	if !_has_dependencies : return
