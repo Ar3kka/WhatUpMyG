@@ -90,8 +90,33 @@ const PLAYABLE_COMPONENT = "Playable"
 ## Custom name for the playable component for auto population
 @export var playable_name : String = PLAYABLE_COMPONENT
 
-
 var components : Array[Node3D] = []
+
+var team_id : int :
+	set(new_value) : return
+	get() :
+		if team_component == null : return team_id
+		return team_component.team 
+var health_points : float :
+	set(new_value) : return
+	get() :
+		if health_component == null : return health_points
+		return health_component.health_points
+var damage_points : float :
+	set(new_value) : return
+	get() :
+		if damage_points == null : return damage_points
+		return damage_component.damage_points
+var is_playable : bool :
+	set(new_value) : return
+	get () :
+		if playable_component == null : return false
+		return true
+var is_playing : bool :
+	set(new_value) : return
+	get() :
+		if !is_playable || ( is_playable && ( playable_component.is_deceased || !playable_component.active ) ) : return false
+		return true
 
 func read_health_component() -> HealthComponent :
 	for node in get_children(): 

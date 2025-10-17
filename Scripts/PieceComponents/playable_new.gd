@@ -6,15 +6,23 @@ class_name PlayableComponent extends Node3D
 signal play(new_tile : Tile)
 signal loaded_dependencies()
 signal attacked(attacked_by : DamageComponent)
+signal death()
 
 ## If not active, no built in components will interact with it, as if it
 ## didn't exist.
 @export var active : bool = true :
 	get() : 
-		if !_has_dependencies : return false
+		if !_has_dependencies || is_deceased : return false
 		return active
 ## The piece this components belongs to.
 @export var body : Piece
+var is_deceased : bool :
+	set(new_value) : return
+	get() :
+		if !_has_dependencies || body.health_component == null : return false
+		if !body.health_component.alive : death.emit()
+		return !body.health_component.alive
+@export_group("Dependencies")
 ## The snappable component for dependency.
 @export var snappable_component : SnappableComponent
 ## The draggable component for dependency.
@@ -41,6 +49,11 @@ var attacking_snap : bool :
 	get() :
 		if !_has_dependencies : return false
 		return snappable_component.attacking_snap
+var is_recovering : bool :
+	set(new_value) : return
+	get() :
+		if !_has_dependencies : return false
+		return snappable_component.is_recovering
 
 ## Returns if dependencies are found, cannot be set.
 var _has_dependencies : bool :
@@ -58,6 +71,7 @@ var current_tile : Tile :
 		if current_tile != null && new_value != null && current_tile != new_value:
 			current_tile.disconnected.emit()
 		current_tile = new_value
+		if current_tile == null : return
 		current_tile.connected.emit()
 		movement_tiles
 		attack_tiles
@@ -99,6 +113,7 @@ func _ready():
 		current_tile = new_tile)
 	snappable_component.connected.connect(func () : 
 		current_tile = snappable_component.snapped_to)
+	death.connect( func () : current_tile = null )
 
 ## Judges whether or not the provided tile is playable by searching it within the
 ## currently playable tiles.

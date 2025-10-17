@@ -103,13 +103,16 @@ func instantiate(new_active_state : bool = true, new_snappable_state : bool = tr
 	new_tile.instantiated.emit()
 	return new_tile
 
+var is_playable_deceased : bool :
+	get() : return occupier && occupier.is_playable && !occupier.is_playing
+
 func _ready() -> void:
 	get_movable()
 	appearance = %Mesh
 	_snap_area = %Snap
 	set_color(tint)
 	
-	occupy.connect(func (new_occupier : Piece) : 
+	occupy.connect(func (new_occupier : Piece) :
 		if _highlight_push: 
 			if new_occupier != null && new_occupier != occupier :
 				if new_occupier.snappable_component && new_occupier.snappable_component.is_handled : 
@@ -171,7 +174,7 @@ func _ready() -> void:
 			return
 		if parent is SnappableComponent : 
 			if occupier == null : return
-			occupier.snappable_component.stop_snapping()
+			if parent.snapped_to == self : occupier.snappable_component.stop_snapping()
 			occupy.emit(null))
 
 func set_color(new_tint : Color):

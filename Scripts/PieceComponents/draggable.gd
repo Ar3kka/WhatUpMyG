@@ -6,7 +6,7 @@ signal stopped_dragging()
 
 ## RECOMMENDED SETTINGS
 const ROTATION_STRENGTH : float = 0.05
-const DRAGGING_STRENGTH : float = 17.5
+const DRAGGING_STRENGTH : float = 14.5
 const X_LIMIT : float = 0.0
 
 ## The piece this component belongs to.
@@ -76,7 +76,8 @@ func _ready() -> void:
 	
 	stopped_dragging.connect(func (): 
 		if !body || snappable_component == null : return
-		snappable_component.grounded.emit())
+		snappable_component.grounded.emit() )
+		
 	drag.connect(func(horizontal : bool, vertical : bool, target : Vector3, strength : float, player_requested_to_drag : Manipulator):
 		if !manipulable && player_requested_to_drag : return
 		if !vertical_drag && !horizontal_drag && (vertical || horizontal) && ( snappable_component && !snappable_component.attacking_snap ): 

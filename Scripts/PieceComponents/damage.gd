@@ -1,21 +1,20 @@
 class_name DamageComponent extends Node3D
 
+const STANDARD_DAMAGE : float = 1.0
+const STANDARD_EFFECT : float = 0.0
+const STANDARD_MULTIPLIER : float = 1.0
+
 @export var body : Piece
-@export var damage_area : Area3D
 @export var active : bool = true
-@export var damage_points : float = 1.0
+@export var damage_points : float = STANDARD_DAMAGE :
+	get () : return ( damage_points + effect ) * multiplier
+var effect : float = STANDARD_EFFECT
+var multiplier : float = STANDARD_MULTIPLIER
 @export var cooldown_time : float = 2.0
 
 func hit(health_component : HealthComponent):
 	health_component.hit.emit(damage_points)
 	print(body, ": toma mis: ", damage_points, " pinchi burroide menso: ", health_component.body)
-
-func _on_damage_area_area_entered(area: Area3D):
-	return
-	var health_component := area.get_parent_node_3d()
-	if health_component.body == body: return
-	hit(health_component)
-	#print(get_parent(), ": este es al que se supone que le puedo pegar: ", health_component.body)
 
 func _on_ready():
 	if body == null : body = get_parent_node_3d()

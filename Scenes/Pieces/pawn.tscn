@@ -53,20 +53,8 @@ surface_material_override/0 = SubResource("StandardMaterial3D_3865y")
 [node name="Health" parent="." node_paths=PackedStringArray("body") instance=ExtResource("2_yp78i")]
 body = NodePath("..")
 
-[node name="HealthArea" parent="Health" index="0"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.990104, 0)
-
-[node name="CollisionShape" parent="Health/HealthArea" index="0"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.003479, 0.376095, 0)
-
 [node name="Damage" parent="." node_paths=PackedStringArray("body") instance=ExtResource("3_04pu8")]
 body = NodePath("..")
-
-[node name="DamageArea" parent="Damage" index="0"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.29836, 0)
-
-[node name="CollisionShape" parent="Damage/DamageArea" index="0"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.00354001, 0.591265, 0)
 
 [node name="Draggable" parent="." instance=ExtResource("4_w368m")]
 
@@ -85,7 +73,12 @@ team = 1
 
 [node name="Snappable" parent="." instance=ExtResource("11_xj264")]
 
-[node name="Playable" parent="." instance=ExtResource("12_l25yr")]
+[node name="Playable" parent="." node_paths=PackedStringArray("body", "snappable_component", "draggable_component", "health_component", "damage_component") instance=ExtResource("12_l25yr")]
+body = NodePath("..")
+snappable_component = NodePath("../Snappable")
+draggable_component = NodePath("../Draggable")
+health_component = NodePath("../Health")
+damage_component = NodePath("../Damage")
 
 [node name="Movement Reach" parent="Playable" index="0"]
 lock_left = true

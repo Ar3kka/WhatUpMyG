@@ -1,6 +1,6 @@
 class_name Hands extends Node3D
 
-const DRAG_STRENGTH : float = 17.5
+const DRAG_STRENGTH : float = 14.5
 const ROTATION_STRENGTH : float = 3.5
 const RAYCAST_DISTANCE : float = 250.0
 const FINGER_SIZE : float = 0.5
@@ -141,12 +141,20 @@ func _process(_delta):
 		else: if Input.is_action_just_pressed("Rotate Right"): rotatable_component.rotate.emit(Vector3(0, -1, 0), manipulator)
 		if Input.is_action_just_released("Rotate Left") || Input.is_action_just_released("Rotate Right"): rotatable_component.stop_rotating()
 	
+	var playable_component : PlayableComponent = selected_object.playable_component
+	
 	####### Checking drag inputs
 	if Input.is_action_just_pressed("Drag Vertical"):
-		if holding_drag || (!holding_drag && !vertical_drag) : vertical_drag = true
+		if holding_drag || (!holding_drag && !vertical_drag) : 
+			if playable_component && playable_component.being_played && playable_component.attacking_snap : 
+				stop_dragging(draggable_component)
+			vertical_drag = true
 		else: vertical_drag = false
 	if Input.is_action_just_pressed("Drag Horizontal"): 
-		if holding_drag || (!holding_drag && !horizontal_drag) : horizontal_drag = true
+		if holding_drag || (!holding_drag && !horizontal_drag) :
+			if playable_component && playable_component.being_played && playable_component.attacking_snap : 
+				stop_dragging(draggable_component)
+			horizontal_drag = true
 		else: horizontal_drag = false
 	
 	####### Checking undragging inputs
@@ -158,13 +166,17 @@ func _process(_delta):
 	####### RECOVER DRAG OBJECT INPUTS
 	if Input.is_action_pressed("Recover") && !dragging(): vertical_drag = true
 	
-	var playable_component : PlayableComponent = selected_object.playable_component
-	if (Input.is_action_pressed("Recover Playable") || playable_component.attacking_snap ) && !dragging() : 
-		if playable_component && playable_component.being_played : 
+	if (Input.is_action_pressed("Recover Playable") || playable_component.attacking_snap ) && !dragging() :
+		if playable_component && playable_component.being_played :
+			if playable_component.is_recovering == false && playable_component.attacking_snap :
+				playable_component.snappable_component.attack_recover.emit()
 			playable_component.reset_to_playable_position()
 			return
 	
-	if !dragging(): return stop_dragging(draggable_component) # If no dragging action is recorded, we stop dragging.
+	#if Input.is_action_just_released("Recover Playable") && playable_component && playable_component.being_played :
+	#	snappable_component.
+	
+	if !dragging() : return stop_dragging(draggable_component) # If no dragging action is recorded, we stop dragging.
 	
 	####### Calculating the position where the SELECTED object needs to move at
 	

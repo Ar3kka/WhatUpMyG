@@ -7,6 +7,10 @@ const STANDARD_HIGHLIGHT_STRENGTH : float = 0.5
 const STANDARD_REACH : int = 1
 const STANDARD_MOVEMENT_COLOR : Color = Color.AQUA
 const STANDARD_ATTACK_COLOR : Color = Color.DEEP_PINK
+const STANDARD_EFFECT_VECTOR : Vector2i = Vector2i.ZERO
+const STANDARD_MULTIPLIER_VECTOR : Vector2i = Vector2i.ZERO
+const STANDARD_EFFECT : float = 0.0
+const STANDARD_MULTIPLIER : float = 1.0
 
 ## Standard Directions
 const HORIZONTAL_LEFT : Vector2i = Vector2i(0, 1)
@@ -46,6 +50,9 @@ var current_team : TeamComponent :
 		depth_reach = Vector2i(standard_reach, standard_reach)
 		frontal_diagonal_reach = Vector2i(standard_reach, standard_reach)
 		rear_diagonal_reach = Vector2i(standard_reach, standard_reach)
+	get() : return ( standard_reach + standard_effect ) * standard_multiplier
+var standard_effect : float = STANDARD_EFFECT
+var standard_multiplier : float = STANDARD_MULTIPLIER
 ## When true, the reach will not be interrupted by obsctruction, 
 ## allowing the piece to phase through and jump over unplayable tiles
 @export var ignore_blockage : bool = false
@@ -70,9 +77,6 @@ var current_team : TeamComponent :
 ## The color overlay the tiles will have whenever they are selected.
 @export var highlight_color : Color = STANDARD_MOVEMENT_COLOR
 @export_group("Pattern Settings")
-## When true, all reach will be considered as specific coordinates, 
-## ignoring the tiles in its path.
-@export var specific_pattern : bool = false
 ## When true, all patterns will be mirrored doubling the rounds provided
 ## to ensure a full 360 coverage is done surrounding the playing piece.
 @export var mirror_pattern : bool = false
@@ -86,12 +90,17 @@ var current_team : TeamComponent :
 ## When true, all custom reach will be ignored and only the uniform reach will be taken in account.
 @export var uniform_movement : bool = false
 ## The universal reach, only taken in account if uniform movement is on. 
-@export var uniform_reach : int = standard_reach
+@export var uniform_reach : int = standard_reach :
+	get () : return ( uniform_reach + uniform_effect ) * uniform_multiplier
+var uniform_effect : float = STANDARD_EFFECT
+var uniform_multiplier : float = STANDARD_MULTIPLIER
 ## When true, locks all movement from all directions.
 @export var uniform_lock : bool = false
 ## When specific pattern is turned on, turning this feature will let the uniform pattern overwrite
 ## the specific patterns, and only follow the uniform pattern
 @export_group("Uniform Pattern Settings")
+## When true, all reach will be considered as specific coordinates, 
+## ignoring the tiles in its path.
 @export var follow_uniform_pattern : bool = false
 ## When mirroring uniform pattern is on, the pattern will be mirrored doubling the rounds provided.
 @export var mirror_uniform_pattern : bool = false
@@ -103,7 +112,10 @@ var current_team : TeamComponent :
 @export_category("Reach Settings")
 @export_group("Horizontal Reach")
 ## This is the horizontal reach for the playable piece: Vector2i(left, right)
-@export var horizontal_reach : Vector2i = Vector2i(standard_reach, standard_reach)
+@export var horizontal_reach : Vector2i = Vector2i(standard_reach, standard_reach) :
+	get() : return ( horizontal_reach + horizontal_effect ) * horizontal_multiplier
+var horizontal_effect : Vector2i = STANDARD_EFFECT_VECTOR
+var horizontal_multiplier : Vector2i = STANDARD_MULTIPLIER_VECTOR
 ## When true, the right reach will not be interrupted by obsctruction, 
 ## allowing the piece to phase through and jump over unplayable tiles
 @export var ignore_blockage_left : bool = false
@@ -152,7 +164,10 @@ var right_playables : Array[Tile] :
 
 @export_group("Depth Reach")
 ## This is the frontal and rear reach for the playable piece: Vector2i(front, rear)
-@export var depth_reach : Vector2i = Vector2i(standard_reach, standard_reach)
+@export var depth_reach : Vector2i = Vector2i(standard_reach, standard_reach) :
+	get() : return ( depth_reach + depth_effect ) * depth_multiplier
+var depth_effect : Vector2i = STANDARD_EFFECT_VECTOR
+var depth_multiplier : Vector2i = STANDARD_MULTIPLIER_VECTOR
 ## When true, the frontal reach will not be interrupted by obsctruction, 
 ## allowing the piece to phase through and jump over unplayable tiles
 @export var ignore_blockage_front : bool = false
@@ -199,7 +214,10 @@ var rear_playables : Array[Tile] :
 
 @export_group("Frontal Diagonal Reach")
 ## This is the frontal diagonal reach for the playable piece: Vector2i(front left, front right)
-@export var frontal_diagonal_reach : Vector2i = Vector2i(standard_reach, standard_reach)
+@export var frontal_diagonal_reach : Vector2i = Vector2i(standard_reach, standard_reach) :
+	get() : return ( frontal_diagonal_reach + frontal_diagonal_effect ) * frontal_diagonal_multiplier
+var frontal_diagonal_effect : Vector2i = STANDARD_EFFECT_VECTOR
+var frontal_diagonal_multiplier : Vector2i = STANDARD_MULTIPLIER_VECTOR
 ## When true, the frontal diagonal left reach will not be interrupted by obsctruction,
 ## allowing the piece to phase through and jump over unplayable tiles
 @export var ignore_blockage_frontal_left : bool = false
@@ -246,7 +264,10 @@ var frontal_right_playables : Array[Tile] :
 
 @export_group("Rear Diagonal Reach")
 ## This is the rear diagonal reach for the playable piece: Vector2i(rear left, rear right)
-@export var rear_diagonal_reach : Vector2i = Vector2i(standard_reach, standard_reach)
+@export var rear_diagonal_reach : Vector2i = Vector2i(standard_reach, standard_reach) :
+	get() : return ( rear_diagonal_reach + rear_diagonal_effect ) * rear_diagonal_multiplier
+var rear_diagonal_effect : Vector2i = STANDARD_EFFECT_VECTOR
+var rear_diagonal_multiplier : Vector2i = STANDARD_MULTIPLIER_VECTOR
 ## When true, the rear diagonal left reach will not be interrupted by obsctruction,
 ## allowing the piece to phase through and jump over unplayable tiles
 @export var ignore_blockage_rear_left : bool = false
@@ -328,7 +349,7 @@ func _ready() -> void:
 		playable.snappable_component.connected.connect(func () : _highlight_playables(false, false)))
 
 func _highlight_playables(highlight : bool = true, color : bool = true):
-	if body == null || !current_grid : return
+	if body == null || !current_grid || playable.is_deceased : return
 	for tile in playable_tiles:
 		if tile is Tile: tile.highlight.emit(highlight, color, highlight_color, highlight_strength)
 

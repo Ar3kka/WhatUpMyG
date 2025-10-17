@@ -5,7 +5,10 @@ signal grounded()
 signal connected()
 signal disconnected()
 signal recover(new_tile : Tile)
+signal attack_recover()
 
+const RECOVERY_SNAP_FORCE : float = 3.5
+const ATTACK_SNAP_FORCE : float = 12.50
 const SNAP_FORCE : float = 35
 const SNAP_Y_OFFSET : float = 0.125
 
@@ -22,7 +25,8 @@ const SNAP_Y_OFFSET : float = 0.125
 ## The recovery snap force. (It should always be lower than the regular snap force since the piece
 ## will have to travel longer distances, if maintaining a strong pull force, it will cause a mess
 ## along its path to the played tile).
-@export var recovery_snap_force : float = SNAP_FORCE * 0.10
+@export var recovery_snap_force : float = RECOVERY_SNAP_FORCE
+@export var attack_recovery_snap_force : float = ATTACK_SNAP_FORCE
 var _playable : PlayableComponent = null :
 	set(new_value) : return
 	get() :
@@ -39,7 +43,7 @@ var snap_point : Vector3 :
 		if snapped_to == null : return Vector3.ZERO
 		return Vector3(snapped_to.global_position.x, snapped_to.global_position.y + SNAP_Y_OFFSET, snapped_to.global_position.z)
 var snapped_to : Tile :
-	set(new_tile): 
+	set(new_tile):
 		snapped_to = new_tile
 		if snapped_to == null :
 			disconnected.emit()
@@ -63,11 +67,11 @@ func _is_tile_playable(supposed_tile : Tile) -> bool :
 	# Check if the piece is currently being played,
 	# and only let it snap if the tile is the current tile set in the playable component
 	# or its a new playable tile judged by the playable component.
-	return (!being_played || (being_played && (_playable.current_tile == supposed_tile || _playable.is_tile_playable(supposed_tile))))
+	return (!being_played || (being_played && !_playable.is_deceased && (_playable.current_tile == supposed_tile || _playable.is_tile_playable(supposed_tile))))
 
 func _is_tile_attackable(supposed_tile : Tile) -> bool :
-	return (!being_played || (being_played && _playable.is_tile_attackable(supposed_tile) 
-	&& _playable.damage_component && _playable.damage_component.active && _playable.damage_component.damage_points > 0))
+	return ( being_played && _playable.is_tile_attackable(supposed_tile) 
+	&& _playable.damage_component && _playable.damage_component.active && _playable.damage_component.damage_points > 0 )
 
 func _is_tile_not_being_played(supposed_tile : Tile) -> bool :
 	return (!supposed_tile.has_playable || (supposed_tile.has_playable && supposed_tile.playable_piece == _playable))
@@ -81,12 +85,16 @@ func _ready() -> void:
 		if !attacking_snap : is_recovering = false
 		snapped_to.playable_piece = _playable)
 	
-	grounded.connect( func () : 
+	grounded.connect( func () :
+		if is_recovering : stop_snapping()
 		if snapped_to == null : return
+		if _playable : connected.emit())
+	
+	attack_recover.connect( func () : 
+		if snapped_to == null || !active : return
 		if attacking_snap && !is_recovering : 
 			snapped_to.playable_piece.attacked.emit(body.damage_component)
-			return
-		if _playable : connected.emit())
+		return )
 	
 	recover.connect( func ( new_tile : Tile ) : 
 		if !recoverable : return
@@ -100,45 +108,42 @@ func _ready() -> void:
 			# Check if the tile is snappable and if the piece is being handled directly
 			if !parent.active || !parent.snappable : return
 			if is_handled :
-				if ( _is_tile_playable(parent) && _is_tile_not_being_played(parent) ) :
+				if _is_tile_playable(parent) && _is_tile_not_being_played(parent) : snapped_to = parent
+				else : if _is_tile_attackable(parent) && body.damage_component && body.draggable_component :
 					snapped_to = parent
-				else : if _is_tile_attackable(parent) && body.damage_component : 
-					snapped_to = parent
-					attacking_snap = true
-			else: if attacking_snap && parent == _playable.current_tile : 
-				pass )
-				#attacking_snap = false
+					attacking_snap = true )
 	
 	snap_area.area_exited.connect(func (area : Area3D):
 		var parent = area.get_parent_node_3d()
 		if parent is Hands: is_handled = false
 		if parent is Tile : 
-			if snapped_to == parent : stop_snapping())
+			if snapped_to == parent : stop_snapping() )
 
 func stop_snapping():
-	if !active : return
-	if snapped_to: 
-		attacking_snap = false
-		is_recovering = false
-		snapped_to = null
+	if !active || snapped_to == null : return
+	attacking_snap = false
+	is_recovering = false
+	snapped_to = null
 
 func _round_to_decimal(num, digit : int = 2):
 	return round(num * pow(10.0, digit)) / pow(10.0, digit)
 
 func is_recovering_done() -> bool :
 	var final_coordinates : Vector2 = Vector2(_playable.current_tile.global_position.x, _playable.current_tile.global_position.z)
-	return _round_to_decimal(final_coordinates.x) == _round_to_decimal(global_position.x) && _round_to_decimal(final_coordinates.y) == _round_to_decimal(final_coordinates.y)
+	return _round_to_decimal(final_coordinates.x) == _round_to_decimal(global_position.x) && _round_to_decimal(final_coordinates.y) == _round_to_decimal(global_position.z)
 
 func _process(_delta: float) -> void:
-	if !active || body == null || !snapping || ( is_grounded && !is_recovering ) : return
+	if !active || body == null || !snapping || ( is_grounded && !is_recovering ) || ( _playable && _playable.is_deceased ) : return
 	
 	var draggable_component = body.draggable_component
 	if draggable_component == null : return
 	
 	var final_snap_force : float = snap_force
-	if is_recovering : 
-		if is_recovering_done() : stop_snapping()
+	
+	if is_recovering :
+		if is_recovering_done() && attacking_snap : stop_snapping()
 		final_snap_force = recovery_snap_force
+		if attacking_snap : final_snap_force = attack_recovery_snap_force
 	
 	draggable_component.drag.emit(true, true, snap_point, final_snap_force, draggable_component.current_manipulator)
 	
