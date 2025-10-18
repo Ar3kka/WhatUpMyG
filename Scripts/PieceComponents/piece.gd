@@ -1,5 +1,8 @@
 class_name Piece extends RigidBody3D
 
+signal found_health()
+signal found_damage()
+
 ## REGULAR COMPONENT NAMES
 const HEALTH_COMPONENT = "Health"
 const DAMAGE_COMPONENT = "Damage"
@@ -122,14 +125,14 @@ func read_health_component() -> HealthComponent :
 	for node in get_children(): 
 		if node is HealthComponent:
 			if !custom_names || (custom_names && node.name == health_name):
-				health_component = node ; return node
+				health_component = node ; found_health.emit() ; return node
 	return null
 
 func read_damage_component() -> DamageComponent :
 	for node in get_children(): 
 		if node is DamageComponent:
 			if !custom_names || (custom_names && node.name == damage_name):
-				damage_component = node ; return node
+				damage_component = node ; found_damage.emit() ; return node
 	return null
 	
 func read_lookable_component() -> LookableComponent :

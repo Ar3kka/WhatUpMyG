@@ -80,6 +80,9 @@ uniform_movement = true
 uniform_reach = 7
 
 [node name="Damage" parent="." instance=ExtResource("11_pls4v")]
+active = null
+damage_points = null
+cooldown_time = null
 
 [node name="Health" parent="." instance=ExtResource("12_q07mo")]
 

@@ -5,5 +5,8 @@
 [node name="Damage" type="Node3D"]
 transform = Transform3D(0.3, 0, 0, 0, 0.3, 0, 0, 0, 0.3, 0, 0, 0)
 script = ExtResource("1_mq4m7")
+active = null
+damage_points = null
+cooldown_time = null
 
 [connection signal="ready" from="." to="." method="_on_ready"]

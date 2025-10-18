@@ -365,7 +365,10 @@ func playable_tiles_from(tile_list : Array[Tile], ignore_block : bool = ignore_b
 	var playables : Array[Tile] = []
 	for tile in tile_list :
 		if tile is Tile:
-			if ( !get_only_played_tiles && !tile.has_playable ) || ( ( get_only_played_tiles || get_played_tile) && tile.has_playable ) : playables.append(tile)
+			if (( !get_only_played_tiles && !tile.has_playable ) 
+			|| ( ( get_only_played_tiles || get_played_tile) && ( tile.has_playable && 
+			( playable.ally_attack || playable.current_team.team != tile.current_team.team )) )) : 
+				playables.append(tile)
 			if tile.has_playable && !ignore_block : return playables
 	return playables
 

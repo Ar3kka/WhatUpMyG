@@ -32,6 +32,14 @@ var horizontal_drag : bool = false
 var rotate_left : bool = false
 var rotate_right : bool = false
 
+var team : int :
+	set(new_value) : 
+		if manipulator == null : return
+		manipulator.team = new_value
+	get() :
+		if manipulator == null : return 0
+		return manipulator.team
+
 func _ready() -> void:
 	if !manipulator : manipulator = get_parent_node_3d()
 	finger = %Finger
@@ -59,13 +67,16 @@ func _process(_delta):
 	if !manipulator || !manipulator.eyes: return
 	
 	var camera : Eyes = manipulator.eyes
-	var team = manipulator.team
 	
 	###### RAYCAST
 	camera.blink()
 	
 	###### SWITCH DRAGGING TYPE
 	if Input.is_action_just_pressed("Switch Drag Mode"): holding_drag = !holding_drag
+	
+	if Input.is_action_just_pressed("Change Team"): 
+		if team == 1 : team = 2
+		else : if team == 2 : team = 1
 	
 	###### DETECT LOOKABLE, SELECTABLE AND DRAGGABLE OBJECT
 	var looked_at_nothing : bool = true

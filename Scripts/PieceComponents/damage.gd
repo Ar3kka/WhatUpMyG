@@ -11,10 +11,12 @@ const STANDARD_MULTIPLIER : float = 1.0
 var effect : float = STANDARD_EFFECT
 var multiplier : float = STANDARD_MULTIPLIER
 @export var cooldown_time : float = 2.0
+var playable_component : PlayableComponent :
+	set(new_value) : return
+	get() : return body.playable_component
 
 func hit(health_component : HealthComponent):
-	health_component.hit.emit(damage_points)
-	print(body, ": toma mis: ", damage_points, " pinchi burroide menso: ", health_component.body)
+	health_component.hit.emit(self)
 
 func _on_ready():
 	if body == null : body = get_parent_node_3d()

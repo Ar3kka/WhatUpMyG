@@ -35,6 +35,7 @@ var skin : StandardMaterial3D
 @export var snappable : bool = true
 ## Wether or not this tile is a playable tile.
 @export var is_playable : bool = true
+@export var accept_non_playables : bool = false
 var _snap_area : Area3D
 
 @export_category("Reaction Settings")
@@ -42,7 +43,7 @@ var _snap_area : Area3D
 ## with the occupier or any stimuli that might try to move this tile. If not set, the tile will automatically
 ## look for a child node that is a movable component.
 @export var movable : MovableComponent
-@export_group("Being played reaction")
+@export_group("Connect reaction")
 ## When true, the tile will be pushed down the specified amount by the variable push_down_by when
 ## it has been occupied by a piece that is grounded (not being dragged). Only works if this tile has a
 ## movable component as a child node.
@@ -164,6 +165,7 @@ func _ready() -> void:
 			# Check if the tile already has a playable piece saved,
 			# and if the entering piece is another one that is not the playable piece.
 			if has_playable && playable_piece != parent._playable : return
+			if parent._playable && parent._playable.is_deceased : return
 			occupy.emit(parent.body))
 	
 	_snap_area.area_exited.connect(func (area : Area3D):
@@ -175,6 +177,7 @@ func _ready() -> void:
 		if parent is SnappableComponent : 
 			if occupier == null : return
 			if parent.snapped_to == self : occupier.snappable_component.stop_snapping()
+			if occupier.snappable_component != parent : return
 			occupy.emit(null))
 
 func set_color(new_tint : Color):

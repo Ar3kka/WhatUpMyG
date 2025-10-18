@@ -7,6 +7,7 @@ signal play(new_tile : Tile)
 signal loaded_dependencies()
 signal attacked(attacked_by : DamageComponent)
 signal death()
+signal kill(killed_piece : PlayableComponent)
 
 ## If not active, no built in components will interact with it, as if it
 ## didn't exist.
@@ -20,7 +21,6 @@ var is_deceased : bool :
 	set(new_value) : return
 	get() :
 		if !_has_dependencies || body.health_component == null : return false
-		if !body.health_component.alive : death.emit()
 		return !body.health_component.alive
 @export_group("Dependencies")
 ## The snappable component for dependency.
@@ -54,6 +54,7 @@ var is_recovering : bool :
 	get() :
 		if !_has_dependencies : return false
 		return snappable_component.is_recovering
+var ally_attack : bool = false
 
 ## Returns if dependencies are found, cannot be set.
 var _has_dependencies : bool :
@@ -96,6 +97,10 @@ var attack_tiles : Array [Tile] :
 		if attack_reach.mimic_reach_of != null: return attack_reach.mimic_reach_of.get_playable_tiles()
 		return attack_reach.get_playable_tiles()
 
+func stop_highlight() :
+	if attack_reach : attack_reach._highlight_playables(false, false)
+	if movement_reach : movement_reach._highlight_playables(false, false)
+
 func get_playable_tiles() :
 	attack_tiles
 	movement_tiles
@@ -110,10 +115,22 @@ func _ready():
 		if health_component == null : return
 		attacked_by.hit( health_component ))
 	play.connect( func (new_tile : Tile) :
-		current_tile = new_tile)
+		current_tile = new_tile )
 	snappable_component.connected.connect(func () : 
 		current_tile = snappable_component.snapped_to)
-	death.connect( func () : current_tile = null )
+	body.found_health.connect(func () : 
+		body.health_component.death.connect(func () : death.emit() ))
+	death.connect(func () :
+		current_tile.occupy.emit(null)
+		current_tile.disconnected.emit()
+		current_tile = null )
+	kill.connect(func (killed_piece : PlayableComponent) :
+		stop_highlight()
+		snappable_component.stop_snapping()
+		snappable_component.snapped_to = killed_piece.current_tile
+		play.emit(killed_piece.current_tile)
+		current_tile.occupy.emit(body)
+		get_playable_tiles() )
 
 ## Judges whether or not the provided tile is playable by searching it within the
 ## currently playable tiles.
@@ -125,6 +142,7 @@ func is_tile_attackable(attacked_tile : Tile) -> bool:
 	if !active || current_grid == null || attack_reach == null : return false
 	return ( attack_reach.is_tile_playable(attacked_tile) 
 	&& attacked_tile.playable_piece
+	&& ( attacked_tile.playable_piece.current_team.team != current_team.team || ally_attack )
 	&& attacked_tile.playable_piece.health_component
 	&& attacked_tile.playable_piece.health_component.active
 	&& !attacked_tile.playable_piece.health_component.invincible )

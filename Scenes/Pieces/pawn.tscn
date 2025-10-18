@@ -55,6 +55,9 @@ body = NodePath("..")
 
 [node name="Damage" parent="." node_paths=PackedStringArray("body") instance=ExtResource("3_04pu8")]
 body = NodePath("..")
+active = null
+damage_points = null
+cooldown_time = null
 
 [node name="Draggable" parent="." instance=ExtResource("4_w368m")]
 

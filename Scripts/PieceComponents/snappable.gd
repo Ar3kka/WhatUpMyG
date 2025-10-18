@@ -107,7 +107,7 @@ func _ready() -> void:
 		if parent is Tile:
 			# Check if the tile is snappable and if the piece is being handled directly
 			if !parent.active || !parent.snappable : return
-			if is_handled :
+			if is_handled && _playable && !_playable.is_deceased:
 				if _is_tile_playable(parent) && _is_tile_not_being_played(parent) : snapped_to = parent
 				else : if _is_tile_attackable(parent) && body.damage_component && body.draggable_component :
 					snapped_to = parent
