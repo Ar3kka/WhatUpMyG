@@ -7,10 +7,10 @@ const STANDARD_HIGHLIGHT_STRENGTH : float = 0.5
 const STANDARD_REACH : int = 1
 const STANDARD_MOVEMENT_COLOR : Color = Color.AQUA
 const STANDARD_ATTACK_COLOR : Color = Color.DEEP_PINK
-const STANDARD_EFFECT_VECTOR : Vector2i = Vector2i.ZERO
-const STANDARD_MULTIPLIER_VECTOR : Vector2i = Vector2i.ZERO
 const STANDARD_EFFECT : float = 0.0
 const STANDARD_MULTIPLIER : float = 1.0
+const STANDARD_EFFECT_VECTOR : Vector2i = Vector2i(STANDARD_EFFECT, STANDARD_EFFECT)
+const STANDARD_MULTIPLIER_VECTOR : Vector2i = Vector2i(STANDARD_MULTIPLIER, STANDARD_MULTIPLIER)
 
 ## Standard Directions
 const HORIZONTAL_LEFT : Vector2i = Vector2i(0, 1)
@@ -343,6 +343,7 @@ func _ready() -> void:
 	if playable == null : return
 	playable.loaded_dependencies.connect(func () : 
 		playable.draggable_component.started_dragging.connect(func () : 
+			if playable.snappable_component && playable.snappable_component._hit_reset : return
 			get_playable_tiles()
 			_highlight_playables(raise_tiles, highlight_tiles))
 		playable.snappable_component.grounded.connect(func () : _highlight_playables(false, false))
@@ -351,7 +352,9 @@ func _ready() -> void:
 func _highlight_playables(highlight : bool = true, color : bool = true):
 	if body == null || !current_grid || playable.is_deceased : return
 	for tile in playable_tiles:
-		if tile is Tile: tile.highlight.emit(highlight, color, highlight_color, highlight_strength)
+		if tile is Tile: 
+			if highlight : tile.highlight(color, highlight_color, highlight_strength)
+			else : tile.unhighlight()
 
 ## Judges whether or not the provided tile is playable by searching it within the
 ## currently playable tiles.
@@ -367,7 +370,7 @@ func playable_tiles_from(tile_list : Array[Tile], ignore_block : bool = ignore_b
 		if tile is Tile:
 			if (( !get_only_played_tiles && !tile.has_playable ) 
 			|| ( ( get_only_played_tiles || get_played_tile) && ( tile.has_playable && 
-			( playable.ally_attack || playable.current_team.team != tile.current_team.team )) )) : 
+			( playable.friendly_fire || playable.current_team.id != tile.current_team.id )) )) : 
 				playables.append(tile)
 			if tile.has_playable && !ignore_block : return playables
 	return playables

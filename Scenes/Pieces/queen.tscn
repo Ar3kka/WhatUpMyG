@@ -32,9 +32,10 @@ _surfaces = [{
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_gs1eq"]
 albedo_color = Color(0, 0, 0, 1)
 
-[node name="Queen" type="RigidBody3D"]
+[node name="Queen" type="RigidBody3D" node_paths=PackedStringArray("skin")]
 collision_mask = 3
 script = ExtResource("1_ieefp")
+skin = NodePath("Mesh/QUEEN")
 
 [node name="CollisionHitbox" type="CollisionShape3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.580669, 0)
@@ -61,7 +62,6 @@ active = true
 outline = NodePath("../Mesh/Outline")
 
 [node name="Team" parent="." instance=ExtResource("6_dpgc3")]
-team = 1
 
 [node name="Rotatable" parent="." instance=ExtResource("7_kd7fw")]
 
@@ -70,19 +70,14 @@ team = 1
 [node name="Playable" parent="." instance=ExtResource("10_5wri7")]
 
 [node name="Movement Reach" parent="Playable" index="0"]
-uniform_movement = true
-uniform_reach = 7
+standard_reach = 7
 
 [node name="Attack Reach" parent="Playable" index="1"]
 active = true
+standard_reach = 7
 get_only_played_tiles = true
-uniform_movement = true
-uniform_reach = 7
 
 [node name="Damage" parent="." instance=ExtResource("11_pls4v")]
-active = null
-damage_points = null
-cooldown_time = null
 
 [node name="Health" parent="." instance=ExtResource("12_q07mo")]
 

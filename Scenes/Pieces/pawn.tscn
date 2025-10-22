@@ -32,9 +32,10 @@ _surfaces = [{
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_3865y"]
 albedo_color = Color(0, 0, 0, 1)
 
-[node name="Pawn" type="RigidBody3D"]
+[node name="Pawn" type="RigidBody3D" node_paths=PackedStringArray("skin")]
 collision_mask = 3
 script = ExtResource("1_uhxor")
+skin = NodePath("Mesh/PAWN")
 
 [node name="CollisionHitbox" type="CollisionShape3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.38284, 0)
@@ -55,9 +56,6 @@ body = NodePath("..")
 
 [node name="Damage" parent="." node_paths=PackedStringArray("body") instance=ExtResource("3_04pu8")]
 body = NodePath("..")
-active = null
-damage_points = null
-cooldown_time = null
 
 [node name="Draggable" parent="." instance=ExtResource("4_w368m")]
 
@@ -70,7 +68,6 @@ active = true
 outline = NodePath("../Mesh/Outline")
 
 [node name="Team" parent="." instance=ExtResource("8_kuxq2")]
-team = 1
 
 [node name="Rotatable" parent="." instance=ExtResource("9_wxs05")]
 
@@ -84,9 +81,9 @@ health_component = NodePath("../Health")
 damage_component = NodePath("../Damage")
 
 [node name="Movement Reach" parent="Playable" index="0"]
+horizontal_reach = Vector2i(1, 1)
 lock_left = true
 lock_right = true
-depth_reach = Vector2i(1, 0)
 lock_rear = true
 lock_frontal_left_diagonal = true
 lock_frontal_right_diagonal = true
@@ -96,12 +93,11 @@ lock_rear_right_diagonal = true
 [node name="Attack Reach" parent="Playable" index="1"]
 active = true
 get_only_played_tiles = true
-uniform_movement = true
-uniform_reach = 1
 lock_left = true
 lock_right = true
 lock_front = true
 lock_rear = true
+frontal_diagonal_reach = Vector2i(1, 1)
 lock_rear_left_diagonal = true
 lock_rear_right_diagonal = true
 

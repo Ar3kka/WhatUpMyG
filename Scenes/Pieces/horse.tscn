@@ -32,9 +32,10 @@ _surfaces = [{
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_8yyqj"]
 albedo_color = Color(0, 0, 0, 1)
 
-[node name="Horse" type="RigidBody3D"]
+[node name="Horse" type="RigidBody3D" node_paths=PackedStringArray("skin")]
 collision_mask = 3
 script = ExtResource("1_w76fb")
+skin = NodePath("Mesh/HORSE")
 
 [node name="CollisionHitbox" type="CollisionShape3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.00236034, 0.445736, 0.0269087)
@@ -61,7 +62,6 @@ active = true
 outline = NodePath("../Mesh/Outline")
 
 [node name="Team" parent="." instance=ExtResource("6_b0usl")]
-team = 1
 
 [node name="Rotatable" parent="." instance=ExtResource("7_1lect")]
 
@@ -82,9 +82,6 @@ mirror_uniform_pattern = true
 uniform_pattern = Vector2i(2, -1)
 
 [node name="Damage" parent="." instance=ExtResource("11_xkt54")]
-active = null
-damage_points = null
-cooldown_time = null
 
 [node name="Health" parent="." instance=ExtResource("12_u5fs3")]
 

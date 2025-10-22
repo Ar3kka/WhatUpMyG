@@ -91,9 +91,7 @@ func _ready() -> void:
 		if override_drag_strength : _custom_dragging_strength = strength)
 
 func _process(delta: float) -> void:
-	if !active: return
-	
-	if body == null: return
+	if !active || body == null : return
 	
 	if !dragged() : return
 	

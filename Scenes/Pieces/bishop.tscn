@@ -32,9 +32,10 @@ _surfaces = [{
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_5pmi2"]
 albedo_color = Color(0, 0, 0, 1)
 
-[node name="Bishop" type="RigidBody3D"]
+[node name="Bishop" type="RigidBody3D" node_paths=PackedStringArray("skin")]
 collision_mask = 3
 script = ExtResource("1_y6o4j")
+skin = NodePath("Mesh/BISHOP")
 
 [node name="CollisionHitbox" type="CollisionShape3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.487829, 0)
@@ -62,7 +63,6 @@ active = true
 outline = NodePath("../Mesh/Outline")
 
 [node name="Team" parent="." instance=ExtResource("6_n2sq1")]
-team = 1
 
 [node name="Rotatable" parent="." instance=ExtResource("7_dij6e")]
 
@@ -92,9 +92,6 @@ lock_rear = true
 [node name="Health" parent="." instance=ExtResource("11_p6t58")]
 
 [node name="Damage" parent="." instance=ExtResource("12_0otbx")]
-active = null
-damage_points = null
-cooldown_time = null
 
 [editable path="Mesh"]
 [editable path="Playable"]

@@ -32,13 +32,13 @@ var horizontal_drag : bool = false
 var rotate_left : bool = false
 var rotate_right : bool = false
 
-var team : int :
+var current_team : int :
 	set(new_value) : 
 		if manipulator == null : return
-		manipulator.team = new_value
+		manipulator.team_id = new_value
 	get() :
 		if manipulator == null : return 0
-		return manipulator.team
+		return manipulator.team_id
 
 func _ready() -> void:
 	if !manipulator : manipulator = get_parent_node_3d()
@@ -75,8 +75,8 @@ func _process(_delta):
 	if Input.is_action_just_pressed("Switch Drag Mode"): holding_drag = !holding_drag
 	
 	if Input.is_action_just_pressed("Change Team"): 
-		if team == 1 : team = 2
-		else : if team == 2 : team = 1
+		if current_team == 1 : current_team = 2
+		else : if current_team == 2 : current_team = 1
 	
 	###### DETECT LOOKABLE, SELECTABLE AND DRAGGABLE OBJECT
 	var looked_at_nothing : bool = true
@@ -138,10 +138,10 @@ func _process(_delta):
 	
 	# Detect if object is in your team in order to interact with it:
 	var team_component : TeamComponent = draggable_object.team_component
-	if team_component != null: team_component.observer_team = team # set observing player team id to the team component
+	if team_component != null: team_component.observer_team_id = current_team # set observing player team id to the team component
 	# if there's a team component and it's active and the team id of the obj is above 0 
 	# and the team id of the obj is different from your team, skip
-	if team_component != null && team_component.active && team_component.team > 0 && team_component.team != team : return
+	if team_component != null && team_component.active && team_component.id > 0 && team_component.id != current_team : return
 	
 	if selected_object == null: return
 	

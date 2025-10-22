@@ -3,10 +3,12 @@
 ## For this component to work, the body piece has to have an active draggable component and snappable component.
 class_name PlayableComponent extends Node3D
 
-signal play(new_tile : Tile)
 signal loaded_dependencies()
+signal played()
+signal unplayed()
+signal death(by_take : bool)
+
 signal attacked(attacked_by : DamageComponent)
-signal death()
 signal kill(killed_piece : PlayableComponent)
 
 ## If not active, no built in components will interact with it, as if it
@@ -54,7 +56,7 @@ var is_recovering : bool :
 	get() :
 		if !_has_dependencies : return false
 		return snappable_component.is_recovering
-var ally_attack : bool = false
+var friendly_fire : bool = false
 
 ## Returns if dependencies are found, cannot be set.
 var _has_dependencies : bool :
@@ -70,10 +72,10 @@ var being_played : bool = false :
 var current_tile : Tile :
 	set(new_value) :
 		if current_tile != null && new_value != null && current_tile != new_value:
-			current_tile.disconnected.emit()
+			current_tile.disconnect_playable()
 		current_tile = new_value
 		if current_tile == null : return
-		current_tile.connected.emit()
+		current_tile.connect_to(self)
 		movement_tiles
 		attack_tiles
 ## The current grid the currently played tile belongs to.
@@ -105,31 +107,43 @@ func get_playable_tiles() :
 	attack_tiles
 	movement_tiles
 
+func play(new_tile : Tile) :
+	current_tile = new_tile
+	played.emit()
+
+func unplay() :
+	current_tile = null
+	unplayed.emit()
+
 func _ready():
 	if body == null : body = get_parent_node_3d()
 	_get_snappable()
 	_get_draggable()
 	if !_has_dependencies : return
 	loaded_dependencies.emit()
+	
 	attacked.connect( func(attacked_by : DamageComponent) : 
 		if health_component == null : return
-		attacked_by.hit( health_component ))
-	play.connect( func (new_tile : Tile) :
-		current_tile = new_tile )
+		attacked_by.hit( health_component )
+		if snappable_component && health_component.alive : snappable_component.hit_recover.emit() )
+	
 	snappable_component.connected.connect(func () : 
-		current_tile = snappable_component.snapped_to)
+		play(snappable_component.snapped_to) )
+		
 	body.found_health.connect(func () : 
 		body.health_component.death.connect(func () : death.emit() ))
-	death.connect(func () :
-		current_tile.occupy.emit(null)
-		current_tile.disconnected.emit()
-		current_tile = null )
+	
+	death.connect(func (by_take : bool = true) :
+		if snappable_component : snappable_component.stop_snapping()
+		if draggable_component : draggable_component.stop_dragging()
+		if !by_take : current_tile.disconnect_playable() )
+	
 	kill.connect(func (killed_piece : PlayableComponent) :
 		stop_highlight()
 		snappable_component.stop_snapping()
-		snappable_component.snapped_to = killed_piece.current_tile
-		play.emit(killed_piece.current_tile)
-		current_tile.occupy.emit(body)
+		snappable_component.snap_to(killed_piece.current_tile)
+		play(killed_piece.current_tile)
+		current_tile.occupy(body)
 		get_playable_tiles() )
 
 ## Judges whether or not the provided tile is playable by searching it within the
@@ -142,7 +156,7 @@ func is_tile_attackable(attacked_tile : Tile) -> bool:
 	if !active || current_grid == null || attack_reach == null : return false
 	return ( attack_reach.is_tile_playable(attacked_tile) 
 	&& attacked_tile.playable_piece
-	&& ( attacked_tile.playable_piece.current_team.team != current_team.team || ally_attack )
+	&& ( attacked_tile.playable_piece.current_team.id != current_team.id || friendly_fire )
 	&& attacked_tile.playable_piece.health_component
 	&& attacked_tile.playable_piece.health_component.active
 	&& !attacked_tile.playable_piece.health_component.invincible )

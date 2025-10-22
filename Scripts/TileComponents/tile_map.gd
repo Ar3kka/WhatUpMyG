@@ -146,7 +146,7 @@ func generate_rows(final_size : Vector2i = grid_size, custom_generation_directio
 			if current_switch_pattern && color_switch_index + 1 < color_pattern.size() : color_switch_index += 1
 			else: color_switch_index = 0
 		# Initialize the new row of vertical tiles.
-		var tile_array : Array = []
+		var tile_array : Array = [] 
 		## Horizontal Tiles
 		for x in range(final_size.x):
 			# Instantiate the new tile and set its position and id.

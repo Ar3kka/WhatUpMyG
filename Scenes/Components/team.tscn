@@ -4,4 +4,3 @@
 
 [node name="Team" type="Node3D"]
 script = ExtResource("1_8loyy")
-team = 2

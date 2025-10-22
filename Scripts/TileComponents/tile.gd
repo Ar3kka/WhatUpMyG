@@ -1,11 +1,14 @@
 class_name Tile extends Node3D
 
-signal occupy(occupier : Piece)
+signal occupied()
+signal unoccupied()
 signal snap()
-signal highlight(new_raise_value : bool, new_highlight_value : bool, new_highlight_color : Color)
+signal highlighted()
+signal unhighlighted()
 signal connected()
 signal disconnected()
-signal press(new_press_value : bool)
+signal pressed()
+signal unpressed()
 signal instantiated()
 
 const SCENE : PackedScene = preload("res://Scenes/Tiles/tile.tscn")
@@ -50,7 +53,7 @@ var _snap_area : Area3D
 @export var pressable : bool = true
 ## The multiplication for the pushing (times its own size) where 1.0 is equal to its height (0.250)
 @export var press_down_by : float = PUSH_DOWN_MULTIPLIER
-var _pressing_down : bool = false
+var is_pressing : bool
 @export_group("Playable reaction")
 ## When true, the tile will be pushed up the specified amount by the variable raise_up_by when
 ## it its been deemed playable by the currently dragged playable piece (not grounded). Only works if this tile has a
@@ -67,8 +70,8 @@ var _pressing_down : bool = false
 @export var highlight_strength : float = HIGHLIGHT_STRENGTH
 ## The multiplication for the highlight push (times its own size) where 1.0 is equal to its height (0.250)
 @export var raise_up_by : float = RAISE_UP_MULTIPLIER
-var _highlight_push : bool = false
-var highlight_press : bool = false
+var is_highlighting : bool = false
+#var highlight_press : bool = false
 
 var occupier : Piece
 var has_playable : bool :
@@ -83,20 +86,7 @@ var current_team : TeamComponent :
 	get() :
 		if !has_playable : return
 		return playable_piece.body.team_component
-
-func raise_up():
-	if !movable || !highlightable || !_highlight_push: return
-	movable.move_up(raise_up_by)
-
-func press_down():
-	if !movable || !pressable || !_pressing_down: return
-	movable.move_down(press_down_by)
-
-func get_movable() -> MovableComponent :
-	for node in get_children() :
-		if node is MovableComponent : movable = node
-	return movable
-
+	
 func instantiate(new_active_state : bool = true, new_snappable_state : bool = true) -> Tile:
 	var new_tile : Tile = SCENE.instantiate()
 	new_tile.active = new_active_state
@@ -104,84 +94,115 @@ func instantiate(new_active_state : bool = true, new_snappable_state : bool = tr
 	new_tile.instantiated.emit()
 	return new_tile
 
-var is_playable_deceased : bool :
-	get() : return occupier && occupier.is_playable && !occupier.is_playing
+func highlight(color_highlight : bool, new_color : Color, new_highlight_strength : float = highlight_strength) :
+	if !highlightable : return
+	is_highlighting = true
+	if color_highlight :
+		highlight_color = new_color
+		highlight_strength = new_highlight_strength
+		set_color(lerp(tint, highlight_color, highlight_strength))
+	highlighted.emit()
+	if playable_piece : return
+	raise_up()
+
+func unhighlight() :
+	if playable_piece == null : reset_position()
+	is_highlighting = false
+	highlight_color = tint
+	set_color(tint)
+	unhighlighted.emit()
+
+func occupy(new_occupier : Piece) :
+	if new_occupier == null : return unocuppy()
+	if ( is_highlighting && new_occupier != occupier &&
+	new_occupier.snappable_component && new_occupier.snappable_component.is_handled ) : reset_position()
+	occupier = new_occupier
+	occupied.emit()
+
+func unocuppy() :
+	if is_highlighting : raise_up()
+	else : if !has_playable : reset_position()
+	occupier = null 
+	unoccupied.emit()
+
+func press() :
+	if !pressable : return
+	is_pressing = true
+	press_down()
+	pressed.emit()
+
+func unpress() :
+	if occupier != null || has_playable : return
+	reset_position()
+	is_pressing = false
+	unpressed.emit()
+
+func raise_up():
+	if movable == null || !is_highlighting || has_playable : return
+	movable.change_to_state(1)
+
+func press_down():
+	if movable == null || !pressable || !is_pressing : return
+	movable.change_to_state(2)
+
+func reset_position() :
+	if movable == null || ( has_playable && !playable_piece.is_deceased ) : return
+	movable.reset.emit(true)
+
+func connect_to(new_playable_piece : PlayableComponent):
+	press()
+	playable_piece = new_playable_piece
+	connected.emit()
+
+func disconnect_playable():
+	playable_piece = null
+	unpress()
+	disconnected.emit()
+
+func set_movable() -> MovableComponent :
+	for node in get_children() :
+		if node is MovableComponent : movable = node
+	movable.vertical_multiplier = Vector2(raise_up_by, press_down_by)
+	movable.reset_vector_states()
+	return movable
+
+func set_color(new_tint : Color):
+	if appearance == null : return
+	skin = StandardMaterial3D.new()
+	skin.albedo_color = new_tint
+	appearance.set_surface_override_material(0, skin)
+
+func _is_different_playable_and_not_attacking(snappable : SnappableComponent) -> bool :
+	return has_playable && playable_piece != snappable._playable && !snappable.attacking_snap
+
+func _is_playable_deceased(snappable : SnappableComponent) -> bool :
+	return snappable._playable && snappable._playable.is_deceased
 
 func _ready() -> void:
-	get_movable()
+	set_movable()
 	appearance = %Mesh
 	_snap_area = %Snap
 	set_color(tint)
 	
-	occupy.connect(func (new_occupier : Piece) :
-		if _highlight_push: 
-			if new_occupier != null && new_occupier != occupier :
-				if new_occupier.snappable_component && new_occupier.snappable_component.is_handled : 
-					movable.reset.emit(true)
-					highlight_press = true
-			else : if highlight_press :
-					movable.move_up(raise_up_by)
-					highlight_press = false
-		occupier = new_occupier )
-	
-	highlight.connect(func (new_raise_value: bool, new_highlight_value : bool, new_highlight_color : Color, new_highlight_strength : float = highlight_strength) :
-		if !highlightable || movable == null : return
-		if !new_highlight_value && _highlight_push :
-			if playable_piece == null && !_pressing_down : movable.reset.emit(true)
-			_highlight_push = new_raise_value
-			highlight_color = tint
-			set_color(tint)
-			return
-		if _highlight_push && new_highlight_value : return
-		_highlight_push = new_raise_value
-		if new_highlight_value :
-			highlight_color = new_highlight_color
-			highlight_strength = new_highlight_strength
-			set_color(lerp(tint, highlight_color, highlight_strength))
-		if playable_piece && _pressing_down : return
-		raise_up())
-	
-	press.connect(func (new_press_value : bool) :
-		if !pressable || movable == null : return
-		if !new_press_value && _pressing_down: 
-			movable.reset.emit(true)
-			_pressing_down = new_press_value
-			return
-		if _pressing_down && new_press_value : return
-		_pressing_down = new_press_value
-		press_down())
-	
-	connected.connect(func () : press.emit(true))
-	disconnected.connect(func () : 
-		press.emit(false)
-		playable_piece = null)
-	
-	if !_snap_area : return
+	if _snap_area == null : return
 	
 	_snap_area.area_entered.connect(func (area : Area3D):
 		var parent = area.get_parent_node_3d()
-		#if parent is Hands :
 		if parent is SnappableComponent:
 			# Check if the tile already has a playable piece saved,
 			# and if the entering piece is another one that is not the playable piece.
-			if has_playable && playable_piece != parent._playable : return
-			if parent._playable && parent._playable.is_deceased : return
-			occupy.emit(parent.body))
+			if _is_different_playable_and_not_attacking(parent) || _is_playable_deceased(parent) : return
+			occupy(parent.body) )
 	
 	_snap_area.area_exited.connect(func (area : Area3D):
 		var parent = area.get_parent_node_3d()
 		if parent is Hands :
 			if parent.draggable_object != occupier || occupier == null : return
 			occupier.snappable_component.stop_snapping()
+			unocuppy()
 			return
 		if parent is SnappableComponent : 
 			if occupier == null : return
 			if parent.snapped_to == self : occupier.snappable_component.stop_snapping()
-			if occupier.snappable_component != parent : return
-			occupy.emit(null))
-
-func set_color(new_tint : Color):
-	if !appearance : return
-	skin = StandardMaterial3D.new()
-	skin.albedo_color = new_tint
-	appearance.set_surface_override_material(0, skin)
+			if occupier.snappable_component != parent || ( has_playable && playable_piece.snappable_component == occupier.snappable_component ) : return
+			unocuppy() )

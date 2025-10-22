@@ -4,6 +4,7 @@ signal found_health()
 signal found_damage()
 
 ## REGULAR COMPONENT NAMES
+const STANDARD_COLOR = Color.WHITE_SMOKE
 const HEALTH_COMPONENT = "Health"
 const DAMAGE_COMPONENT = "Damage"
 const DRAGGABLE_COMPONENT = "Draggable"
@@ -17,6 +18,42 @@ const PLAYABLE_COMPONENT = "Playable"
 
 @export var active : bool = true
 @export var manipulator : Manipulator
+@export var team_id : int = 0 :
+	set(new_value) :
+		if team_component == null : return
+		team_component.id = new_value
+	get() :
+		if team_component == null : return team_id
+		return team_component.id
+@export_group("Color Settings")
+@export var skin : MeshInstance3D
+@export var tint : Color = STANDARD_COLOR :
+	set(new_tint): 
+		tint = new_tint
+		set_color(tint)
+@export var block_color : bool = false
+
+var health_points : float :
+	set(new_value) : return
+	get() :
+		if health_component == null : return health_points
+		return health_component.health_points
+var damage_points : float :
+	set(new_value) : return
+	get() :
+		if damage_points == null : return damage_points
+		return damage_component.damage_points
+var is_playable : bool :
+	set(new_value) : return
+	get () :
+		if playable_component == null : return false
+		return true
+var is_playing : bool :
+	set(new_value) : return
+	get() :
+		if !is_playable || ( is_playable && ( playable_component.is_deceased || !playable_component.active ) ) : return false
+		return true
+
 @export_group("Set Components") 
 ## The component that makes this 3d rigidbody have health
 @export var health_component : HealthComponent :
@@ -94,32 +131,6 @@ const PLAYABLE_COMPONENT = "Playable"
 @export var playable_name : String = PLAYABLE_COMPONENT
 
 var components : Array[Node3D] = []
-
-var team_id : int :
-	set(new_value) : return
-	get() :
-		if team_component == null : return team_id
-		return team_component.team 
-var health_points : float :
-	set(new_value) : return
-	get() :
-		if health_component == null : return health_points
-		return health_component.health_points
-var damage_points : float :
-	set(new_value) : return
-	get() :
-		if damage_points == null : return damage_points
-		return damage_component.damage_points
-var is_playable : bool :
-	set(new_value) : return
-	get () :
-		if playable_component == null : return false
-		return true
-var is_playing : bool :
-	set(new_value) : return
-	get() :
-		if !is_playable || ( is_playable && ( playable_component.is_deceased || !playable_component.active ) ) : return false
-		return true
 
 func read_health_component() -> HealthComponent :
 	for node in get_children(): 
@@ -225,6 +236,12 @@ func _populate_components_array(restart : bool):
 	if snappable_component && !components.has(playable_component) : 
 		components.append(snappable_component)
 
+func set_color(new_tint : Color):
+	if skin == null || block_color : return
+	var new_skin = StandardMaterial3D.new()
+	new_skin.albedo_color = new_tint
+	skin.set_surface_override_material(0, new_skin)
+
 func read_components():
 	if !active: return
 	read_health_component()
@@ -243,3 +260,4 @@ func read_components():
 func _ready() -> void:
 	if !active : return
 	if populate: read_components()
+	set_color(tint)

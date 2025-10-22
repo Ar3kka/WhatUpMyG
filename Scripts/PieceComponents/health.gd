@@ -32,7 +32,7 @@ func _on_health_area_area_entered(area: Area3D):
 
 func _on_ready():
 	if body == null : body = get_parent_node_3d()
-	hit.connect(func(damage_component : DamageComponent):
+	hit.connect( func(damage_component : DamageComponent):
 		health_points -= damage_component.damage_points
 		if alive : return
 		if damage_component.playable_component : damage_component.playable_component.kill.emit(playable_component)

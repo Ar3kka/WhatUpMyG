@@ -9,8 +9,7 @@ signal found_hands()
 @export var ID : int :
 	set(new_ID): return
 	get(): return get_instance_id()
-@export var team : int = 0
-
+@export var team_id : int = 0
 @export var eyes : Camera3D :
 	set(new_eyes) :
 		eyes = new_eyes

@@ -35,9 +35,10 @@ _surfaces = [{
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_tghyl"]
 albedo_color = Color(0, 0, 0, 1)
 
-[node name="Tower" type="RigidBody3D"]
+[node name="Tower" type="RigidBody3D" node_paths=PackedStringArray("skin")]
 collision_mask = 3
 script = ExtResource("1_gfquu")
+skin = NodePath("Mesh/TOWER")
 
 [node name="CollisionHitbox" type="CollisionShape3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.402826, 0)
@@ -75,12 +76,12 @@ body = NodePath("..")
 [node name="Rotatable" parent="." instance=ExtResource("9_c1pjq")]
 
 [node name="Snappable" parent="." instance=ExtResource("9_0ro88")]
+auto_recovery = true
 
 [node name="Playable" parent="." instance=ExtResource("10_0ro88")]
 
 [node name="Movement Reach" parent="Playable" index="0"]
-uniform_movement = true
-uniform_reach = 7
+standard_reach = 7
 lock_frontal_left_diagonal = true
 lock_frontal_right_diagonal = true
 lock_rear_left_diagonal = true
@@ -88,9 +89,8 @@ lock_rear_right_diagonal = true
 
 [node name="Attack Reach" parent="Playable" index="1"]
 active = true
+standard_reach = 7
 get_only_played_tiles = true
-uniform_movement = true
-uniform_reach = 7
 lock_frontal_left_diagonal = true
 lock_frontal_right_diagonal = true
 lock_rear_left_diagonal = true
