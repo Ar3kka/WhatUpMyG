@@ -7,6 +7,7 @@ signal change_team(player_team : int, new_team_id : int)
 ## The team ID for the given body, if set to 0, this object will count as teamless and any observer will be able to interact with it.
 @export var id : int = 0
 var observer_team_id : int = 0
+var current_team : Team
 
 func _ready():
 	if body == null: body = get_parent_node_3d()

@@ -1,6 +1,6 @@
 [gd_scene load_steps=3 format=3 uid="uid://ddpcdx1omf0vo"]
 
-[ext_resource type="Script" uid="uid://bp7p6ixnuil88" path="res://Scripts/PieceComponents/snappable.gd" id="1_43m3h"]
+[ext_resource type="Script" uid="uid://bp7p6ixnuil88" path="res://Scripts/PieceComponents/Selection&Movement/snappable.gd" id="1_43m3h"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_43m3h"]
 

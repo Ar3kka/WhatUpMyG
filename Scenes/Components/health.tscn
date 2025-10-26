@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://bm8ty1amlhee7"]
 
-[ext_resource type="Script" uid="uid://cb30p5db36y03" path="res://Scripts/PieceComponents/health.gd" id="1_mahij"]
+[ext_resource type="Script" uid="uid://cb30p5db36y03" path="res://Scripts/PieceComponents/Playable/health.gd" id="1_mahij"]
 
 [node name="Health" type="Node3D"]
 transform = Transform3D(0.3, 0, 0, 0, 0.3, 0, 0, 0, 0.3, 0, 0, 0)

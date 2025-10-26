@@ -81,6 +81,9 @@ var playable_piece : PlayableComponent :
 	set(new_value) :
 		if !is_playable : return
 		playable_piece = new_value
+		if grid == null : return 
+		if playable_piece == null : grid.played_tiles -= 2 ; return
+		grid.played_tiles += 1
 var current_team : TeamComponent :
 	set(new_value) : return
 	get() :
@@ -172,11 +175,11 @@ func set_color(new_tint : Color):
 	skin.albedo_color = new_tint
 	appearance.set_surface_override_material(0, skin)
 
-func _is_different_playable_and_not_attacking(snappable : SnappableComponent) -> bool :
-	return has_playable && playable_piece != snappable._playable && !snappable.attacking_snap
+func _is_different_playable_and_not_attacking(snappable_comp : SnappableComponent) -> bool :
+	return has_playable && playable_piece != snappable_comp._playable && !snappable_comp.attacking_snap
 
-func _is_playable_deceased(snappable : SnappableComponent) -> bool :
-	return snappable._playable && snappable._playable.is_deceased
+func _is_playable_deceased(snappable_comp : SnappableComponent) -> bool :
+	return snappable_comp._playable && snappable_comp._playable.is_deceased
 
 func _ready() -> void:
 	set_movable()

@@ -19,11 +19,106 @@ signal kill(killed_piece : PlayableComponent)
 		return active
 ## The piece this components belongs to.
 @export var body : Piece
+@export var coordinates : Vector2i :
+	set(new_coords) :
+		if !active || current_grid == null : return
+		if current_tile :
+			current_tile.disconnect_playable()
+			unplay()
+		var grid_size : Vector2i = current_grid.grid_size
+		var target_tile : Tile
+		target_tile = current_grid.get_tile_at(new_coords)
+		play(target_tile)
+		if target_tile : body.global_position = target_tile.global_position
+	get() :
+		if current_tile == null : return Vector2i.ZERO
+		return current_tile.id
+var mother : PieceGenerator :
+	get() :
+		if body == null : return
+		return body.mother
+var asus : Board :
+	get() :
+		if mother == null : return
+		return mother.board 
+## The currently played tile.
+var current_tile : Tile :
+	set(new_value) :
+		if current_tile != null && new_value != null && current_tile != new_value:
+			current_tile.disconnect_playable()
+		current_tile = new_value
+		if current_tile == null : return
+		current_tile.connect_to(self)
+		movement_tiles
+		attack_tiles
+## The current grid the currently played tile belongs to.
+var current_grid : TileGrid :
+	set(new_value) : return
+	get() :
+		if current_tile : return current_tile.grid
+		if asus : return asus.grid
+		return
+## Returns all stored playable movement tiles.
+var movement_tiles : Array [Tile] :
+	set(new_value) : return
+	get() : 
+		if movement_reach == null : return []
+		if movement_reach.mimic_reach_of != null: return movement_reach.mimic_reach_of.get_playable_tiles()
+		return movement_reach.get_playable_tiles()
+## Returns all stored playable attacking tiles.
+var attack_tiles : Array [Tile] :
+	set(new_value) : return
+	get() : 
+		if attack_reach == null : return []
+		if attack_reach.mimic_reach_of != null: return attack_reach.mimic_reach_of.get_playable_tiles()
+		return attack_reach.get_playable_tiles()
 var is_deceased : bool :
 	set(new_value) : return
 	get() :
 		if !_has_dependencies || body.health_component == null : return false
 		return !body.health_component.alive
+var current_team : TeamComponent :
+	set(new_value) : return
+	get() :
+		if body == null : return
+		return body.team_component
+var attacking_snap : bool :
+	set(new_value) : return
+	get() :
+		if !_has_dependencies : return false
+		return snappable_component.attacking_snap
+var is_recovering : bool :
+	set(new_value) : return
+	get() :
+		if !_has_dependencies : return false
+		return snappable_component.is_recovering
+var friendly_fire : bool = false
+var invert_attack_axis : bool = false :
+	set(new_value) :
+		if attack_reach == null || !attack_reach.active : return
+		attack_reach.invert_uniform = new_value
+	get() :
+		if attack_reach == null || !attack_reach.active : return false
+		return attack_reach.invert_uniform
+var invert_movement_axis : bool = false :
+	set(new_value) :
+		if movement_reach == null || !movement_reach.active : return
+		movement_reach.invert_uniform = new_value
+	get() :
+		if movement_reach == null || !movement_reach.active : return false
+		return movement_reach.invert_uniform
+
+## Returns if dependencies are found, cannot be set.
+var _has_dependencies : bool :
+	set(new_value) : return
+	get() : return snappable_component && draggable_component
+## Returns if the current piece is being played, cannot be set.
+var being_played : bool = false :
+	set(new_value) : return
+	get() : 
+		if current_tile == null : return false 
+		return true
+
 @export_group("Dependencies")
 ## The snappable component for dependency.
 @export var snappable_component : SnappableComponent
@@ -41,63 +136,6 @@ var is_deceased : bool :
 	get() :
 		if body == null : return
 		return body.damage_component
-var current_team : TeamComponent :
-	set(new_value) : return
-	get() :
-		if body == null : return
-		return body.team_component
-var attacking_snap : bool :
-	set(new_value) : return
-	get() :
-		if !_has_dependencies : return false
-		return snappable_component.attacking_snap
-var is_recovering : bool :
-	set(new_value) : return
-	get() :
-		if !_has_dependencies : return false
-		return snappable_component.is_recovering
-var friendly_fire : bool = false
-
-## Returns if dependencies are found, cannot be set.
-var _has_dependencies : bool :
-	set(new_value) : return
-	get() : return snappable_component && draggable_component
-## Returns if the current piece is being played, cannot be set.
-var being_played : bool = false :
-	set(new_value) : return
-	get() : 
-		if current_tile == null : return false 
-		return true
-## The currently played tile.
-var current_tile : Tile :
-	set(new_value) :
-		if current_tile != null && new_value != null && current_tile != new_value:
-			current_tile.disconnect_playable()
-		current_tile = new_value
-		if current_tile == null : return
-		current_tile.connect_to(self)
-		movement_tiles
-		attack_tiles
-## The current grid the currently played tile belongs to.
-var current_grid : TileGrid :
-	set(new_value) : return
-	get() :
-		if current_tile == null : return 
-		return current_tile.grid
-## Returns all stored playable movement tiles.
-var movement_tiles : Array [Tile] :
-	set(new_value) : return
-	get() : 
-		if movement_reach == null : return []
-		if movement_reach.mimic_reach_of != null: return movement_reach.mimic_reach_of.get_playable_tiles()
-		return movement_reach.get_playable_tiles()
-## Returns all stored playable attacking tiles.
-var attack_tiles : Array [Tile] :
-	set(new_value) : return
-	get() : 
-		if attack_reach == null : return []
-		if attack_reach.mimic_reach_of != null: return attack_reach.mimic_reach_of.get_playable_tiles()
-		return attack_reach.get_playable_tiles()
 
 func stop_highlight() :
 	if attack_reach : attack_reach._highlight_playables(false, false)
@@ -134,6 +172,7 @@ func _ready():
 		body.health_component.death.connect(func () : death.emit() ))
 	
 	death.connect(func (by_take : bool = true) :
+		unplay()
 		if snappable_component : snappable_component.stop_snapping()
 		if draggable_component : draggable_component.stop_dragging()
 		if !by_take : current_tile.disconnect_playable() )

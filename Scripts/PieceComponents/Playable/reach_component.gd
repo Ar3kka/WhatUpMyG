@@ -1,9 +1,4 @@
-## Piece component that allows a piece to be playable with its own personalized reach pattern,
-## this component is dependant on the piece being draggable, manipulable and snappable.
-## For this component to work, the body piece has to have an active draggable component and snappable component.
-class_name PlayableComponents extends Node3D
-
-signal play(new_tile : Tile)
+class_name ReachComponent extends Node3D
 
 ## These are the recommended rounds for a full 360 degrees pattern to be applied around surrounding tiles.
 const STANDARD_UNIFORM_PATTERN_ROUNDS : int = 4
@@ -12,6 +7,10 @@ const STANDARD_HIGHLIGHT_STRENGTH : float = 0.5
 const STANDARD_REACH : int = 1
 const STANDARD_MOVEMENT_COLOR : Color = Color.AQUA
 const STANDARD_ATTACK_COLOR : Color = Color.DEEP_PINK
+const STANDARD_EFFECT : float = 0.0
+const STANDARD_MULTIPLIER : float = 1.0
+const STANDARD_EFFECT_VECTOR : Vector2i = Vector2i(STANDARD_EFFECT, STANDARD_EFFECT)
+const STANDARD_MULTIPLIER_VECTOR : Vector2i = Vector2i(STANDARD_MULTIPLIER, STANDARD_MULTIPLIER)
 
 ## Standard Directions
 const HORIZONTAL_LEFT : Vector2i = Vector2i(0, 1)
@@ -25,23 +24,23 @@ const DIAGONAL_REAR_RIGHT : Vector2i = Vector2i(-1, -1)
 
 ## If not active, no built in components will interact with it, as if it
 ## didn't exist.
-@export var active : bool = true :
-	get() : 
-		if !_has_dependencies : return false
-		return active
+@export var active : bool = true 
 ## The piece this components belongs to.
-@export var body : Piece
-## The snappable component for dependency.
-@export var snappable_component : SnappableComponent
-## The draggable component for dependency.
-@export var draggable_component : DraggableComponent
+@export var playable : PlayableComponent
+var body : Piece :
+	set(new_value) : return
+	get() : 
+		if playable == null : return 
+		return playable.body
 var current_team : TeamComponent :
 	set(new_value) : return
 	get() :
 		if body == null : return
 		return body.team_component
 
-@export_category("General Movement Settings")
+@export_category("General Settings")
+## If assigned, the playable tiles of this reach component will be copied from the set reach component here.
+@export var mimic_reach_of : ReachComponent
 ## When updated, all reach variables will be set to this standard reach.
 @export var standard_reach : int = STANDARD_REACH :
 	set(new_reach) :
@@ -51,9 +50,16 @@ var current_team : TeamComponent :
 		depth_reach = Vector2i(standard_reach, standard_reach)
 		frontal_diagonal_reach = Vector2i(standard_reach, standard_reach)
 		rear_diagonal_reach = Vector2i(standard_reach, standard_reach)
+	get() : return ( standard_reach + standard_effect ) * standard_multiplier
+var standard_effect : float = STANDARD_EFFECT
+var standard_multiplier : float = STANDARD_MULTIPLIER
 ## When true, the reach will not be interrupted by obsctruction, 
 ## allowing the piece to phase through and jump over unplayable tiles
 @export var ignore_blockage : bool = false
+## When true, in case the blockage is not ignored, the colliding piece will be returned as playable.
+@export var get_colliding_piece : bool = false
+## When true, only played tiles (tiles with playables) will be returned as playable tiles.
+@export var get_only_played_tiles : bool = false
 
 @export_group("Highlight Settings")
 ## When on, all playable tiles will be raised up to highlight their availability
@@ -63,12 +69,14 @@ var current_team : TeamComponent :
 @export var highlight_tiles : bool = true
 ## The weight the highlight color will have on the highlighted tile.
 @export var highlight_strength : float = STANDARD_HIGHLIGHT_STRENGTH
+@export_enum("Movement", "Attack") var highlight_type : String = "Movement" :
+	set(new_value) :
+		highlight_type = new_value
+		if highlight_type == "Movement" : highlight_color = STANDARD_MOVEMENT_COLOR
+		else : highlight_color = STANDARD_ATTACK_COLOR
 ## The color overlay the tiles will have whenever they are selected.
 @export var highlight_color : Color = STANDARD_MOVEMENT_COLOR
 @export_group("Pattern Settings")
-## When true, all reach will be considered as specific coordinates, 
-## ignoring the tiles in its path.
-@export var specific_pattern : bool = false
 ## When true, all patterns will be mirrored doubling the rounds provided
 ## to ensure a full 360 coverage is done surrounding the playing piece.
 @export var mirror_pattern : bool = false
@@ -78,16 +86,22 @@ var current_team : TeamComponent :
 		pattern_rounds = new_value
 		uniform_pattern_rounds = new_value
 
-@export_category("Uniform Movement Settings")
+@export_category("Uniform Settings")
 ## When true, all custom reach will be ignored and only the uniform reach will be taken in account.
 @export var uniform_movement : bool = false
+@export var invert_uniform : bool = false
 ## The universal reach, only taken in account if uniform movement is on. 
-@export var uniform_reach : int = standard_reach
+@export var uniform_reach : int = standard_reach :
+	get () : return ( uniform_reach + uniform_effect ) * uniform_multiplier
+var uniform_effect : float = STANDARD_EFFECT
+var uniform_multiplier : float = STANDARD_MULTIPLIER
 ## When true, locks all movement from all directions.
 @export var uniform_lock : bool = false
 ## When specific pattern is turned on, turning this feature will let the uniform pattern overwrite
 ## the specific patterns, and only follow the uniform pattern
 @export_group("Uniform Pattern Settings")
+## When true, all reach will be considered as specific coordinates, 
+## ignoring the tiles in its path.
 @export var follow_uniform_pattern : bool = false
 ## When mirroring uniform pattern is on, the pattern will be mirrored doubling the rounds provided.
 @export var mirror_uniform_pattern : bool = false
@@ -96,10 +110,14 @@ var current_team : TeamComponent :
 ## When following uniform pattern, all specific patterns will be replaced by the pattern set here.
 @export var uniform_pattern : Vector2i = Vector2i.ZERO
 
-@export_category("Movement Reach")
+@export_category("Reach Settings")
 @export_group("Horizontal Reach")
+@export var invert_horizontal : bool = false
 ## This is the horizontal reach for the playable piece: Vector2i(left, right)
-@export var horizontal_reach : Vector2i = Vector2i(standard_reach, standard_reach)
+@export var horizontal_reach : Vector2i = Vector2i(standard_reach, standard_reach) :
+	get() : return ( horizontal_reach + horizontal_effect ) * horizontal_multiplier
+var horizontal_effect : Vector2i = STANDARD_EFFECT_VECTOR
+var horizontal_multiplier : Vector2i = STANDARD_MULTIPLIER_VECTOR
 ## When true, the right reach will not be interrupted by obsctruction, 
 ## allowing the piece to phase through and jump over unplayable tiles
 @export var ignore_blockage_left : bool = false
@@ -139,16 +157,24 @@ var left_playables : Array[Tile] :
 	set(new_value) : return
 	get() : 
 		if follow_left_pattern : return get_tiles_from_pattern(left_pattern, mirror_left_pattern, pattern_rounds)
-		return get_tiles(HORIZONTAL_LEFT, horizontal_reach.x, lock_left, ignore_blockage_left)
+		var final_direction : Vector2i = HORIZONTAL_LEFT
+		if invert_rear_diagonal || invert_uniform : final_direction = HORIZONTAL_RIGHT
+		return get_tiles(final_direction, horizontal_reach.x, lock_left, ignore_blockage_left)
 var right_playables : Array[Tile] :
 	set(new_value) : return
 	get() : 
 		if follow_right_pattern : return get_tiles_from_pattern(right_pattern, mirror_right_pattern, pattern_rounds)
-		return get_tiles(HORIZONTAL_RIGHT, horizontal_reach.y, lock_right, ignore_blockage_right)
+		var final_direction : Vector2i = HORIZONTAL_RIGHT
+		if invert_rear_diagonal || invert_uniform : final_direction = HORIZONTAL_LEFT
+		return get_tiles(final_direction, horizontal_reach.y, lock_right, ignore_blockage_right)
 
 @export_group("Depth Reach")
+@export var invert_depth : bool = false
 ## This is the frontal and rear reach for the playable piece: Vector2i(front, rear)
-@export var depth_reach : Vector2i = Vector2i(standard_reach, standard_reach)
+@export var depth_reach : Vector2i = Vector2i(standard_reach, standard_reach) :
+	get() : return ( depth_reach + depth_effect ) * depth_multiplier
+var depth_effect : Vector2i = STANDARD_EFFECT_VECTOR
+var depth_multiplier : Vector2i = STANDARD_MULTIPLIER_VECTOR
 ## When true, the frontal reach will not be interrupted by obsctruction, 
 ## allowing the piece to phase through and jump over unplayable tiles
 @export var ignore_blockage_front : bool = false
@@ -186,16 +212,24 @@ var front_playables : Array[Tile] :
 	set(new_value) : return
 	get() : 
 		if follow_front_pattern : return get_tiles_from_pattern(front_pattern, mirror_front_pattern, pattern_rounds)
-		return get_tiles(DEPTH_FRONT, depth_reach.x, lock_front, ignore_blockage_front)
+		var final_direction : Vector2i = DEPTH_FRONT
+		if invert_rear_diagonal || invert_uniform : final_direction = DEPTH_REAR
+		return get_tiles(final_direction, depth_reach.x, lock_front, ignore_blockage_front)
 var rear_playables : Array[Tile] :
 	set(new_value) : return
 	get() : 
 		if follow_rear_pattern : return get_tiles_from_pattern(rear_pattern, mirror_rear_pattern, pattern_rounds)
-		return get_tiles(DEPTH_REAR, depth_reach.y, lock_rear, ignore_blockage_rear)
+		var final_direction : Vector2i = DEPTH_REAR
+		if invert_rear_diagonal || invert_uniform : final_direction = DEPTH_FRONT
+		return get_tiles(final_direction, depth_reach.y, lock_rear, ignore_blockage_rear)
 
 @export_group("Frontal Diagonal Reach")
+@export var invert_frontal_diagonal : bool = false
 ## This is the frontal diagonal reach for the playable piece: Vector2i(front left, front right)
-@export var frontal_diagonal_reach : Vector2i = Vector2i(standard_reach, standard_reach)
+@export var frontal_diagonal_reach : Vector2i = Vector2i(standard_reach, standard_reach) :
+	get() : return ( frontal_diagonal_reach + frontal_diagonal_effect ) * frontal_diagonal_multiplier
+var frontal_diagonal_effect : Vector2i = STANDARD_EFFECT_VECTOR
+var frontal_diagonal_multiplier : Vector2i = STANDARD_MULTIPLIER_VECTOR
 ## When true, the frontal diagonal left reach will not be interrupted by obsctruction,
 ## allowing the piece to phase through and jump over unplayable tiles
 @export var ignore_blockage_frontal_left : bool = false
@@ -233,16 +267,24 @@ var frontal_left_playables : Array[Tile] :
 	set(new_value) : return
 	get() : 
 		if follow_frontal_left_pattern : return get_tiles_from_pattern(frontal_left_pattern, mirror_frontal_left_pattern, pattern_rounds)
-		return get_tiles(DIAGONAL_FRONTAL_LEFT, frontal_diagonal_reach.x, lock_frontal_left_diagonal, ignore_blockage_frontal_left)
+		var final_direction : Vector2i = DIAGONAL_FRONTAL_LEFT
+		if invert_rear_diagonal || invert_uniform : final_direction = DIAGONAL_REAR_RIGHT
+		return get_tiles(final_direction, frontal_diagonal_reach.x, lock_frontal_left_diagonal, ignore_blockage_frontal_left)
 var frontal_right_playables : Array[Tile] :
 	set(new_value) : return
 	get() : 
 		if follow_frontal_right_pattern : return get_tiles_from_pattern(frontal_right_pattern, mirror_frontal_right_pattern, pattern_rounds)
-		return get_tiles(DIAGONAL_FRONTAL_RIGHT, frontal_diagonal_reach.y, lock_frontal_right_diagonal, ignore_blockage_frontal_right)
+		var final_direction : Vector2i = DIAGONAL_FRONTAL_RIGHT
+		if invert_rear_diagonal || invert_uniform : final_direction = DIAGONAL_REAR_LEFT
+		return get_tiles(final_direction, frontal_diagonal_reach.y, lock_frontal_right_diagonal, ignore_blockage_frontal_right)
 
 @export_group("Rear Diagonal Reach")
+@export var invert_rear_diagonal : bool = false
 ## This is the rear diagonal reach for the playable piece: Vector2i(rear left, rear right)
-@export var rear_diagonal_reach : Vector2i = Vector2i(standard_reach, standard_reach)
+@export var rear_diagonal_reach : Vector2i = Vector2i(standard_reach, standard_reach) :
+	get() : return ( rear_diagonal_reach + rear_diagonal_effect ) * rear_diagonal_multiplier
+var rear_diagonal_effect : Vector2i = STANDARD_EFFECT_VECTOR
+var rear_diagonal_multiplier : Vector2i = STANDARD_MULTIPLIER_VECTOR
 ## When true, the rear diagonal left reach will not be interrupted by obsctruction,
 ## allowing the piece to phase through and jump over unplayable tiles
 @export var ignore_blockage_rear_left : bool = false
@@ -280,17 +322,17 @@ var rear_left_playables : Array[Tile] :
 	set(new_value) : return
 	get() : 
 		if follow_rear_left_pattern : return get_tiles_from_pattern(rear_left_pattern, mirror_rear_left_pattern, pattern_rounds)
-		return get_tiles(DIAGONAL_REAR_LEFT, rear_diagonal_reach.x, lock_rear_left_diagonal, ignore_blockage_rear_left)
+		var final_direction : Vector2i = DIAGONAL_REAR_LEFT
+		if invert_rear_diagonal || invert_uniform : final_direction = DIAGONAL_FRONTAL_RIGHT
+		return get_tiles(final_direction, rear_diagonal_reach.x, lock_rear_left_diagonal, ignore_blockage_rear_left)
 var rear_right_playables : Array[Tile] :
 	set(new_value) : return
 	get() : 
 		if follow_rear_right_pattern : return get_tiles_from_pattern(rear_right_pattern, mirror_rear_right_pattern, pattern_rounds)
-		return get_tiles(DIAGONAL_REAR_RIGHT, rear_diagonal_reach.y, lock_rear_right_diagonal, ignore_blockage_rear_right)
+		var final_direction : Vector2i = DIAGONAL_REAR_RIGHT
+		if invert_rear_diagonal || invert_uniform : final_direction = DIAGONAL_FRONTAL_LEFT
+		return get_tiles(final_direction, rear_diagonal_reach.y, lock_rear_right_diagonal, ignore_blockage_rear_right)
 
-## Returns if dependencies are found, cannot be set.
-var _has_dependencies : bool :
-	set(new_value) : return
-	get() : return snappable_component && draggable_component
 var is_functional : bool :
 	set(new_value) : return
 	get() : return active && current_grid != null && !uniform_lock
@@ -302,12 +344,10 @@ var being_played : bool = false :
 		return true
 ## The currently played tile.
 var current_tile : Tile :
-	set(new_value) :
-		if current_tile != null && new_value != null && current_tile != new_value:
-			current_tile.disconnected.emit()
-		current_tile = new_value
-		current_tile.connected.emit()
-		get_playable_tiles()
+	set(new_value) : return
+	get() :
+		if playable == null : return
+		return playable.current_tile
 ## The current grid the currently played tile belongs to.
 var current_grid : TileGrid :
 	set(new_value) : return
@@ -316,44 +356,43 @@ var current_grid : TileGrid :
 		return current_tile.grid
 ## Returns all stored playable tiles.
 var playable_tiles : Array [Tile] :
-	set(new_tiles) :
-		if new_tiles != null && playable_tiles != null && raise_tiles:
-			_highlight_playables(false, false)
-		playable_tiles = new_tiles
+	get() :
+		if mimic_reach_of : return mimic_reach_of.playable_tiles
+		return playable_tiles
+
+func _ready() -> void:
+	if playable == null : return
+	playable.loaded_dependencies.connect(func () : 
+		playable.draggable_component.started_dragging.connect(func () : 
+			if playable.snappable_component && playable.snappable_component._hit_reset : return
+			get_playable_tiles()
+			_highlight_playables(raise_tiles, highlight_tiles))
+		playable.snappable_component.grounded.connect(func () : _highlight_playables(false, false))
+		playable.snappable_component.connected.connect(func () : _highlight_playables(false, false)))
 
 func _highlight_playables(highlight : bool = true, color : bool = true):
-	if body == null || !current_grid : return
+	if body == null || !current_grid || playable.is_deceased : return
 	for tile in playable_tiles:
-		if tile is Tile: tile.highlight.emit(highlight, color, highlight_color, highlight_strength)
-
-func _ready():
-	if body == null : body = get_parent_node_3d()
-	_get_snappable()
-	_get_draggable()
-	if !_has_dependencies : return
-	play.connect( func (new_tile : Tile) :
-		current_tile = new_tile)
-	snappable_component.connected.connect(func () : 
-		current_tile = snappable_component.snapped_to)
-	if !raise_tiles : return 
-	draggable_component.started_dragging.connect(func () : 
-		get_playable_tiles()
-		_highlight_playables(raise_tiles, highlight_tiles))
-	snappable_component.grounded.connect(func () : _highlight_playables(false, false))
+		if tile is Tile: 
+			if highlight : tile.highlight(color, highlight_color, highlight_strength)
+			else : tile.unhighlight()
 
 ## Judges whether or not the provided tile is playable by searching it within the
 ## currently playable tiles.
 func is_tile_playable(current_tile_wannabe : Tile) -> bool:
-	if current_grid == null || !active: return false
+	if !active || current_grid == null : return false
 	return get_playable_tiles(false).has(current_tile_wannabe)
 
 ## Returns the playable tiles from a provided Array[Tile].
 ## It can be set to ignore any blockage (played tiles), or if returning a found playable tile within the list.
-func playable_tiles_from(tile_list : Array[Tile], ignore_block : bool = ignore_blockage, get_played_tile : bool = false) -> Array[Tile]:
+func playable_tiles_from(tile_list : Array[Tile], ignore_block : bool = ignore_blockage, get_played_tile : bool = get_colliding_piece, get_played_tiles : bool = get_only_played_tiles) -> Array[Tile]:
 	var playables : Array[Tile] = []
 	for tile in tile_list :
 		if tile is Tile:
-			if !tile.has_playable || ( get_played_tile && tile.has_playable ) : playables.append(tile)
+			if (( !get_only_played_tiles && !tile.has_playable ) 
+			|| ( ( get_only_played_tiles || get_played_tile) && ( tile.has_playable && 
+			( playable.friendly_fire || playable.current_team.id != tile.current_team.id )) )) : 
+				playables.append(tile)
 			if tile.has_playable && !ignore_block : return playables
 	return playables
 
@@ -363,7 +402,7 @@ func get_playable_tiles(store_tiles : bool = true) -> Array[Tile]:
 	var playables : Array[Tile] = []
 
 	if follow_uniform_pattern : 
-		playables.append_array(get_tiles_from_pattern())
+		playables.append_array(playable_tiles_from(get_tiles_from_pattern(), true, false, true))
 		if store_tiles : playable_tiles = playables
 		return playables
 	
@@ -392,17 +431,3 @@ func get_tiles(direction : Vector2i, reach : int, is_locked : bool = false, igno
 	playables.append_array(playable_tiles_from(final_tiles, ignore_blockage || ignore_block))
 	
 	return playables
-
-func reset_to_playable_position() :
-	if !_has_dependencies : return
-	snappable_component.recover.emit(current_tile)
-
-## Internal function to retrieve snappable dependency from given body.
-func _get_snappable():
-	if body == null : return 
-	snappable_component = body.read_snappable_component()
-
-## Internal function to retrieve draggable dependency from given body.
-func _get_draggable():
-	if body == null : return 
-	draggable_component = body.read_draggable_component()

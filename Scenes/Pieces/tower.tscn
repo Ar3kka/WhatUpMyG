@@ -1,4 +1,4 @@
-[gd_scene load_steps=17 format=4 uid="uid://4dwhgmum18oq"]
+[gd_scene load_steps=16 format=4 uid="uid://4dwhgmum18oq"]
 
 [ext_resource type="Script" uid="uid://bi2l7ixfw6ufq" path="res://Scripts/PieceComponents/piece.gd" id="1_gfquu"]
 [ext_resource type="PackedScene" uid="uid://grf1wmcd38w2" path="res://Meshes/Pieces/Tower.glb" id="1_mh5eo"]
@@ -15,9 +15,6 @@
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_mh5eo"]
 size = Vector3(0.3, 0.791219, 0.3)
-
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ihpw3"]
-albedo_color = Color(0.129558, 0.129558, 0.129558, 1)
 
 [sub_resource type="ArrayMesh" id="ArrayMesh_mh5eo"]
 _surfaces = [{
@@ -45,9 +42,6 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.402826, 0)
 shape = SubResource("BoxShape3D_mh5eo")
 
 [node name="Mesh" parent="." instance=ExtResource("1_mh5eo")]
-
-[node name="TOWER" parent="Mesh" index="0"]
-material_override = SubResource("StandardMaterial3D_ihpw3")
 
 [node name="Outline" type="MeshInstance3D" parent="Mesh"]
 unique_name_in_owner = true
@@ -97,7 +91,6 @@ lock_rear_left_diagonal = true
 lock_rear_right_diagonal = true
 
 [node name="Health" parent="." instance=ExtResource("11_ihpw3")]
-health_points = 2.0
 
 [node name="Damage" parent="." instance=ExtResource("12_k5vk0")]
 

@@ -1,7 +1,7 @@
 [gd_scene load_steps=3 format=3 uid="uid://bj8c5n2moabr6"]
 
-[ext_resource type="Script" uid="uid://ceiikob7b2brw" path="res://Scripts/PieceComponents/playable_new.gd" id="1_0axqs"]
-[ext_resource type="Script" uid="uid://bghsrqj0lhgg3" path="res://Scripts/PieceComponents/reach_component.gd" id="2_0axqs"]
+[ext_resource type="Script" uid="uid://ceiikob7b2brw" path="res://Scripts/PieceComponents/Playable/playable_new.gd" id="1_0axqs"]
+[ext_resource type="Script" uid="uid://bghsrqj0lhgg3" path="res://Scripts/PieceComponents/Playable/reach_component.gd" id="2_0axqs"]
 
 [node name="Playable" type="Node3D" node_paths=PackedStringArray("movement_reach", "attack_reach")]
 script = ExtResource("1_0axqs")

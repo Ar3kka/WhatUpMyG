@@ -23,7 +23,6 @@ var frozen : bool :
 			if debug: print("I'M FROZEN")
 		else:
 			if _manipulator_list.has(current_manipulator):
-				print(current_manipulator)
 				_manipulator_list.erase(current_manipulator)
 				current_manipulator = null
 			if debug: print("I'M HOT")

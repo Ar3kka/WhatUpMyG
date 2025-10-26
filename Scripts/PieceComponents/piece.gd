@@ -2,6 +2,8 @@ class_name Piece extends RigidBody3D
 
 signal found_health()
 signal found_damage()
+signal found_playable()
+signal found_team()
 
 ## REGULAR COMPONENT NAMES
 const STANDARD_COLOR = Color.WHITE_SMOKE
@@ -17,20 +19,22 @@ const SNAPPABLE_COMPONENT = "Snappable"
 const PLAYABLE_COMPONENT = "Playable"
 
 @export var active : bool = true
-@export var manipulator : Manipulator
+var manipulator : Manipulator
 @export var team_id : int = 0 :
-	set(new_value) :
-		if team_component == null : return
-		team_component.id = new_value
+	set(new_value) : set_team_id(new_value)
 	get() :
 		if team_component == null : return team_id
 		return team_component.id
+var initial_team_id : int = 0
+var initial_team : Team
+var initial_invert : bool = false
 @export_group("Color Settings")
 @export var skin : MeshInstance3D
 @export var tint : Color = STANDARD_COLOR :
 	set(new_tint): 
 		tint = new_tint
-		set_color(tint)
+		set_color()
+@export var inherit_color : bool = true
 @export var block_color : bool = false
 
 var health_points : float :
@@ -53,6 +57,9 @@ var is_playing : bool :
 	get() :
 		if !is_playable || ( is_playable && ( playable_component.is_deceased || !playable_component.active ) ) : return false
 		return true
+var initial_coordinates : Vector2i = Vector2i.ZERO
+var mother : PieceGenerator
+
 
 @export_group("Set Components") 
 ## The component that makes this 3d rigidbody have health
@@ -157,7 +164,7 @@ func read_team_component() -> TeamComponent :
 	for node in get_children(): 
 		if node is TeamComponent:
 			if !custom_names || (custom_names && node.name == team_name):
-				team_component = node ; return node
+				team_component = node ; found_team.emit() ; return node
 	return null
 	
 func read_selectable_component() -> SelectableComponent :
@@ -199,7 +206,7 @@ func read_playable_component() -> PlayableComponent :
 	for node in get_children(): 
 		if node is PlayableComponent: 
 			if !custom_names || (custom_names && node.name == playable_name):
-				playable_component = node ; return node
+				playable_component = node ; found_playable.emit() ; return node
 	return null
 
 func _populate_components_array(restart : bool):
@@ -236,7 +243,20 @@ func _populate_components_array(restart : bool):
 	if snappable_component && !components.has(playable_component) : 
 		components.append(snappable_component)
 
-func set_color(new_tint : Color):
+
+func set_coordinates( new_coords : Vector2i = initial_coordinates ) :
+	if playable_component == null : return
+	playable_component.coordinates = new_coords
+	
+func set_team_id( new_id : int = initial_team_id ): 
+	if team_component == null : return
+	team_component.id = new_id
+
+func set_team( new_team : Team = initial_team ):
+	if team_component == null : return
+	new_team.apply(self)
+
+func set_color(new_tint : Color = tint):
 	if skin == null || block_color : return
 	var new_skin = StandardMaterial3D.new()
 	new_skin.albedo_color = new_tint
@@ -259,5 +279,14 @@ func read_components():
 
 func _ready() -> void:
 	if !active : return
+	
+	if initial_team : found_team.connect(set_team)
+	else : if initial_team_id : found_team.connect(set_team_id)
+	found_playable.connect(func() :
+		set_coordinates()
+		if initial_invert : 
+			playable_component.invert_attack_axis = true
+			playable_component.invert_movement_axis = true )
+	
 	if populate: read_components()
-	set_color(tint)
+	if !inherit_color : set_color(tint)

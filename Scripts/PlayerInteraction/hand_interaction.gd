@@ -78,6 +78,8 @@ func _process(_delta):
 		if current_team == 1 : current_team = 2
 		else : if current_team == 2 : current_team = 1
 	
+	if Input.is_action_just_pressed("Reload"): get_tree().reload_current_scene()
+	
 	###### DETECT LOOKABLE, SELECTABLE AND DRAGGABLE OBJECT
 	var looked_at_nothing : bool = true
 	if !dragging(): detected_object = camera.potential_momma

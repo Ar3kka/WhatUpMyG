@@ -1,6 +1,9 @@
 class_name TileGrid extends Node3D
 
-signal generate()
+signal initial_generation()
+signal generated_rows()
+
+const SCENE : PackedScene = preload("res://Scenes/Tiles/tile_grid.tscn")
 
 const STANDARD_SIZE : int = 8
 const STANDARD_DIRECTION : Vector2i = Vector2i(-1, -1)
@@ -8,14 +11,23 @@ const STANDARD_COLOR_PATTERN : Array[Color] = [Color.WHITE, Color.BLACK]
 const STANDARD_RAISE_HEIGHT : float = 0.250
 
 @export var active : bool = true
+@export var board : Board
+var god : RandomNumberGenerator :
+	get() : 
+		if board == null : return
+		return board.god
 ## The tiles that this tile grid can generate randomly throughout the map generation accounting by their
 ## generation chance set in each tile individually.
 @export var tile_types : Array[Tile]
 ## Size for the matrix of tiles, where X represents the horizontal tiles and Y the vertical tiles.
-@export var grid_size : Vector2i = Vector2i(STANDARD_SIZE, STANDARD_SIZE)
+@export var generation_grid_size : Vector2i = Vector2i(STANDARD_SIZE, STANDARD_SIZE)
 ## When true: the gridmap size will randomize the gridsize within the range provided in the Grid Size
 ## vector from x to y.
-@export var randomize : bool = false
+@export var randomize : Vector2i :
+	get() : return Vector2i(randomize_depth, randomize_width)
+@export var randomize_depth : bool = false
+@export var randomize_width : bool = false
+
 ## Direction for generation where X represents the horizontal direction and Y the vertical direction.
 ## If left on 0 it will set it to the standard direction (-1, -1)
 @export var generation_direction : Vector2i = STANDARD_DIRECTION :
@@ -34,23 +46,71 @@ const STANDARD_RAISE_HEIGHT : float = 0.250
 ## Switch the color palette every other row in case the color palette matches the grid size
 ## causing it to merge, turn on or off this variable to change when to skip a color every other row.
 @export var color_switch : bool = true
+
 var tiles : Array[Array]
+var played_tiles : int = 0
+var is_full_of_played_tiles : bool :
+	get() :
+		if tiles.size() < 1 : return false
+		return grid_size_amount == played_tiles
+var grid_size : Vector2i :
+	get() :
+		if tiles.size() < 1 : return Vector2i.ZERO
+		return Vector2i( tiles.size(), tiles[0].size() )
+var grid_size_amount : int
+var is_empty : bool :
+	get() : return tiles.size() < 1
 var last_row : Array :
-	set(new_value) : return
 	get() : 
 		if tiles.size() < 1 : return []
 		return tiles.get(tiles.size() - 1)
 var last_tile : Tile :
-	set (new_value) : return
 	get() : return last_row[last_row.size() - 1]
+var _has_generated : bool = false
 
 func _ready() -> void:
 	if !tile_types.size(): _reset_tyle_types()
-	generate_rows()
-	generate_rows(Vector2i(grid_size.x, 5))
+	
+	generated_rows.connect(func () :
+		update_grid_tile_amount()
+		if !_has_generated : 
+			initial_generation.emit()
+			_has_generated = true )
+	
+	#generate_rows()
 	#print(get_tiles_from(Vector2i.ZERO, Vector2i(1, 1), 10))
 	#print(get_specific_tile_from(Vector2i(1, 1), Vector2i(1, 2)))
 	#print(get_tiles_following_pattern(Vector2i(2, 3), Vector2i(2, -1), true))
+
+func update_grid_tile_amount() -> int :
+	if tiles.size() < 1 : return 0
+	grid_size_amount = tiles.size() * tiles[0].size()
+	return grid_size_amount
+
+func reset() :
+	if tiles.size() < 1 : return
+	for x in range(tiles.size()) :
+		for y in range(tiles[x].size()) :
+			var tile : Tile = tiles[x][y]
+			tile.queue_free()
+	tiles = []
+
+func get_random_coordinates(discard_played_tiles : bool = true) -> Vector2i :
+	var random_coords : Vector2i
+	var iterate : bool = true
+	while iterate :
+		iterate = false
+		random_coords = Vector2i( god.randi_range(0, tiles.size() - 1), god.randi_range(0, tiles[0].size() - 1) )
+		if discard_played_tiles && get_tile_at(random_coords).has_playable: iterate = true
+		if discard_played_tiles && is_full_of_played_tiles : return Vector2i(-1, -1)
+	return random_coords
+
+func instantiate(size : Vector2i = generation_grid_size, random : bool = false, direction : Vector2i = generation_direction) -> TileGrid :
+	var new_grid : TileGrid = SCENE.instantiate()
+	new_grid.generation_grid_size = size
+	#new_grid.randomize = random
+	new_grid.generation_direction = direction
+	return new_grid
 
 func _reset_tyle_types():
 	if !active : return
@@ -67,8 +127,8 @@ func get_tiles_from(origin_coordinates : Vector2i = Vector2i.ZERO, direction : V
 	if direction == Vector2i.ZERO : 
 		tiles.append(get_tile_at(origin_coordinates))
 		return result_tiles
-	if origin_coordinates.x > grid_size.y : origin_coordinates.x = grid_size.x
-	if origin_coordinates.y > grid_size.x : origin_coordinates.y = grid_size.y
+	if origin_coordinates.x > generation_grid_size.y : origin_coordinates.x = generation_grid_size.x
+	if origin_coordinates.y > generation_grid_size.x : origin_coordinates.y = generation_grid_size.y
 	var final_reach = reach
 	if final_reach > tiles.size() : final_reach = tiles.size()
 	for id in range(final_reach) :
@@ -127,16 +187,16 @@ func get_tile_at(tile_coordinates : Vector2i = Vector2i.ZERO) -> Tile:
 var current_switch_pattern : bool = color_switch
 var color_switch_index : int = 0
 
-func generate_rows(final_size : Vector2i = grid_size, custom_generation_direction : Vector2i = generation_direction, randomize_size : bool = randomize):
+func generate_rows(final_size : Vector2i = generation_grid_size, custom_generation_direction : Vector2i = generation_direction, randomize_x : bool = randomize_depth, randomize_y : bool = randomize_width):
 	if !active : return
-	generate.emit()
 	# Check and initialize the final size of the desired grid
-	if randomize_size : final_size = Vector2i(randi_range(grid_size.x, grid_size.y), randi_range(grid_size.x, grid_size.y)) 
+	if randomize_x : final_size.x = god.randi_range(1, generation_grid_size.x)
+	if randomize_y : final_size.y = god.randi_range(1, generation_grid_size.y)
 	
 	if tiles.size() < 1 && color_pattern.size() < 1 : force_pattern = false
 	# Check if the new size is an addition, in the case of it being an addition, the grid size will be changed to fit.
-	if final_size.x > tiles.size() : grid_size.y += final_size.x
-	if tiles && tiles[0] && final_size.y > tiles[0].size() : grid_size.x += final_size.y
+	if final_size.x > tiles.size() : generation_grid_size.y += final_size.x
+	if tiles && tiles[0] && final_size.y > tiles[0].size() : generation_grid_size.x += final_size.y
 	
 	## Vertical Tiles
 	for z in range(final_size.y):
@@ -165,3 +225,4 @@ func generate_rows(final_size : Vector2i = grid_size, custom_generation_directio
 			%Tiles.add_child(new_tile)
 		# After finishing the array append it to the list of vertical arrays
 		if tile_array.size() != 0: tiles.append(tile_array)
+		generated_rows.emit()

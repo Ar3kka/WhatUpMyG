@@ -44,6 +44,10 @@ var being_played : bool = false :
 	get() :
 		if _playable == null : return false
 		return _playable.being_played
+var played_tile : Tile :
+	get() : 
+		if !being_played : return
+		return _playable.current_tile
 var snap_point : Vector3 :
 	set(new_value) : return
 	get() : 
@@ -163,13 +167,12 @@ func is_recovering_done() -> bool :
 	return _round_to_decimal(final_coordinates.x) == _round_to_decimal(global_position.x) && _round_to_decimal(final_coordinates.y) == _round_to_decimal(global_position.z)
 
 func is_tile_occupied() -> bool :
-	return _playable && snapped_to && snapped_to.occupier != null && snapped_to != self
+	return played_tile && played_tile.occupier != null && played_tile.occupier != body
 
 func _process(_delta: float) -> void:
 	if !active || body == null : return
 	
-	if just_got_attacked && _playable && _playable.current_tile && _playable.current_tile.occupier != null && _playable.current_tile.occupier != body && !_current_timer.paused : _current_timer.paused = true
-	else : if _current_timer.paused : _current_timer.paused = false 
+	if just_got_attacked && is_tile_occupied() && !_current_timer.paused : _current_timer.start()
 	
 	if !snapping || ( is_grounded && !is_recovering ) : return
 	
@@ -179,11 +182,11 @@ func _process(_delta: float) -> void:
 	
 	var draggable_component = body.draggable_component
 	if draggable_component == null : return
-	
 	var final_snap_force : float = snap_force
+	
 	if is_recovering :
-		if is_recovering_done() && attacking_snap : stop_snapping() ; return
-		if _hit_reset && is_tile_occupied() : 
+		if attacking_snap && is_recovering_done() : stop_snapping() ; return
+		if _hit_reset && ( is_tile_occupied() || is_recovering_done() ) :
 			draggable_component.stop_dragging()
 			stop_snapping() ; return
 		final_snap_force = recovery_snap_force
