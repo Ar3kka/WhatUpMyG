@@ -7,20 +7,18 @@ const STANDARD_HIGHLIGHT_STRENGTH : float = 0.5
 const STANDARD_REACH : int = 1
 const STANDARD_MOVEMENT_COLOR : Color = Color.AQUA
 const STANDARD_ATTACK_COLOR : Color = Color.DEEP_PINK
-const STANDARD_EFFECT : float = 0.0
-const STANDARD_MULTIPLIER : float = 1.0
-const STANDARD_EFFECT_VECTOR : Vector2i = Vector2i(STANDARD_EFFECT, STANDARD_EFFECT)
-const STANDARD_MULTIPLIER_VECTOR : Vector2i = Vector2i(STANDARD_MULTIPLIER, STANDARD_MULTIPLIER)
 
 ## Standard Directions
-const HORIZONTAL_LEFT : Vector2i = Vector2i(0, 1)
-const HORIZONTAL_RIGHT : Vector2i = Vector2i(0, -1)
-const DEPTH_FRONT : Vector2i = Vector2i(1, 0)
-const DEPTH_REAR : Vector2i = Vector2i(-1, 0)
-const DIAGONAL_FRONTAL_LEFT : Vector2i = Vector2i(1, 1)
-const DIAGONAL_FRONTAL_RIGHT : Vector2i = Vector2i(1, -1)
-const DIAGONAL_REAR_LEFT : Vector2i = Vector2i(-1, 1)
-const DIAGONAL_REAR_RIGHT : Vector2i = Vector2i(-1, -1)
+#const HORIZONTAL_LEFT : Vector2i = Vector2i(0, 1)
+#const HORIZONTAL_RIGHT : Vector2i = Vector2i(0, -1)
+#const DEPTH_FRONT : Vector2i = Vector2i(1, 0)
+#const DEPTH_REAR : Vector2i = Vector2i(-1, 0)
+#const DIAGONAL_FRONTAL_LEFT : Vector2i = Vector2i(1, 1)
+#const DIAGONAL_FRONTAL_RIGHT : Vector2i = Vector2i(1, -1)
+#const DIAGONAL_REAR_LEFT : Vector2i = Vector2i(-1, 1)
+#const DIAGONAL_REAR_RIGHT : Vector2i = Vector2i(-1, -1)
+
+var global := GeneralKnowledge.new()
 
 ## If not active, no built in components will interact with it, as if it
 ## didn't exist.
@@ -51,8 +49,8 @@ var current_team : TeamComponent :
 		frontal_diagonal_reach = Vector2i(standard_reach, standard_reach)
 		rear_diagonal_reach = Vector2i(standard_reach, standard_reach)
 	get() : return ( standard_reach + standard_effect ) * standard_multiplier
-var standard_effect : float = STANDARD_EFFECT
-var standard_multiplier : float = STANDARD_MULTIPLIER
+var standard_effect : float = global.STANDARD_EFFECT
+var standard_multiplier : float = global.STANDARD_MULTIPLIER
 ## When true, the reach will not be interrupted by obsctruction, 
 ## allowing the piece to phase through and jump over unplayable tiles
 @export var ignore_blockage : bool = false
@@ -93,8 +91,8 @@ var standard_multiplier : float = STANDARD_MULTIPLIER
 ## The universal reach, only taken in account if uniform movement is on. 
 @export var uniform_reach : int = standard_reach :
 	get () : return ( uniform_reach + uniform_effect ) * uniform_multiplier
-var uniform_effect : float = STANDARD_EFFECT
-var uniform_multiplier : float = STANDARD_MULTIPLIER
+var uniform_effect : float = global.STANDARD_EFFECT
+var uniform_multiplier : float = global.STANDARD_MULTIPLIER
 ## When true, locks all movement from all directions.
 @export var uniform_lock : bool = false
 ## When specific pattern is turned on, turning this feature will let the uniform pattern overwrite
@@ -116,8 +114,8 @@ var uniform_multiplier : float = STANDARD_MULTIPLIER
 ## This is the horizontal reach for the playable piece: Vector2i(left, right)
 @export var horizontal_reach : Vector2i = Vector2i(standard_reach, standard_reach) :
 	get() : return ( horizontal_reach + horizontal_effect ) * horizontal_multiplier
-var horizontal_effect : Vector2i = STANDARD_EFFECT_VECTOR
-var horizontal_multiplier : Vector2i = STANDARD_MULTIPLIER_VECTOR
+var horizontal_effect : Vector2i = global.STANDARD_EFFECT_VECTOR
+var horizontal_multiplier : Vector2i = global.STANDARD_MULTIPLIER_VECTOR
 ## When true, the right reach will not be interrupted by obsctruction, 
 ## allowing the piece to phase through and jump over unplayable tiles
 @export var ignore_blockage_left : bool = false
@@ -157,15 +155,15 @@ var left_playables : Array[Tile] :
 	set(new_value) : return
 	get() : 
 		if follow_left_pattern : return get_tiles_from_pattern(left_pattern, mirror_left_pattern, pattern_rounds)
-		var final_direction : Vector2i = HORIZONTAL_LEFT
-		if invert_rear_diagonal || invert_uniform : final_direction = HORIZONTAL_RIGHT
+		var final_direction : Vector2i = global.HORIZONTAL_LEFT
+		if invert_rear_diagonal || invert_uniform : final_direction = global.HORIZONTAL_RIGHT
 		return get_tiles(final_direction, horizontal_reach.x, lock_left, ignore_blockage_left)
 var right_playables : Array[Tile] :
 	set(new_value) : return
 	get() : 
 		if follow_right_pattern : return get_tiles_from_pattern(right_pattern, mirror_right_pattern, pattern_rounds)
-		var final_direction : Vector2i = HORIZONTAL_RIGHT
-		if invert_rear_diagonal || invert_uniform : final_direction = HORIZONTAL_LEFT
+		var final_direction : Vector2i = global.HORIZONTAL_RIGHT
+		if invert_rear_diagonal || invert_uniform : final_direction = global.HORIZONTAL_LEFT
 		return get_tiles(final_direction, horizontal_reach.y, lock_right, ignore_blockage_right)
 
 @export_group("Depth Reach")
@@ -173,8 +171,8 @@ var right_playables : Array[Tile] :
 ## This is the frontal and rear reach for the playable piece: Vector2i(front, rear)
 @export var depth_reach : Vector2i = Vector2i(standard_reach, standard_reach) :
 	get() : return ( depth_reach + depth_effect ) * depth_multiplier
-var depth_effect : Vector2i = STANDARD_EFFECT_VECTOR
-var depth_multiplier : Vector2i = STANDARD_MULTIPLIER_VECTOR
+var depth_effect : Vector2i = global.STANDARD_EFFECT_VECTOR
+var depth_multiplier : Vector2i = global.STANDARD_MULTIPLIER_VECTOR
 ## When true, the frontal reach will not be interrupted by obsctruction, 
 ## allowing the piece to phase through and jump over unplayable tiles
 @export var ignore_blockage_front : bool = false
@@ -212,15 +210,15 @@ var front_playables : Array[Tile] :
 	set(new_value) : return
 	get() : 
 		if follow_front_pattern : return get_tiles_from_pattern(front_pattern, mirror_front_pattern, pattern_rounds)
-		var final_direction : Vector2i = DEPTH_FRONT
-		if invert_rear_diagonal || invert_uniform : final_direction = DEPTH_REAR
+		var final_direction : Vector2i = global.DEPTH_FRONT
+		if invert_rear_diagonal || invert_uniform : final_direction = global.DEPTH_REAR
 		return get_tiles(final_direction, depth_reach.x, lock_front, ignore_blockage_front)
 var rear_playables : Array[Tile] :
 	set(new_value) : return
 	get() : 
 		if follow_rear_pattern : return get_tiles_from_pattern(rear_pattern, mirror_rear_pattern, pattern_rounds)
-		var final_direction : Vector2i = DEPTH_REAR
-		if invert_rear_diagonal || invert_uniform : final_direction = DEPTH_FRONT
+		var final_direction : Vector2i = global.DEPTH_REAR
+		if invert_rear_diagonal || invert_uniform : final_direction = global.DEPTH_FRONT
 		return get_tiles(final_direction, depth_reach.y, lock_rear, ignore_blockage_rear)
 
 @export_group("Frontal Diagonal Reach")
@@ -228,8 +226,8 @@ var rear_playables : Array[Tile] :
 ## This is the frontal diagonal reach for the playable piece: Vector2i(front left, front right)
 @export var frontal_diagonal_reach : Vector2i = Vector2i(standard_reach, standard_reach) :
 	get() : return ( frontal_diagonal_reach + frontal_diagonal_effect ) * frontal_diagonal_multiplier
-var frontal_diagonal_effect : Vector2i = STANDARD_EFFECT_VECTOR
-var frontal_diagonal_multiplier : Vector2i = STANDARD_MULTIPLIER_VECTOR
+var frontal_diagonal_effect : Vector2i = global.STANDARD_EFFECT_VECTOR
+var frontal_diagonal_multiplier : Vector2i = global.STANDARD_MULTIPLIER_VECTOR
 ## When true, the frontal diagonal left reach will not be interrupted by obsctruction,
 ## allowing the piece to phase through and jump over unplayable tiles
 @export var ignore_blockage_frontal_left : bool = false
@@ -267,15 +265,15 @@ var frontal_left_playables : Array[Tile] :
 	set(new_value) : return
 	get() : 
 		if follow_frontal_left_pattern : return get_tiles_from_pattern(frontal_left_pattern, mirror_frontal_left_pattern, pattern_rounds)
-		var final_direction : Vector2i = DIAGONAL_FRONTAL_LEFT
-		if invert_rear_diagonal || invert_uniform : final_direction = DIAGONAL_REAR_RIGHT
+		var final_direction : Vector2i = global.DIAGONAL_FRONTAL_LEFT
+		if invert_rear_diagonal || invert_uniform : final_direction = global.DIAGONAL_REAR_RIGHT
 		return get_tiles(final_direction, frontal_diagonal_reach.x, lock_frontal_left_diagonal, ignore_blockage_frontal_left)
 var frontal_right_playables : Array[Tile] :
 	set(new_value) : return
 	get() : 
 		if follow_frontal_right_pattern : return get_tiles_from_pattern(frontal_right_pattern, mirror_frontal_right_pattern, pattern_rounds)
-		var final_direction : Vector2i = DIAGONAL_FRONTAL_RIGHT
-		if invert_rear_diagonal || invert_uniform : final_direction = DIAGONAL_REAR_LEFT
+		var final_direction : Vector2i = global.DIAGONAL_FRONTAL_RIGHT
+		if invert_rear_diagonal || invert_uniform : final_direction = global.DIAGONAL_REAR_LEFT
 		return get_tiles(final_direction, frontal_diagonal_reach.y, lock_frontal_right_diagonal, ignore_blockage_frontal_right)
 
 @export_group("Rear Diagonal Reach")
@@ -283,8 +281,8 @@ var frontal_right_playables : Array[Tile] :
 ## This is the rear diagonal reach for the playable piece: Vector2i(rear left, rear right)
 @export var rear_diagonal_reach : Vector2i = Vector2i(standard_reach, standard_reach) :
 	get() : return ( rear_diagonal_reach + rear_diagonal_effect ) * rear_diagonal_multiplier
-var rear_diagonal_effect : Vector2i = STANDARD_EFFECT_VECTOR
-var rear_diagonal_multiplier : Vector2i = STANDARD_MULTIPLIER_VECTOR
+var rear_diagonal_effect : Vector2i = global.STANDARD_EFFECT_VECTOR
+var rear_diagonal_multiplier : Vector2i = global.STANDARD_MULTIPLIER_VECTOR
 ## When true, the rear diagonal left reach will not be interrupted by obsctruction,
 ## allowing the piece to phase through and jump over unplayable tiles
 @export var ignore_blockage_rear_left : bool = false
@@ -322,17 +320,19 @@ var rear_left_playables : Array[Tile] :
 	set(new_value) : return
 	get() : 
 		if follow_rear_left_pattern : return get_tiles_from_pattern(rear_left_pattern, mirror_rear_left_pattern, pattern_rounds)
-		var final_direction : Vector2i = DIAGONAL_REAR_LEFT
-		if invert_rear_diagonal || invert_uniform : final_direction = DIAGONAL_FRONTAL_RIGHT
+		var final_direction : Vector2i = global.DIAGONAL_REAR_LEFT
+		if invert_rear_diagonal || invert_uniform : final_direction = global.DIAGONAL_FRONTAL_RIGHT
 		return get_tiles(final_direction, rear_diagonal_reach.x, lock_rear_left_diagonal, ignore_blockage_rear_left)
 var rear_right_playables : Array[Tile] :
 	set(new_value) : return
 	get() : 
 		if follow_rear_right_pattern : return get_tiles_from_pattern(rear_right_pattern, mirror_rear_right_pattern, pattern_rounds)
-		var final_direction : Vector2i = DIAGONAL_REAR_RIGHT
-		if invert_rear_diagonal || invert_uniform : final_direction = DIAGONAL_FRONTAL_LEFT
+		var final_direction : Vector2i = global.DIAGONAL_REAR_RIGHT
+		if invert_rear_diagonal || invert_uniform : final_direction = global.DIAGONAL_FRONTAL_LEFT
 		return get_tiles(final_direction, rear_diagonal_reach.y, lock_rear_right_diagonal, ignore_blockage_rear_right)
 
+var are_axis_inverted : bool :
+	get() : return ( invert_depth && invert_horizontal && invert_rear_diagonal && invert_frontal_diagonal ) || invert_uniform
 var is_functional : bool :
 	set(new_value) : return
 	get() : return active && current_grid != null && !uniform_lock
@@ -369,6 +369,12 @@ func _ready() -> void:
 			_highlight_playables(raise_tiles, highlight_tiles))
 		playable.snappable_component.grounded.connect(func () : _highlight_playables(false, false))
 		playable.snappable_component.connected.connect(func () : _highlight_playables(false, false)))
+
+func invert_all_axis( invert : bool = true ) :
+	invert_depth = invert
+	invert_horizontal = invert
+	invert_frontal_diagonal = invert
+	invert_rear_diagonal = invert
 
 func _highlight_playables(highlight : bool = true, color : bool = true):
 	if body == null || !current_grid || playable.is_deceased : return

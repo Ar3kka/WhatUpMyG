@@ -5,6 +5,7 @@ const EYES_SCENE : PackedScene = preload("res://Scenes/PlayerComponents/eyes.tsc
 signal found_eyes()
 signal found_feet()
 signal found_hands()
+signal assigned_board()
 
 @export var ID : int :
 	set(new_ID): return
@@ -22,25 +23,33 @@ signal found_hands()
 	set(new_feet) :
 		feet = new_feet
 		if feet != null : found_feet.emit()
-
+@export var initial_board : Board
 @export var pieces : Array[Piece]
 
 func _ready():
-	if !eyes : _find_eyes()
-	if !hands : _find_hands()
-	if !feet : _find_feet()
+	
+	found_feet.connect(_assign_board)
+	
+	if eyes == null : _find_eyes()
+	else : found_eyes.emit()
+	if hands == null : _find_hands()
+	else : found_hands.emit()
+	if feet == null : _find_feet()
+	else : found_feet.emit()
+
+func _assign_board() :
+	if feet == null : return
+	feet.board = initial_board
+	if initial_board != null : assigned_board.emit()
 
 func _find_eyes():
 	for organ in get_children():
-		if organ is Camera3D : eyes = organ
-	if eyes : return
-	eyes = EYES_SCENE.instantiate()
-	add_child(eyes)
+		if organ is Camera3D : eyes = organ ; return
 
 func _find_hands():
 	for organ in get_children():
-		if organ is Hands : hands = organ
+		if organ is Hands : hands = organ ; return
 
 func _find_feet():
 	for appendage in get_children():
-		if appendage is Feet : feet = appendage
+		if appendage is Feet : feet = appendage ; return

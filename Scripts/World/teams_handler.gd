@@ -29,6 +29,7 @@ func get_team_by_name(team_name : String = "") -> Team :
 func add_team(team_id : int = 0, team_name : String = "", team_color : Color = Color.WHITE_SMOKE) -> Team:
 	if get_team(team_id) : return
 	var new_team : Team = Team.new().instantiate()
+	new_team.handler = self
 	new_team.id = team_id
 	new_team.team_name = team_name
 	new_team.team_color = team_color

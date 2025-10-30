@@ -3,17 +3,18 @@ class_name HealthComponent extends Node3D
 signal hit(damage_component : DamageComponent)
 signal death()
 
-const STANDARD_MAX_HEALTH : float = 1.0
-const STANDARD_EFFECT : float = 0.0
-const STANDARD_MULTIPLIER : float = 1.0
+var global := GeneralKnowledge.new()
 
 @export var active : bool = true
 @export var body : Piece
-@export var max_health : float = STANDARD_MAX_HEALTH
-@export var health_points : float = STANDARD_MAX_HEALTH :
-	get() : return ( health_points + effect ) * multiplier
-var effect : float = STANDARD_EFFECT
-var multiplier : float = STANDARD_MULTIPLIER
+@export var max_health : float = global.STANDARD_MAX_HEALTH
+@export var health_points : float = global.STANDARD_MAX_HEALTH :
+	get() : 
+		var final_hp : float = ( health_points + effect ) * multiplier
+		if final_hp > max_health : final_hp = max_health
+		return final_hp
+var effect : float = global.STANDARD_EFFECT
+var multiplier : float = global.STANDARD_MULTIPLIER
 var alive : bool :
 	set(new_value) : return
 	get() :

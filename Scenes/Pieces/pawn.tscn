@@ -101,6 +101,9 @@ frontal_diagonal_reach = Vector2i(1, 1)
 lock_rear_left_diagonal = true
 lock_rear_right_diagonal = true
 
+[node name="State Machine" parent="Playable" index="2"]
+active = true
+
 [editable path="Mesh"]
 [editable path="Health"]
 [editable path="Damage"]

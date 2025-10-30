@@ -39,6 +39,8 @@ shape = SubResource("BoxShape3D_y18ax")
 unique_name_in_owner = true
 mesh = SubResource("BoxMesh_xsjyq")
 
+[node name="Catalyst" type="Node3D" parent="."]
+
 [node name="Movable" parent="." node_paths=PackedStringArray("node") instance=ExtResource("2_lghtw")]
 node = NodePath("..")
 add_vertical_states = true

@@ -56,15 +56,12 @@ light_energy = 1.101
 shadow_enabled = true
 directional_shadow_mode = 1
 
-[node name="Manipulator" parent="SubViewportContainer/SubViewport" instance=ExtResource("2_dqfvb")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -4.94566)
+[node name="Manipulator" parent="SubViewportContainer/SubViewport" node_paths=PackedStringArray("initial_board") instance=ExtResource("2_dqfvb")]
 team_id = 1
-
-[node name="Feet" parent="SubViewportContainer/SubViewport/Manipulator" index="1"]
-transform = Transform3D(1, 0, 0, 0, 0.707107, 0.707107, 0, -0.707107, 0.707107, -3.799, 2.5, 6.669)
+initial_board = NodePath("../Board")
 
 [node name="Hands" parent="SubViewportContainer/SubViewport/Manipulator" index="2"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.00577164, -2.38419e-07, 0.00413203)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
 
 [node name="Board" parent="SubViewportContainer/SubViewport" instance=ExtResource("3_707cn")]
 

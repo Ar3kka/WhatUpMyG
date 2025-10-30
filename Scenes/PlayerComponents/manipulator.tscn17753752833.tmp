@@ -5,13 +5,11 @@
 [ext_resource type="PackedScene" uid="uid://7725558gj7rr" path="res://Scenes/PlayerComponents/eyes.tscn" id="2_66ekc"]
 [ext_resource type="PackedScene" uid="uid://cxgtaeo6opt03" path="res://Scenes/PlayerComponents/feet.tscn" id="3_wte6m"]
 
-[node name="Manipulator" type="Node3D" node_paths=PackedStringArray("eyes", "hands", "feet")]
+[node name="Manipulator" type="Node3D"]
 script = ExtResource("1_66ekc")
-eyes = NodePath("Eyes")
-hands = NodePath("Hands")
-feet = NodePath("Feet")
 
 [node name="Eyes" parent="." node_paths=PackedStringArray("body") instance=ExtResource("2_66ekc")]
+transform = Transform3D(1, 0, 0, 0, 0.707107, 0.707107, 0, -0.707107, 0.707107, -3.799, 14.7437, 6.70071)
 body = NodePath("..")
 
 [node name="Feet" parent="." node_paths=PackedStringArray("body") instance=ExtResource("3_wte6m")]

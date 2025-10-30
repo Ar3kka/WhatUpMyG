@@ -5,19 +5,19 @@ signal finished_translation()
 signal reset(new_reset_value : bool, reset_vector_states : bool)
 
 const SCENE : PackedScene = preload("res://Scenes/Components/movable.tscn")
+
 const STANDARD_UP_DOWN_DISTANCE : float = 0.250
 const STANDARD_LEFT_RIGHT_DISTANCE : float = 1.0
 const STANDARD_TRANSLATION_STRENGTH : float = 0.05
-const STANDARD_MULTIPLIER : float = 1.0
-const STANDARD_GLOBAL_POSITION : Vector3 = Vector3.ZERO
-const STANDARD_MULTIPLIER_VECTOR : Vector2 = Vector2(STANDARD_MULTIPLIER, STANDARD_MULTIPLIER)
+
+var global := GeneralKnowledge.new()
 
 @export var active : bool = true
 @export var node : Node3D :
 	set(new_node):
 		node = new_node
 		if node == null : 
-			standard_position = STANDARD_GLOBAL_POSITION
+			standard_position = global.STANDARD_GLOBAL_POSITION
 			return
 		standard_position = node.global_position
 ## The general translation strength, ranging from 0 to 1.
@@ -29,15 +29,15 @@ const STANDARD_MULTIPLIER_VECTOR : Vector2 = Vector2(STANDARD_MULTIPLIER, STANDA
 		return standard_position
 @export_group("Translation Distance Settings")
 @export var add_vertical_states : bool = false
-@export var vertical_multiplier : Vector2 = STANDARD_MULTIPLIER_VECTOR
+@export var vertical_multiplier : Vector2 = global.STANDARD_MULTIPLIER_VECTOR
 @export var vertical_distance : Vector2 = Vector2(STANDARD_UP_DOWN_DISTANCE, -STANDARD_UP_DOWN_DISTANCE) :
 	get () : return vertical_distance * vertical_multiplier
 @export var add_horizontal_states : bool = false
-@export var horizontal_multiplier : Vector2 = STANDARD_MULTIPLIER_VECTOR
+@export var horizontal_multiplier : Vector2 = global.STANDARD_MULTIPLIER_VECTOR
 @export var horizontal_distance : Vector2 = Vector2(-STANDARD_LEFT_RIGHT_DISTANCE, STANDARD_LEFT_RIGHT_DISTANCE) :
 	get () : return vertical_distance * horizontal_multiplier
 @export var add_depth_states : bool = false
-@export var depth_multiplier : Vector2 = STANDARD_MULTIPLIER_VECTOR
+@export var depth_multiplier : Vector2 = global.STANDARD_MULTIPLIER_VECTOR
 @export var depth_distance : Vector2 = Vector2(STANDARD_LEFT_RIGHT_DISTANCE, -STANDARD_LEFT_RIGHT_DISTANCE) :
 	get () : return depth_distance * depth_multiplier
 
@@ -154,13 +154,10 @@ func stop_translation():
 	_reset = false
 
 func is_translating() -> bool : 
-	return _round_to_decimal(_translation_vector) != _round_to_decimal(standard_position) || _reset
+	return global.round_to_decimal(_translation_vector) != global.round_to_decimal(standard_position) || _reset
 
 func _has_translation_reached_goal() -> bool :
-	return _round_to_decimal(_global_position) == _round_to_decimal(_translation_vector)
-
-func _round_to_decimal(num, digit : int = 2):
-	return round( num * pow( 10.0, digit ) ) / pow( 10.0, digit )
+	return global.round_to_decimal(_global_position) == global.round_to_decimal(_translation_vector)
 
 func instantiate(initial_node_to_move : Node3D) -> MovableComponent:
 	var new_movable : MovableComponent = SCENE.instantiate()

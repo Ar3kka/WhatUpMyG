@@ -20,18 +20,18 @@ board = NodePath("..")
 script = ExtResource("3_5bi0w")
 board = NodePath("..")
 
-[node name="White" parent="Teams" node_paths=PackedStringArray("pieces_location") instance=ExtResource("3_a6k0q")]
+[node name="White" parent="Teams" node_paths=PackedStringArray("handler") instance=ExtResource("3_a6k0q")]
+handler = NodePath("..")
 team_name = "White"
 id = 1
 team_color = Color(0.877616, 0.877616, 0.877616, 1)
-pieces_location = NodePath("../../Pieces")
 
-[node name="Black" parent="Teams" node_paths=PackedStringArray("pieces_location") instance=ExtResource("3_a6k0q")]
+[node name="Black" parent="Teams" node_paths=PackedStringArray("handler") instance=ExtResource("3_a6k0q")]
+handler = NodePath("..")
 team_name = "Black"
 id = 2
 team_color = Color(0.125911, 0.125911, 0.125911, 1)
 invert_axis = true
-pieces_location = NodePath("../../Pieces")
 
 [node name="TileGrid" parent="." node_paths=PackedStringArray("board") instance=ExtResource("5_a6k0q")]
 board = NodePath("..")

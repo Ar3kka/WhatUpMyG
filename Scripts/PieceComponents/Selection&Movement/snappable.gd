@@ -14,6 +14,8 @@ const ATTACK_SNAP_FORCE : float = 12.50
 const SNAP_FORCE : float = 35
 const SNAP_Y_OFFSET : float = 0.125
 
+var global := GeneralKnowledge.new()
+
 ## The piece this component belongs to.
 @export var body : Piece
 ## Whether or not this component is active and other components can interact with it.
@@ -159,12 +161,10 @@ func stop_snapping():
 	is_recovering = false
 	snapped_to = null
 
-func _round_to_decimal(num, digit : int = 2):
-	return round(num * pow(10.0, digit)) / pow(10.0, digit)
-
 func is_recovering_done() -> bool :
 	var final_coordinates : Vector2 = Vector2(_playable.current_tile.global_position.x, _playable.current_tile.global_position.z)
-	return _round_to_decimal(final_coordinates.x) == _round_to_decimal(global_position.x) && _round_to_decimal(final_coordinates.y) == _round_to_decimal(global_position.z)
+	return ( global.round_to_decimal(final_coordinates.x) == global.round_to_decimal(global_position.x)
+	 && global.round_to_decimal(final_coordinates.y) == global.round_to_decimal(global_position.z) )
 
 func is_tile_occupied() -> bool :
 	return played_tile && played_tile.occupier != null && played_tile.occupier != body

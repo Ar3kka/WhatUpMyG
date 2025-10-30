@@ -28,11 +28,18 @@ signal kill(killed_piece : PlayableComponent)
 		var grid_size : Vector2i = current_grid.grid_size
 		var target_tile : Tile
 		target_tile = current_grid.get_tile_at(new_coords)
-		play(target_tile)
-		if target_tile : body.global_position = target_tile.global_position
+		
+		if connect_coordinates : play(target_tile)
+		else : if snappable_component : snappable_component.snapped_to = target_tile
+		
+		if target_tile : body.global_position = target_tile.global_position ; return
+		if mother : body.global_position = mother.spawn_point ; return
+		if current_grid : body.global_position = current_grid.center_point ; return
+		body.global_position = Vector3.ZERO
 	get() :
 		if current_tile == null : return Vector2i.ZERO
 		return current_tile.id
+var connect_coordinates : bool = true
 var mother : PieceGenerator :
 	get() :
 		if body == null : return
@@ -96,17 +103,17 @@ var friendly_fire : bool = false
 var invert_attack_axis : bool = false :
 	set(new_value) :
 		if attack_reach == null || !attack_reach.active : return
-		attack_reach.invert_uniform = new_value
+		attack_reach.invert_all_axis()
 	get() :
 		if attack_reach == null || !attack_reach.active : return false
-		return attack_reach.invert_uniform
+		return attack_reach.are_axis_inverted
 var invert_movement_axis : bool = false :
 	set(new_value) :
 		if movement_reach == null || !movement_reach.active : return
-		movement_reach.invert_uniform = new_value
+		movement_reach.invert_all_axis()
 	get() :
 		if movement_reach == null || !movement_reach.active : return false
-		return movement_reach.invert_uniform
+		return movement_reach.are_axis_inverted
 
 ## Returns if dependencies are found, cannot be set.
 var _has_dependencies : bool :
@@ -124,8 +131,6 @@ var being_played : bool = false :
 @export var snappable_component : SnappableComponent
 ## The draggable component for dependency.
 @export var draggable_component : DraggableComponent
-@export var movement_reach : ReachComponent
-@export var attack_reach : ReachComponent
 @export var health_component : HealthComponent :
 	set(new_value) : return
 	get() :
@@ -136,6 +141,9 @@ var being_played : bool = false :
 	get() :
 		if body == null : return
 		return body.damage_component
+@export var movement_reach : ReachComponent
+@export var attack_reach : ReachComponent
+@export var state_machine : StateMachine
 
 func stop_highlight() :
 	if attack_reach : attack_reach._highlight_playables(false, false)

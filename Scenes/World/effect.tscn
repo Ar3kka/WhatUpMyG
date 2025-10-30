@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://byrbb6qf8wvj0"]
+
+[ext_resource type="Script" uid="uid://lhggobbytwyy" path="res://Scripts/World/effect.gd" id="1_xekn3"]
+
+[node name="Effect" type="Node3D"]
+script = ExtResource("1_xekn3")

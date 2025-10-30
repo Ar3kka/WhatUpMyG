@@ -6,9 +6,12 @@ signal generated_rows()
 const SCENE : PackedScene = preload("res://Scenes/Tiles/tile_grid.tscn")
 
 const STANDARD_SIZE : int = 8
+const STANDARD_GENERATION_SIZE := Vector2i(STANDARD_SIZE, STANDARD_SIZE) 
 const STANDARD_DIRECTION : Vector2i = Vector2i(-1, -1)
 const STANDARD_COLOR_PATTERN : Array[Color] = [Color.WHITE, Color.BLACK]
 const STANDARD_RAISE_HEIGHT : float = 0.250
+
+var global := GeneralKnowledge.new()
 
 @export var active : bool = true
 @export var board : Board
@@ -20,7 +23,7 @@ var god : RandomNumberGenerator :
 ## generation chance set in each tile individually.
 @export var tile_types : Array[Tile]
 ## Size for the matrix of tiles, where X represents the horizontal tiles and Y the vertical tiles.
-@export var generation_grid_size : Vector2i = Vector2i(STANDARD_SIZE, STANDARD_SIZE)
+@export var generation_grid_size : Vector2i = STANDARD_GENERATION_SIZE
 ## When true: the gridmap size will randomize the gridsize within the range provided in the Grid Size
 ## vector from x to y.
 @export var randomize : Vector2i :
@@ -51,22 +54,67 @@ var tiles : Array[Array]
 var played_tiles : int = 0
 var is_full_of_played_tiles : bool :
 	get() :
-		if tiles.size() < 1 : return false
+		if tiles.is_empty() : return false
 		return grid_size_amount == played_tiles
 var grid_size : Vector2i :
 	get() :
-		if tiles.size() < 1 : return Vector2i.ZERO
-		return Vector2i( tiles.size(), tiles[0].size() )
+		if tiles.is_empty() : return Vector2i.ZERO
+		return Vector2i( tiles[0].size(), tiles.size() )
 var grid_size_amount : int
 var is_empty : bool :
 	get() : return tiles.size() < 1
 var last_row : Array :
 	get() : 
-		if tiles.size() < 1 : return []
+		if tiles.is_empty() : return []
 		return tiles.get(tiles.size() - 1)
 var last_tile : Tile :
 	get() : return last_row[last_row.size() - 1]
 var _has_generated : bool = false
+
+## GRID POINTS
+
+var middle_bottom : Vector3 :
+	get() :
+		if tiles.is_empty() : return global.STADARD_NEGATIVE_VECTOR
+		var final_x : float = global_position.x - ( grid_size.x / 2 )
+		if global.is_even(grid_size.x) : final_x += 0.5 
+		return Vector3(final_x, global_position.y, global_position.z - 1)
+var middle_top : Vector3 :
+	get() :
+		if tiles.is_empty() : return global.STADARD_NEGATIVE_VECTOR
+		return Vector3(middle_bottom.x, global_position.y, global_position.z - grid_size.y)
+var center_point : Vector3 :
+	get() :
+		if tiles.is_empty() : return global.STADARD_NEGATIVE_VECTOR
+		var final_z : float = global_position.y - ( grid_size.y / 2 )
+		if global.is_even(grid_size.y) : final_z -= 0.5 
+		return Vector3(middle_bottom.x, global_position.y, final_z)
+var center_right : Vector3 :
+	get() :
+		if tiles.is_empty() : return global.STADARD_NEGATIVE_VECTOR
+		return Vector3(global_position.x, global_position.y, center_point.z)
+var center_left : Vector3 :
+	get() :
+		if tiles.is_empty() : return global.STADARD_NEGATIVE_VECTOR
+		return Vector3(global_position.x - grid_size.x + 1, global_position.y, center_point.z)
+# CORNERS
+var bottom_right : Vector3 :
+	get() :
+		if tiles.is_empty() : return global.STADARD_NEGATIVE_VECTOR
+		return Vector3(global_position.x, global_position.y, global_position.z - 1)
+var bottom_left : Vector3 :
+	get() :
+		if tiles.is_empty() : return global.STADARD_NEGATIVE_VECTOR
+		return Vector3(center_left.x, global_position.y, global_position.z - 1)
+var top_right : Vector3 :
+	get() :
+		if tiles.is_empty() : return global.STADARD_NEGATIVE_VECTOR
+		return Vector3(bottom_right.x, global_position.y, global_position.z - grid_size.y)
+var top_left : Vector3 :
+	get() :
+		if tiles.is_empty() : return global.STADARD_NEGATIVE_VECTOR
+		return Vector3(bottom_left.x, global_position.y, top_right.z)
+
 
 func _ready() -> void:
 	if !tile_types.size(): _reset_tyle_types()
@@ -81,6 +129,17 @@ func _ready() -> void:
 	#print(get_tiles_from(Vector2i.ZERO, Vector2i(1, 1), 10))
 	#print(get_specific_tile_from(Vector2i(1, 1), Vector2i(1, 2)))
 	#print(get_tiles_following_pattern(Vector2i(2, 3), Vector2i(2, -1), true))
+
+func is_tile_on_bottom_border(x : float = 0, y : float = 0) -> bool :
+	return is_tile_on_row(Vector2i(x, y), 0)
+
+func is_tile_on_top_border(x : float = 0, y : float = 0) -> bool :
+	return is_tile_on_row(Vector2i(x, y), grid_size.y - 1)
+
+func is_tile_on_row(coordinates : Vector2i = Vector2i.ZERO, row : int = 0) -> bool :
+	var tile : Tile = get_tile_at(coordinates)
+	if tile == null : return false
+	return tile.id.x == row
 
 func update_grid_tile_amount() -> int :
 	if tiles.size() < 1 : return 0
