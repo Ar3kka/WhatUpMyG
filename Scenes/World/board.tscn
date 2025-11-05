@@ -1,9 +1,9 @@
 [gd_scene load_steps=6 format=3 uid="uid://dy0yy25snu76o"]
 
-[ext_resource type="Script" uid="uid://dgq3tbniivg0s" path="res://Scripts/World/board.gd" id="1_q76ey"]
-[ext_resource type="Script" uid="uid://cyhwu0rmncngc" path="res://Scripts/World/teams_handler.gd" id="3_5bi0w"]
+[ext_resource type="Script" uid="uid://dgq3tbniivg0s" path="res://Scripts/Board/board.gd" id="1_q76ey"]
+[ext_resource type="Script" uid="uid://cyhwu0rmncngc" path="res://Scripts/Board/teams_handler.gd" id="3_5bi0w"]
 [ext_resource type="PackedScene" uid="uid://btcwcf7g0ipmi" path="res://Scenes/World/team.tscn" id="3_a6k0q"]
-[ext_resource type="Script" uid="uid://30ad3erx8svf" path="res://Scripts/World/piece_womb.gd" id="3_q76ey"]
+[ext_resource type="Script" uid="uid://30ad3erx8svf" path="res://Scripts/Board/piece_womb.gd" id="3_q76ey"]
 [ext_resource type="PackedScene" uid="uid://dqxedjm0pxgqs" path="res://Scenes/Tiles/tile_grid.tscn" id="5_a6k0q"]
 
 [node name="Board" type="Node3D" node_paths=PackedStringArray("teams_node", "pieces_node")]

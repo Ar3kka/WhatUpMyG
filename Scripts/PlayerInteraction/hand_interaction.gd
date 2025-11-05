@@ -18,7 +18,6 @@ var finger : Area3D
 		if finger == null : return
 		finger_size = new_finger_size
 		finger.scale = Vector3(finger_size, finger_size, finger_size)
-		
 
 var detected_object : Piece
 var last_lookable_object : Piece
@@ -32,6 +31,10 @@ var horizontal_drag : bool = false
 var rotate_left : bool = false
 var rotate_right : bool = false
 
+var current_pieces : Array[Piece] :
+	get() :
+		if manipulator == null : return []
+		return manipulator.pieces
 var current_team : int :
 	set(new_value) : 
 		if manipulator == null : return
@@ -39,6 +42,12 @@ var current_team : int :
 	get() :
 		if manipulator == null : return 0
 		return manipulator.team_id
+var current_index : int = 0 :
+	set(new_value) :
+		if manipulator == null : return 0
+		if new_value < 0 : new_value = current_pieces.size() - 1
+		else : if new_value > current_pieces.size() - 1 : new_value = 0
+		current_index = new_value
 
 func _ready() -> void:
 	if !manipulator : manipulator = get_parent_node_3d()
@@ -56,12 +65,21 @@ func _deselect():
 	if !selected_object : return
 	selected_object.selectable_component.select.emit(false, manipulator)
 	var draggable_component : DraggableComponent = selected_object.draggable_component
-	if draggable_component != null && draggable_component.active && draggable_component.dragged(): stop_dragging(draggable_component)
+	if draggable_component && draggable_component.active && draggable_component.dragged() : stop_dragging(draggable_component)
+	var snappable_component : SnappableComponent = selected_object.snappable_component
+	if snappable_component : snappable_component.stop_snapping()
 	selected_object = null
 
 func dragging() -> bool: return horizontal_drag || vertical_drag
 
 func double_drag() -> bool: return horizontal_drag && vertical_drag
+
+func select(aspirant : Piece = selectable_object) :
+	if aspirant == null : return
+	if aspirant != selected_object: _deselect()
+	aspirant.selectable_component.select.emit(true, manipulator)
+	selected_object = aspirant
+	current_index = current_pieces.find(selected_object)
 
 func _process(_delta):
 	if !manipulator || !manipulator.eyes: return
@@ -79,6 +97,15 @@ func _process(_delta):
 		else : if current_team == 2 : current_team = 1
 	
 	if Input.is_action_just_pressed("Reload"): get_tree().reload_current_scene()
+	
+	####### Selectable pieces navigation
+	var keyboard_select : bool = false
+	if Input.is_action_just_pressed("Select Left") : current_index += 1 ; keyboard_select = true
+	else : if Input.is_action_just_pressed("Select Right") : current_index -= 1 ; keyboard_select = true
+	if keyboard_select :
+		var new_selected : Piece = manipulator.pieces.get(current_index)
+		if new_selected == null : return
+		select(new_selected)
 	
 	###### DETECT LOOKABLE, SELECTABLE AND DRAGGABLE OBJECT
 	var looked_at_nothing : bool = true
@@ -110,14 +137,9 @@ func _process(_delta):
 	if selectable_object == null && selected_object == null || lookable_object == null && last_lookable_object == null: return
 	
 	###### Checking selection inputs
-	if selectable_object:
-		if Input.is_action_just_pressed("Select"):
-			if selectable_object != selected_object: _deselect()
-			selectable_object.selectable_component.select.emit(true, manipulator)
-			selected_object = selectable_object
-		
-		# Checking if the selectable object IS draggable
-	else: if selected_object && Input.is_action_just_pressed("Select") && looked_at_nothing: _deselect()
+	if selectable_object: 
+		if Input.is_action_just_pressed("Select") : select()
+	else: if selected_object && Input.is_action_just_pressed("Select") && looked_at_nothing : _deselect()
 	
 	# Checking if the object being looked at or selected IS draggable
 	var draggable_component : DraggableComponent
@@ -146,6 +168,7 @@ func _process(_delta):
 	if team_component != null && team_component.active && team_component.id > 0 && team_component.id != current_team : return
 	
 	if selected_object == null: return
+
 	
 	####### Checking inputs to manually rotate the SELECTED object
 	var rotatable_component : RotatableComponent = selected_object.rotatable_component
@@ -179,20 +202,50 @@ func _process(_delta):
 	####### RECOVER DRAG OBJECT INPUTS
 	if Input.is_action_pressed("Recover") && !dragging(): vertical_drag = true
 	
-	if (Input.is_action_pressed("Recover Playable") || playable_component.attacking_snap ) && !dragging() :
+	####### Selected piece keyboard manipulation
+	if playable_component :
+		
+		if Input.is_action_just_pressed("Move Front") && Input.is_action_just_pressed("Move Left"):
+			selected_object.playable_component.move_to_front_left() ; return
+		if Input.is_action_just_pressed("Move Front") && Input.is_action_just_pressed("Move Right"):
+			selected_object.playable_component.move_to_front_right() ; return
+		if Input.is_action_just_pressed("Move Rear") && Input.is_action_just_pressed("Move Left"):
+			selected_object.playable_component.move_to_rear_left() ; return
+		if Input.is_action_just_pressed("Move Rear") && Input.is_action_just_pressed("Move Right"):
+			selected_object.playable_component.move_to_rear_right() ; return
+			
+		if Input.is_action_just_pressed("Move Front"):
+			selected_object.playable_component.move_to_front()
+		if Input.is_action_just_pressed("Move Rear"):
+			selected_object.playable_component.move_to_rear()
+		if Input.is_action_just_pressed("Move Left"):
+			selected_object.playable_component.move_to_left()
+		if Input.is_action_just_pressed("Move Right"):
+			selected_object.playable_component.move_to_right()
+		
+		if Input.is_action_just_pressed("Move Front Left"):
+			selected_object.playable_component.move_to_front_left()
+		if Input.is_action_just_pressed("Move Front Right"):
+			selected_object.playable_component.move_to_front_right()
+		if Input.is_action_just_pressed("Move Rear Left"):
+			selected_object.playable_component.move_to_rear_left()
+		if Input.is_action_just_pressed("Move Rear Right"):
+			selected_object.playable_component.move_to_rear_right()
+		
+		if Input.is_action_just_pressed("Confirm Movement"):
+			return stop_dragging(draggable_component)
+	
+	if ( Input.is_action_pressed("Recover Playable") || playable_component.attacking_snap || playable_component.keyboard_recovery ) && !dragging() :
 		if playable_component && playable_component.being_played :
 			if playable_component.is_recovering == false && playable_component.attacking_snap :
 				playable_component.snappable_component.attack_recover.emit()
+			if playable_component.keyboard_recovery : return
 			playable_component.reset_to_playable_position()
 			return
-	
-	#if Input.is_action_just_released("Recover Playable") && playable_component && playable_component.being_played :
-	#	snappable_component.
 	
 	if !dragging() : return stop_dragging(draggable_component) # If no dragging action is recorded, we stop dragging.
 	
 	####### Calculating the position where the SELECTED object needs to move at
-	
 	finger.global_position = camera.sight
 	
 	var snappable_component : SnappableComponent = draggable_object.snappable_component

@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://btcwcf7g0ipmi"]
 
-[ext_resource type="Script" uid="uid://b0nni0vnt7p8e" path="res://Scripts/World/team_handler.gd" id="1_3k68g"]
+[ext_resource type="Script" uid="uid://b0nni0vnt7p8e" path="res://Scripts/Board/team_handler.gd" id="1_3k68g"]
 
 [node name="Team" type="Node3D"]
 script = ExtResource("1_3k68g")

@@ -1,13 +1,17 @@
 class_name PieceGenerator extends Node3D
 
-signal generated_piece()
+signal generated_piece(piece : Piece)
+signal generated_set()
+signal generated_initial_set()
 
 @export var board : Board
+@export var default_set : bool = false
 @export var spawn_point : Vector3 = Vector3.ZERO :
 	get() :
 		if grid == null : return spawn_point
 		return grid.center_point
 var dna := PieceDNA.new()
+var setdna := SetDNA.new()
 var grid : TileGrid :
 	get():
 		if board == null : return
@@ -21,50 +25,69 @@ var god : RandomNumberGenerator :
 		if board == null : return RandomNumberGenerator.new()
 		return board.god
 var initial_set : PieceSet
+var _initial_set_generation : bool = false
+var pieces : Array[Piece] = []
 
 func _ready() -> void:
 	if board == null : board = get_parent_node_3d()
+	
 	dna.god = god
-	var template_set := PieceSet.new()
-	template_set.add_piece(dna.PAWN, 1, Vector2i(1,0))
-	template_set.add_piece(dna.PAWN, 1, Vector2i(1,1))
-	template_set.add_piece(dna.PAWN, 1, Vector2i(1,2))
-	template_set.add_piece(dna.PAWN, 1, Vector2i(1,3))
-	template_set.add_piece(dna.PAWN, 1, Vector2i(1,4))
+	setdna.god = god
 	
+	board.found_grid.connect(func() : 
+		grid.initial_generation.connect(func () : 
+			add_set(initial_set)
+			update_pieces() ) )
 	
-	board.found_grid.connect(func() :
-		grid.generate_rows()
-		add_set(initial_set)
-		fill_row( dna.PAWN, 1, 1 )
-		fill_row( dna.PAWN, 2, 6 )
+	generated_piece.connect(func(new_piece : Piece) : pieces.append(new_piece))
+	
+	generated_set.connect(func() :
+		if _initial_set_generation : return
+		_initial_set_generation = true
+		generated_initial_set.emit()
+		if board : board.initial_set_generation.emit() )
 		
-		add_piece( dna.TOWER, 1, Vector2i(0, 0) )
-		add_piece( dna.TOWER, 1, Vector2i(0, 7) )
-		add_piece( dna.TOWER, 2, Vector2i(7, 0) )
-		add_piece( dna.TOWER, 2, Vector2i(7, 7) )
-		
-		add_piece( dna.BISHOP, 1, Vector2i(0, 2) )
-		add_piece( dna.BISHOP, 1, Vector2i(0, 5) )
-		add_piece( dna.BISHOP, 2, Vector2i(7, 2) )
-		add_piece( dna.BISHOP, 2, Vector2i(7, 5) )
-		
-		add_piece( dna.HORSE, 1, Vector2i(0, 1) )
-		add_piece( dna.HORSE, 1, Vector2i(0, 6) )
-		add_piece( dna.HORSE, 2, Vector2i(7, 1) )
-		add_piece( dna.HORSE, 2, Vector2i(7, 6) )
-		
-		add_piece( dna.QUEEN, 1, Vector2i(0, 3) )
-		add_piece( dna.QUEEN, 2, Vector2i(7, 4) )
-		
-		add_piece( dna.KING, 1, Vector2i(0, 4) )
-		add_piece( dna.KING, 2, Vector2i(7, 3) )
-		)
+
+func update_pieces() : 
+	pieces.clear()
+	pieces = get_pieces()
+
+func get_piece_at(x : int = 0, y : int = 0) -> Piece :
+	var coordinates := Vector2i(x, y)
+	for piece in pieces :
+		if piece.current_coordinates == coordinates : return piece
+	return null
+
+func get_pieces() -> Array[Piece] : 
+	var result : Array[Piece] = []
+	for node in get_children() :
+		if node is Piece : result.append(node)
+	return result
+
+func get_specific_pieces( selectable : bool, playable : bool, alive : bool, team : int = 0, either_or : bool = false ) :
+	var final_array : Array[Piece] = []
+	for piece in pieces :
+		if either_or :
+			if ( ( playable && piece.playable_component ) || 
+			( selectable && piece.selectable_component ) ||
+			( alive && piece.is_alive ) ||
+			( team == piece.team_id ) ) : 
+				final_array.append(piece)
+		else :
+			if ( ( !playable || ( playable && piece.playable_component ) ) && 
+			( !selectable || ( selectable && piece.selectable_component ) ) &&
+			( !alive || ( alive && piece.is_alive ) ) &&
+			( team == piece.team_id ) ) : 
+				final_array.append(piece)
+	return final_array 
 
 func add_set( piece_set : PieceSet ) :
-	if piece_set == null : return
+	if piece_set == null && !default_set : return
+	if piece_set == null : piece_set = PieceSet.new()
+	if piece_set.templates.is_empty() && piece_set.default : setdna.default(piece_set)
 	for piece in piece_set.templates :
 		add_specific_piece(piece)
+	generated_set.emit()
 
 func fill_row( piece_dna : PackedScene, team_id : int, row : int = 0 ) :
 	if grid == null || grid.is_empty : return
@@ -84,14 +107,14 @@ func add_piece( piece_dna : PackedScene, team_id : int, coordinates : Vector2i )
 	if grid == null || grid.is_empty : return
 	var piece : Piece = generate_piece( piece_dna, team_id, coordinates )
 	add_child(piece)
-	generated_piece.emit()
+	generated_piece.emit(piece)
 
 func add_specific_piece( piece : Piece , team_from_id : bool = true ) :
 	if grid == null || grid.is_empty : return
 	piece.mother = self
 	if team_from_id : piece.initial_team = teams.get_team(piece.initial_team_id)
 	add_child(piece)
-	generated_piece.emit()
+	generated_piece.emit(piece)
 
 func add_random_piece( team_id : int = teams.get_random_team().id ) :
 	if grid == null || grid.is_empty : return

@@ -122,6 +122,7 @@ func _ready() -> void:
 	generated_rows.connect(func () :
 		update_grid_tile_amount()
 		if !_has_generated : 
+			if board : board.initial_grid_generation.emit()
 			initial_generation.emit()
 			_has_generated = true )
 	
@@ -167,7 +168,6 @@ func get_random_coordinates(discard_played_tiles : bool = true) -> Vector2i :
 func instantiate(size : Vector2i = generation_grid_size, random : bool = false, direction : Vector2i = generation_direction) -> TileGrid :
 	var new_grid : TileGrid = SCENE.instantiate()
 	new_grid.generation_grid_size = size
-	#new_grid.randomize = random
 	new_grid.generation_direction = direction
 	return new_grid
 
@@ -284,4 +284,4 @@ func generate_rows(final_size : Vector2i = generation_grid_size, custom_generati
 			%Tiles.add_child(new_tile)
 		# After finishing the array append it to the list of vertical arrays
 		if tile_array.size() != 0: tiles.append(tile_array)
-		generated_rows.emit()
+	generated_rows.emit()

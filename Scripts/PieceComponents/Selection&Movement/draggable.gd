@@ -8,6 +8,9 @@ signal stopped_dragging()
 const ROTATION_STRENGTH : float = 0.05
 const DRAGGING_STRENGTH : float = 14.5
 const X_LIMIT : float = 0.0
+const NOT_DRAGGING_LIMIT : float = 1.0
+
+var global := GeneralKnowledge.new()
 
 ## The piece this component belongs to.
 @export var body : Piece
@@ -32,6 +35,8 @@ var being_manipulated : bool :
 ## strength of the manipulator
 @export var override_drag_strength : bool = true
 var _custom_dragging_strength : float
+var _next_position : Vector3
+var _stop_dragging_timer := Timer.new()
 
 var horizontal_drag : bool = false
 var vertical_drag : bool = false
@@ -57,6 +62,7 @@ func stop_dragging() :
 	horizontal_drag = false
 	vertical_drag = false
 	stopped_dragging.emit()
+	
 	target_point = Vector3.ZERO
 	if _manipulator_list.has(current_manipulator): _manipulator_list.erase(current_manipulator)
 	current_manipulator = null
@@ -71,8 +77,19 @@ func _freeze(freeze_value):
 	if freeze && body.freezable_component:
 		body.freezable_component.freeze.emit(freeze_value, current_manipulator)
 
+func is_not_moving() -> bool :
+	return global.round_to_decimal(_next_position) == global.round_to_decimal(body_position)
+
 func _ready() -> void:
 	if body == null : body = get_parent_node_3d()
+	
+	_stop_dragging_timer.one_shot = true
+	_stop_dragging_timer.wait_time = NOT_DRAGGING_LIMIT
+	_stop_dragging_timer.timeout.connect(func () :
+		if is_not_moving() && dragged() : 
+			print("Yup it bugged, stop it my child")
+			stop_dragging())
+	add_child(_stop_dragging_timer)
 	
 	stopped_dragging.connect(func (): 
 		if !body || snappable_component == null : return
@@ -117,7 +134,10 @@ func _process(delta: float) -> void:
 	var final_strength : float = dragging_strength
 	if override_drag_strength : final_strength = _custom_dragging_strength # Check if we respect own strength or accept outside manipulation strength 
 	
-	body_position = lerp(body_position, final_drag_point, final_strength * delta) # change the body's position employing final calculations
+	if is_not_moving() : _stop_dragging_timer.start()
+	
+	_next_position = lerp(body_position, final_drag_point, final_strength * delta) # change the body's position employing final calculations
+	body_position = _next_position
 	
 	if body.rotatable_component == null || !fix_rotation : return
 	body.rotatable_component.fix_rotation()

@@ -6,10 +6,10 @@ const STANDARD_FOCUS_FORCE : float = 35.0
 const STANDARD_SPEED : float = 7.5
 const STANDARD_SMOOTHNESS : float = 0.03
 const STANDARD_PROXIMITY : float = -1.85
-const STANDARD_REMOTENESS : float = 5
+const STANDARD_REMOTENESS : float = 6
 #const STANDARD_VERTICAL_LIMIT : Vector2 = Vector2(7.0, -20.0)
 #const STANDARD_HORIZONTAL_LIMIT : Vector2 = Vector2(-8.50, 1.75)
-const STANDARD_VERTICAL_LIMIT := Vector2(3, 1)
+const STANDARD_VERTICAL_LIMIT := Vector2(4, 1)
 const STANDARD_HORIZONTAL_LIMIT := Vector2(1, 1)
 
 @export var active : bool = true :

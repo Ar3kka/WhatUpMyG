@@ -65,4 +65,8 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
 
 [node name="Board" parent="SubViewportContainer/SubViewport" instance=ExtResource("3_707cn")]
 
+[node name="Pieces" parent="SubViewportContainer/SubViewport/Board" index="0"]
+default_set = true
+
 [editable path="SubViewportContainer/SubViewport/Manipulator"]
+[editable path="SubViewportContainer/SubViewport/Board"]

@@ -70,7 +70,6 @@ body = NodePath("..")
 [node name="Rotatable" parent="." instance=ExtResource("9_c1pjq")]
 
 [node name="Snappable" parent="." instance=ExtResource("9_0ro88")]
-auto_recovery = true
 
 [node name="Playable" parent="." instance=ExtResource("10_0ro88")]
 

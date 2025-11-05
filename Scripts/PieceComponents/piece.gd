@@ -38,26 +38,30 @@ var initial_invert : bool = false
 @export var block_color : bool = false
 
 var health_points : float :
-	set(new_value) : return
 	get() :
 		if health_component == null : return health_points
 		return health_component.health_points
 var damage_points : float :
-	set(new_value) : return
 	get() :
 		if damage_points == null : return damage_points
 		return damage_component.damage_points
 var is_playable : bool :
-	set(new_value) : return
 	get () :
 		if playable_component == null : return false
 		return true
 var is_playing : bool :
-	set(new_value) : return
 	get() :
 		if !is_playable || ( is_playable && ( playable_component.is_deceased || !playable_component.active ) ) : return false
 		return true
+var is_alive : bool :
+	get() :
+		if health_component == null : return false
+		return health_component.alive
 var initial_coordinates : Vector2i = Vector2i.ZERO
+var current_coordinates : Vector2i :
+	get() :
+		if playable_component == null : return Vector2i.ZERO
+		return playable_component.coordinates
 var mother : PieceGenerator
 
 
@@ -244,9 +248,13 @@ func _populate_components_array(restart : bool):
 		components.append(snappable_component)
 
 
-func set_coordinates( new_coords : Vector2i = initial_coordinates ) :
+func set_initial_coordinates( new_coords : Vector2i = initial_coordinates ) :
 	if playable_component == null : return
 	playable_component.coordinates = new_coords
+
+func set_coordinates(new_coords : Vector2i, connect : bool, set_position : bool):
+	if playable_component == null : return
+	playable_component.set_coordinates(new_coords, connect, set_position)
 	
 func set_team_id( new_id : int = initial_team_id ): 
 	if team_component == null : return
@@ -283,7 +291,7 @@ func _ready() -> void:
 	if initial_team : found_team.connect(set_team)
 	else : if initial_team_id : found_team.connect(set_team_id)
 	found_playable.connect(func() :
-		set_coordinates()
+		set_initial_coordinates()
 		if initial_invert : 
 			playable_component.invert_attack_axis = true
 			playable_component.invert_movement_axis = true )

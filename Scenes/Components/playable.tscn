@@ -1,6 +1,6 @@
 [gd_scene load_steps=4 format=3 uid="uid://bj8c5n2moabr6"]
 
-[ext_resource type="Script" uid="uid://ceiikob7b2brw" path="res://Scripts/PieceComponents/Playable/playable_new.gd" id="1_0axqs"]
+[ext_resource type="Script" uid="uid://ceiikob7b2brw" path="res://Scripts/PieceComponents/Playable/playable.gd" id="1_0axqs"]
 [ext_resource type="Script" uid="uid://bghsrqj0lhgg3" path="res://Scripts/PieceComponents/Playable/reach_component.gd" id="2_0axqs"]
 [ext_resource type="Script" uid="uid://dj8n7fii21n1f" path="res://Scripts/PieceComponents/Playable/state_machine.gd" id="3_i5wgd"]
 

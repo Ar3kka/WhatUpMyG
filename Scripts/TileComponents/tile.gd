@@ -175,8 +175,8 @@ func set_color(new_tint : Color):
 	skin.albedo_color = new_tint
 	appearance.set_surface_override_material(0, skin)
 
-func _is_different_playable_and_not_attacking(snappable_comp : SnappableComponent) -> bool :
-	return has_playable && playable_piece != snappable_comp._playable && !snappable_comp.attacking_snap
+func _is_different_playable_and_not_attacking(snappable_component : SnappableComponent) -> bool :
+	return has_playable && playable_piece != snappable_component._playable && !snappable_component.attacking_snap
 
 func _is_playable_deceased(snappable_comp : SnappableComponent) -> bool :
 	return snappable_comp._playable && snappable_comp._playable.is_deceased
@@ -194,7 +194,7 @@ func _ready() -> void:
 		if parent is SnappableComponent:
 			# Check if the tile already has a playable piece saved,
 			# and if the entering piece is another one that is not the playable piece.
-			if _is_different_playable_and_not_attacking(parent) || _is_playable_deceased(parent) : return
+			if _is_playable_deceased(parent) : return
 			occupy(parent.body) )
 	
 	_snap_area.area_exited.connect(func (area : Area3D):
@@ -206,6 +206,6 @@ func _ready() -> void:
 			return
 		if parent is SnappableComponent : 
 			if occupier == null : return
-			if parent.snapped_to == self : occupier.snappable_component.stop_snapping()
+			if parent.snapped_to == self && !parent.is_recovering : occupier.snappable_component.stop_snapping()
 			if occupier.snappable_component != parent || ( has_playable && playable_piece.snappable_component == occupier.snappable_component ) : return
 			unocuppy() )

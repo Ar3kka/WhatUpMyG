@@ -24,11 +24,18 @@ signal assigned_board()
 		feet = new_feet
 		if feet != null : found_feet.emit()
 @export var initial_board : Board
-@export var pieces : Array[Piece]
+var current_board : Board :
+	get() :
+		if feet == null : return
+		return feet.board
+var pieces : Array[Piece]
 
 func _ready():
 	
 	found_feet.connect(_assign_board)
+	assigned_board.connect(func () :
+		if pieces.is_empty() : current_board.initial_set_generation.connect(_update_pieces)
+		else : _update_pieces() )
 	
 	if eyes == null : _find_eyes()
 	else : found_eyes.emit()
@@ -36,6 +43,11 @@ func _ready():
 	else : found_hands.emit()
 	if feet == null : _find_feet()
 	else : found_feet.emit()
+
+func _update_pieces( selectable : bool = true, playable : bool = true, alive : bool = true, either_or : bool = false ) :
+	if current_board == null : return
+	pieces.clear()
+	pieces = current_board.get_specific_pieces(selectable, playable, alive, team_id, either_or)
 
 func _assign_board() :
 	if feet == null : return
