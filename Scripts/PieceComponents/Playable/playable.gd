@@ -53,42 +53,35 @@ var current_tile : Tile :
 		attack_tiles
 ## The current grid the currently played tile belongs to.
 var current_grid : TileGrid :
-	set(new_value) : return
 	get() :
 		if current_tile : return current_tile.grid
 		if asus : return asus.grid
 		return
 ## Returns all stored playable movement tiles.
 var movement_tiles : Array [Tile] :
-	set(new_value) : return
 	get() : 
 		if movement_reach == null : return []
 		if movement_reach.mimic_reach_of != null: return movement_reach.mimic_reach_of.get_playable_tiles()
 		return movement_reach.get_playable_tiles()
 ## Returns all stored playable attacking tiles.
 var attack_tiles : Array [Tile] :
-	set(new_value) : return
 	get() : 
 		if attack_reach == null : return []
 		if attack_reach.mimic_reach_of != null: return attack_reach.mimic_reach_of.get_playable_tiles()
 		return attack_reach.get_playable_tiles()
 var is_deceased : bool :
-	set(new_value) : return
 	get() :
 		if !_has_dependencies || body.health_component == null : return false
 		return !body.health_component.alive
 var current_team : TeamComponent :
-	set(new_value) : return
 	get() :
 		if body == null : return
 		return body.team_component
 var attacking_snap : bool :
-	set(new_value) : return
 	get() :
 		if !_has_dependencies : return false
 		return snappable_component.attacking_snap
 var is_recovering : bool :
-	set(new_value) : return
 	get() :
 		if !_has_dependencies : return false
 		return snappable_component.is_recovering
@@ -114,14 +107,13 @@ var invert_movement_axis : bool = false :
 
 ## Returns if dependencies are found, cannot be set.
 var _has_dependencies : bool :
-	set(new_value) : return
 	get() : return snappable_component && draggable_component
 ## Returns if the current piece is being played, cannot be set.
 var being_played : bool = false :
-	set(new_value) : return
 	get() : 
 		if current_tile == null : return false 
 		return true
+var actions : Array[Action] = []
 
 @export_group("Dependencies")
 ## The snappable component for dependency.
@@ -141,6 +133,17 @@ var being_played : bool = false :
 @export var movement_reach : ReachComponent
 @export var attack_reach : ReachComponent
 @export var state_machine : StateMachine
+var last_movement_id : int = 0
+# MOVEMENT ID:
+# 0 or other : STATIC
+# 1 : LEFT
+# 2 : RIGHT
+# 3 : FRONT
+# 4 : REAR
+# 5 : TOP LEFT
+# 6 : TOP RIGHT
+# 7 : REAR LEFT
+# 8 : REAR RIGHT
 
 func get_front_left_tile() -> Tile :
 	if !_has_dependencies : return
@@ -204,62 +207,70 @@ func is_tile_unavailable(tile : Tile, ignore_playable : bool = false, ignore_att
 	if !ignore_attackable && !is_tile_attackable(tile) && ignore_playable : return true
 	return false
 
-func move_to_front(connect : bool = false, set_position : bool = false, ignore_playable : bool = false, ignore_attackable : bool = false):
-	var tile : Tile = get_front_tile()
-	if is_tile_unavailable(tile, ignore_playable, ignore_attackable) : return
-	set_coordinates(tile.id, connect, set_position)
-
-func move_to_rear(connect : bool = false, set_position : bool = false, ignore_playable : bool = false, ignore_attackable : bool = false):
-	var tile : Tile = get_rear_tile()
-	if is_tile_unavailable(tile, ignore_playable, ignore_attackable) : return
-	set_coordinates(tile.id, connect, set_position)
 
 func move_to_left(connect : bool = false, set_position : bool = false, ignore_playable : bool = false, ignore_attackable : bool = false):
 	var tile : Tile = get_left_tile()
 	if is_tile_unavailable(tile, ignore_playable, ignore_attackable) : return
+	last_movement_id = 1
 	set_coordinates(tile.id, connect, set_position)
 	
 func move_to_right(connect : bool = false, set_position : bool = false, ignore_playable : bool = false, ignore_attackable : bool = false):
 	var tile : Tile = get_right_tile()
 	if is_tile_unavailable(tile, ignore_playable, ignore_attackable) : return
+	last_movement_id = 2
+	set_coordinates(tile.id, connect, set_position)
+
+func move_to_front(connect : bool = false, set_position : bool = false, ignore_playable : bool = false, ignore_attackable : bool = false):
+	var tile : Tile = get_front_tile()
+	if is_tile_unavailable(tile, ignore_playable, ignore_attackable) : return
+	last_movement_id = 3
+	set_coordinates(tile.id, connect, set_position)
+
+func move_to_rear(connect : bool = false, set_position : bool = false, ignore_playable : bool = false, ignore_attackable : bool = false):
+	var tile : Tile = get_rear_tile()
+	if is_tile_unavailable(tile, ignore_playable, ignore_attackable) : return
+	last_movement_id = 4
 	set_coordinates(tile.id, connect, set_position)
 
 func move_to_front_left(connect : bool = false, set_position : bool = false, ignore_playable : bool = false, ignore_attackable : bool = false):
 	var tile : Tile = get_front_left_tile()
 	if is_tile_unavailable(tile, ignore_playable, ignore_attackable) : return
+	last_movement_id = 5
 	set_coordinates(tile.id, connect, set_position)
 
 func move_to_front_right(connect : bool = false, set_position : bool = false, ignore_playable : bool = false, ignore_attackable : bool = false):
 	var tile : Tile = get_front_right_tile()
 	if is_tile_unavailable(tile, ignore_playable, ignore_attackable) : return
+	last_movement_id = 6
 	set_coordinates(tile.id, connect, set_position)
 
 func move_to_rear_left(connect : bool = false, set_position : bool = false, ignore_playable : bool = false, ignore_attackable : bool = false):
 	var tile : Tile = get_rear_left_tile()
 	if is_tile_unavailable(tile, ignore_playable, ignore_attackable) : return
+	last_movement_id = 7
 	set_coordinates(tile.id, connect, set_position)
 
 func move_to_rear_right(connect : bool = false, set_position : bool = false, ignore_playable : bool = false, ignore_attackable : bool = false):
 	var tile : Tile = get_rear_right_tile()
 	if is_tile_unavailable(tile, ignore_playable, ignore_attackable) : return
+	last_movement_id = 8
 	set_coordinates(tile.id, connect, set_position)
 
 func set_coordinates(new_coords : Vector2i, connect : bool = false, set_position : bool = false) :
 	if !active || current_grid == null : return
-	if current_tile && connect :
-		current_tile.disconnect_playable()
-		unplay()
+	if current_tile :
+		if connect : current_tile.disconnect_playable() ; unplay()
+		current_tile.unocuppy()
 	var grid_size : Vector2i = current_grid.grid_size
 	var target_tile : Tile
 	target_tile = current_grid.get_tile_at(new_coords)
-
+	target_tile.occupy(body)
+	
 	if connect : play(target_tile)
 	else : if snappable_component : 
 		snappable_component.keyboard_recovery = true
 		snappable_component.recover.emit(target_tile)
-		if is_tile_attackable(target_tile) : 
-			print("ATTACKING SNAPPING")
-			attacking_snap = true
+		if is_tile_attackable(target_tile) : attacking_snap = true
 	
 	if !set_position : return
 	if target_tile : body.global_position = target_tile.global_position ; return

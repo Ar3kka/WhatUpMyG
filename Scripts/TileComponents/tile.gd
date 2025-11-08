@@ -206,6 +206,7 @@ func _ready() -> void:
 			return
 		if parent is SnappableComponent : 
 			if occupier == null : return
-			if parent.snapped_to == self && !parent.is_recovering : occupier.snappable_component.stop_snapping()
+			if parent.snapped_to == self && !parent.is_recovering :
+				occupier.snappable_component.stop_snapping()
 			if occupier.snappable_component != parent || ( has_playable && playable_piece.snappable_component == occupier.snappable_component ) : return
 			unocuppy() )

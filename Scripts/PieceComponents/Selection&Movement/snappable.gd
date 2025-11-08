@@ -98,9 +98,9 @@ func _is_tile_not_being_played(supposed_tile : Tile) -> bool :
 
 func snap_to(new_tile : Tile, is_attacking : bool = false) :
 	snapped_to = new_tile
+	snapped_to.occupy(body)
 	if !is_attacking : return
 	attacking_snap = true
-	snapped_to.occupy(body)
 
 func _ready() -> void:
 	if body == null: body = get_parent_node_3d()
@@ -118,7 +118,11 @@ func _ready() -> void:
 		if snapped_to == null || !active : return
 		if !attacking_snap : is_recovering = false
 		else : attacking_snap = false
-		if _playable && _playable.current_tile : _playable.current_tile.unocuppy()
+		if _playable && _playable.current_tile && _playable.current_tile != snapped_to : 
+			var new_move := Action.new()
+			new_move.move(body, _playable.current_tile, snapped_to )
+			_playable.actions.append(new_move)
+			_playable.current_tile.unocuppy()
 		snapped_to.playable_piece = _playable )
 	
 	grounded.connect( func () :

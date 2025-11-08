@@ -7,8 +7,10 @@ signal stopped_dragging()
 ## RECOMMENDED SETTINGS
 const ROTATION_STRENGTH : float = 0.05
 const DRAGGING_STRENGTH : float = 14.5
-const X_LIMIT : float = 0.0
 const NOT_DRAGGING_LIMIT : float = 1.0
+const STANDARD_DRAG_ANIMATION_FORCE : float = 15.0
+const STANDARD_DRAG_ANIMATION_ROTATION : float = 10.0
+const X_LIMIT : float = 0.0
 
 var global := GeneralKnowledge.new()
 
@@ -34,6 +36,9 @@ var being_manipulated : bool :
 ## Whether or not the individual drag strength set for each piece should be overwritten by the dragging
 ## strength of the manipulator
 @export var override_drag_strength : bool = true
+@export var drag_animation : bool = true
+@export var drag_animation_force : float = STANDARD_DRAG_ANIMATION_FORCE
+@export var drag_animation_rotation_distance : float = STANDARD_DRAG_ANIMATION_ROTATION
 var _custom_dragging_strength : float
 var _next_position : Vector3
 var _stop_dragging_timer := Timer.new()
@@ -42,20 +47,55 @@ var horizontal_drag : bool = false
 var vertical_drag : bool = false
 
 var target_point : Vector3 = Vector3.ZERO
+var drag_starting_point : Vector3 = Vector3.ZERO
 var dragging_x_limit : float = X_LIMIT
 
+var playable_component : PlayableComponent :
+	get() :
+		if body == null : return
+		return body.playable_component
 var snappable_component : SnappableComponent :
-	set(new_value) : return
 	get() :
 		if body == null : return
 		return body.snappable_component
 
 var body_position : Vector3 : 
 	set(new_position): body.global_position = new_position
-	get(): return body.global_position
+	get() : return body.global_position
 var body_rotation : Vector3 :
 	set(new_rotation_degrees): body.rotation_degrees = new_rotation_degrees
-	get(): return body.rotation_degrees
+	get() : return body.rotation_degrees
+var horizontal_direction : Vector2i :
+	get() :
+		var result : Vector2i = Vector2i.ZERO
+		if body_position.x > target_point.x : result = Vector2i(1, 0) # LEFT
+		else : if body_position.x < target_point.x : result = Vector2i(0, 1) # RIGHT
+		return result
+var vertical_direction : Vector2i :
+	get() :
+		var result : Vector2i = Vector2i.ZERO
+		if body_position.y < target_point.y : result = Vector2i(1, 0) # UP
+		else : if body_position.y > target_point.y : result = Vector2i(0, 1) # DOWN
+		return result
+var depth_direction : Vector2i :
+	get() :
+		var result : Vector2i = Vector2i.ZERO
+		if body_position.z > target_point.z : result = Vector2i(1, 0) # FRONT
+		else : if body_position.z < target_point.z : result = Vector2i(0, 1) # REAR
+		return result
+
+var dragging_left : bool :
+	get() : return horizontal_direction.x
+var dragging_right : bool :
+	get() : return horizontal_direction.y
+var dragging_up : bool :
+	get() : return vertical_direction.x
+var dragging_down : bool :
+	get() : return vertical_direction.y
+var dragging_front : bool :
+	get() : return depth_direction.x
+var dragging_rear : bool :
+	get() : return depth_direction.y
 
 func stop_dragging() :
 	if body == null || !manipulable && being_manipulated : return
@@ -77,8 +117,8 @@ func _freeze(freeze_value):
 	if freeze && body.freezable_component:
 		body.freezable_component.freeze.emit(freeze_value, current_manipulator)
 
-func is_not_moving() -> bool :
-	return global.round_to_decimal(_next_position) == global.round_to_decimal(body_position)
+func is_not_moving(digits : int = 2) -> bool :
+	return global.round_to_decimal(_next_position, digits) == global.round_to_decimal(target_point, digits)
 
 func _ready() -> void:
 	if body == null : body = get_parent_node_3d()
@@ -90,6 +130,8 @@ func _ready() -> void:
 			print("Yup it bugged, stop it my child")
 			stop_dragging())
 	add_child(_stop_dragging_timer)
+	
+	started_dragging.connect(func() : drag_starting_point = body_position )
 	
 	stopped_dragging.connect(func (): 
 		if !body || snappable_component == null : return
@@ -134,10 +176,36 @@ func _process(delta: float) -> void:
 	var final_strength : float = dragging_strength
 	if override_drag_strength : final_strength = _custom_dragging_strength # Check if we respect own strength or accept outside manipulation strength 
 	
-	if is_not_moving() : _stop_dragging_timer.start()
-	
 	_next_position = lerp(body_position, final_drag_point, final_strength * delta) # change the body's position employing final calculations
 	body_position = _next_position
 	
-	if body.rotatable_component == null || !fix_rotation : return
-	body.rotatable_component.fix_rotation()
+	if body.rotatable_component != null && fix_rotation : body.rotatable_component.fix_rotation()
+	
+	if is_not_moving() : _stop_dragging_timer.start() ; return
+	if !drag_animation || snappable_component && ( snappable_component.is_handled || ( snappable_component.keyboard_recovery && is_not_moving(1) )) : return 
+	
+	var final_rotation := Vector3(body.rotation_degrees.x, body.rotation_degrees.y, body.rotation_degrees.z)
+	
+	var is_keyboard : bool = false
+	if snappable_component : is_keyboard = snappable_component.keyboard_recovery
+	if !is_keyboard :
+		# POINTER DRAGGING ANIMATION
+		if dragging_left : final_rotation.z -= drag_animation_rotation_distance
+		else : if dragging_right : final_rotation.z += drag_animation_rotation_distance
+	
+		if dragging_front : final_rotation.x += drag_animation_rotation_distance
+		else : if dragging_rear : final_rotation.x -= drag_animation_rotation_distance
+		
+	else : if playable_component != null :
+		# KEYBOARD DRAGGING ANIMATION
+		match playable_component.last_movement_id :
+			1 : final_rotation.z -= drag_animation_rotation_distance # LEFT
+			2 : final_rotation.z += drag_animation_rotation_distance # RIGHT
+			3 : final_rotation.x += drag_animation_rotation_distance # FRONT
+			4 : final_rotation.x -= drag_animation_rotation_distance # REAR
+			5 : final_rotation.x += drag_animation_rotation_distance ; final_rotation.z -= drag_animation_rotation_distance # FRONT LEFT
+			6 : final_rotation.x += drag_animation_rotation_distance ; final_rotation.z += drag_animation_rotation_distance # FRONT RIGHT
+			7 : final_rotation.x -= drag_animation_rotation_distance ; final_rotation.z -= drag_animation_rotation_distance # REAR LEFT
+			8 : final_rotation.x -= drag_animation_rotation_distance ; final_rotation.z += drag_animation_rotation_distance # REAR RIGHT
+	
+	body.rotation_degrees = lerp(body.rotation_degrees, final_rotation, drag_animation_force * delta)
