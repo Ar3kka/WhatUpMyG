@@ -98,8 +98,8 @@ func _is_tile_not_being_played(supposed_tile : Tile) -> bool :
 
 func snap_to(new_tile : Tile, is_attacking : bool = false) :
 	snapped_to = new_tile
-	snapped_to.occupy(body)
 	if !is_attacking : return
+	snapped_to.occupy(body)
 	attacking_snap = true
 
 func _ready() -> void:

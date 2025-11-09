@@ -63,7 +63,7 @@ func stop_dragging(draggable_component : DraggableComponent) :
 
 func _deselect():
 	if !selected_object : return
-	selected_object.selectable_component.select.emit(false, manipulator)
+	selected_object.selectable_component.select(false, manipulator)
 	var draggable_component : DraggableComponent = selected_object.draggable_component
 	if draggable_component && draggable_component.active && draggable_component.dragged() : stop_dragging(draggable_component)
 	var snappable_component : SnappableComponent = selected_object.snappable_component
@@ -77,7 +77,7 @@ func double_drag() -> bool: return horizontal_drag && vertical_drag
 func select(aspirant : Piece = selectable_object) :
 	if aspirant == null : return
 	if aspirant != selected_object: _deselect()
-	aspirant.selectable_component.select.emit(true, manipulator)
+	aspirant.selectable_component.select(true, manipulator)
 	selected_object = aspirant
 	current_index = current_pieces.find(selected_object)
 

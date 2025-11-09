@@ -380,7 +380,9 @@ func _highlight_playables(highlight : bool = true, color : bool = true):
 	if body == null || !current_grid || playable.is_deceased : return
 	for tile in playable_tiles:
 		if tile is Tile: 
-			if highlight : tile.highlight(color, highlight_color, highlight_strength)
+			if highlight : 
+				if color : tile.color_highlight(highlight_color, true, highlight_strength)
+				tile.highlight()
 			else : tile.unhighlight()
 
 ## Judges whether or not the provided tile is playable by searching it within the

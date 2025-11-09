@@ -4,6 +4,7 @@ signal occupied()
 signal unoccupied()
 signal snap()
 signal highlighted()
+signal highlighted_color()
 signal unhighlighted()
 signal connected()
 signal disconnected()
@@ -71,7 +72,6 @@ var is_pressing : bool
 ## The multiplication for the highlight push (times its own size) where 1.0 is equal to its height (0.250)
 @export var raise_up_by : float = RAISE_UP_MULTIPLIER
 var is_highlighting : bool = false
-#var highlight_press : bool = false
 
 var occupier : Piece
 var has_playable : bool :
@@ -97,16 +97,19 @@ func instantiate(new_active_state : bool = true, new_snappable_state : bool = tr
 	new_tile.instantiated.emit()
 	return new_tile
 
-func highlight(color_highlight : bool, new_color : Color, new_highlight_strength : float = highlight_strength) :
-	if !highlightable : return
-	is_highlighting = true
-	if color_highlight :
+func color_highlight(new_color : Color, save : bool = true, new_highlight_strength : float = highlight_strength) :
+	if save :
 		highlight_color = new_color
 		highlight_strength = new_highlight_strength
-		set_color(lerp(tint, highlight_color, highlight_strength))
-	highlighted.emit()
+	set_color(lerp(tint, new_color, new_highlight_strength))
+	highlighted_color.emit()
+
+func highlight() :
+	if !highlightable : return
+	is_highlighting = true
 	if playable_piece : return
 	raise_up()
+	highlighted.emit()
 
 func unhighlight() :
 	if playable_piece == null : reset_position()

@@ -1,6 +1,7 @@
 class_name SelectableComponent extends Node3D
 
-signal select(new_selection_value : bool, was_a_player_selection : Manipulator)
+signal just_selected
+signal just_deselected
 
 var current_manipulator : Manipulator
 var _manipulator_list : Array[Manipulator] = []
@@ -33,8 +34,11 @@ var selected : bool = false :
 ## The outline itself.
 @export var outline : MeshInstance3D
 
+func select(new_selection_value : bool, was_a_player_selection : Manipulator) :
+	current_manipulator = was_a_player_selection
+	selected = new_selection_value
+	if selected : just_selected.emit() ; return
+	just_deselected.emit()
+
 func _ready():
 	if body == null: body = get_parent_node_3d()
-	select.connect(func(new_selection_value : bool, was_a_player_selection : Manipulator) : 
-		current_manipulator = was_a_player_selection
-		selected = new_selection_value)

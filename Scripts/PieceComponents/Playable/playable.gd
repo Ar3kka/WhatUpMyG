@@ -3,6 +3,8 @@
 ## For this component to work, the body piece has to have an active draggable component and snappable component.
 class_name PlayableComponent extends Node3D
 
+const STANDARD_LAST_MOVEMENT_COLOR : Color = Color.GOLD
+
 signal loaded_dependencies()
 
 signal played()
@@ -27,6 +29,8 @@ signal death(by_take : bool)
 	get() :
 		if current_tile == null : return Vector2i.ZERO
 		return current_tile.id
+var highlight_latest_tile : bool = true
+@export var last_movement_color : Color = STANDARD_LAST_MOVEMENT_COLOR
 var _generation_move : bool = true
 var _first_move : bool = true
 var mother : PieceGenerator :
@@ -114,12 +118,21 @@ var being_played : bool = false :
 		if current_tile == null : return false 
 		return true
 var actions : Array[Action] = []
+var last_movement : Action :
+	get() :
+		if actions.is_empty() : return
+		var index = actions.size()
+		for action in actions :
+			index -= 1
+			if actions[index].has_moved : return actions[index]
+		return
 
 @export_group("Dependencies")
 ## The snappable component for dependency.
 @export var snappable_component : SnappableComponent
 ## The draggable component for dependency.
 @export var draggable_component : DraggableComponent
+@export var selectable_component : SelectableComponent
 @export var health_component : HealthComponent :
 	set(new_value) : return
 	get() :
@@ -286,31 +299,49 @@ func get_playable_tiles() :
 	attack_tiles
 	movement_tiles
 
-func play(new_tile : Tile) :
+func play(new_tile : Tile, highlight : bool = true) :
+	if highlight : unhighlight_played_tiles()
 	current_tile = new_tile
+	if highlight : highlight_last_played_tile()
 	played.emit()
 
 func unplay() :
 	current_tile = null
 	unplayed.emit()
 
+func highlight_last_played_tile() :
+	if last_movement == null || !highlight_latest_tile : return 
+	last_movement.moved_from.color_highlight(last_movement_color, false)
+
+func unhighlight_played_tiles() :
+	if actions.is_empty() == null || !highlight_latest_tile : return
+	for action in actions : 
+		if action.has_moved : action.moved_from.unhighlight()
+
 func _ready():
 	if body == null : body = get_parent_node_3d()
 	_get_snappable()
 	_get_draggable()
+	_get_selectable()
 	if !_has_dependencies : return
 	loaded_dependencies.emit()
+	
+	body.found_health.connect(func () : 
+		body.health_component.death.connect(func () : death.emit() ))
+	
+	snappable_component.grounded.connect(func () : highlight_last_played_tile())
+	
+	snappable_component.connected.connect(func () : 
+		play(snappable_component.snapped_to) )
+	
+	selectable_component.just_selected.connect(func() : highlight_last_played_tile())
+	
+	selectable_component.just_deselected.connect((func() : unhighlight_played_tiles()))
 	
 	attacked.connect( func(attacked_by : DamageComponent) : 
 		if health_component == null : return
 		attacked_by.hit( health_component )
 		if snappable_component && health_component.alive : snappable_component.auto_recover.emit(true) )
-	
-	snappable_component.connected.connect(func () : 
-		play(snappable_component.snapped_to) )
-		
-	body.found_health.connect(func () : 
-		body.health_component.death.connect(func () : death.emit() ))
 	
 	death.connect(func (by_take : bool = true) :
 		unplay()
@@ -355,3 +386,7 @@ func _get_snappable():
 func _get_draggable():
 	if body == null : return 
 	draggable_component = body.read_draggable_component()
+
+func _get_selectable():
+	if body == null : return 
+	selectable_component = body.read_selectable_component()
