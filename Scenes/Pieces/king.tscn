@@ -81,6 +81,9 @@ get_only_played_tiles = true
 body = NodePath("..")
 
 [node name="Damage" parent="." instance=ExtResource("12_3nxrr")]
+active = true
+damage_points = 1.0
+cooldown_time = 2.0
 
 [editable path="Mesh"]
 [editable path="Playable"]

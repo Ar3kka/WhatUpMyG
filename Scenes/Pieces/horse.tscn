@@ -82,6 +82,9 @@ mirror_uniform_pattern = true
 uniform_pattern = Vector2i(2, -1)
 
 [node name="Damage" parent="." instance=ExtResource("11_xkt54")]
+active = true
+damage_points = 1.0
+cooldown_time = 2.0
 
 [node name="Health" parent="." instance=ExtResource("12_u5fs3")]
 

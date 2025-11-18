@@ -23,3 +23,10 @@ func get_random_dna() -> PackedScene :
 		5 : return TOWER
 		6 : return BISHOP
 	return PAWN
+
+func generate_piece( piece_dna : PackedScene, team_id : int, coordinates : Vector2i, health : float = 1 ) -> Piece :
+	var piece : Piece = piece_dna.instantiate()
+	piece.initial_team_id = team_id
+	piece.initial_coordinates = coordinates
+	piece.initial_health = health
+	return piece

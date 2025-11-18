@@ -92,6 +92,9 @@ lock_rear = true
 [node name="Health" parent="." instance=ExtResource("11_p6t58")]
 
 [node name="Damage" parent="." instance=ExtResource("12_0otbx")]
+active = true
+damage_points = 1.0
+cooldown_time = 2.0
 
 [editable path="Mesh"]
 [editable path="Playable"]

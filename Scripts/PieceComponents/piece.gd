@@ -26,6 +26,7 @@ var manipulator : Manipulator
 		if team_component == null : return team_id
 		return team_component.id
 var initial_team_id : int = 0
+var initial_health : float = 1
 var initial_team : Team
 var initial_invert : bool = false
 @export_group("Color Settings")
@@ -247,6 +248,10 @@ func _populate_components_array(restart : bool):
 	if snappable_component && !components.has(playable_component) : 
 		components.append(snappable_component)
 
+func set_health( new_health : float = initial_health ) :
+	if health_component == null : return
+	health_component.max_health = new_health
+	health_component.set_health(new_health)
 
 func set_initial_coordinates( new_coords : Vector2i = initial_coordinates ) :
 	if playable_component == null : return
@@ -288,6 +293,7 @@ func read_components():
 func _ready() -> void:
 	if !active : return
 	
+	found_health.connect(set_health)
 	if initial_team : found_team.connect(set_team)
 	else : if initial_team_id : found_team.connect(set_team_id)
 	found_playable.connect(func() :

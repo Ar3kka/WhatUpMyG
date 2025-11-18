@@ -12,7 +12,6 @@ var effect : float = STANDARD_EFFECT
 var multiplier : float = STANDARD_MULTIPLIER
 @export var cooldown_time : float = 2.0
 var playable_component : PlayableComponent :
-	set(new_value) : return
 	get() : return body.playable_component
 
 func hit(health_component : HealthComponent):

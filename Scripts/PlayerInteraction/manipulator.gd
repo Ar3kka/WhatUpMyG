@@ -10,7 +10,11 @@ signal assigned_board()
 @export var ID : int :
 	set(new_ID): return
 	get(): return get_instance_id()
-@export var team_id : int = 0
+@export var team_id : int = 0 :
+	set(new_team) :
+		team_id = new_team
+		if team_id == 0 : _update_with_all_pieces() ; return
+		_update_pieces()
 @export var eyes : Camera3D :
 	set(new_eyes) :
 		eyes = new_eyes
@@ -43,6 +47,11 @@ func _ready():
 	else : found_hands.emit()
 	if feet == null : _find_feet()
 	else : found_feet.emit()
+
+func _update_with_all_pieces( ) :
+	if current_board == null : return
+	pieces.clear()
+	pieces.append_array( current_board.get_pieces() )
 
 func _update_pieces( selectable : bool = true, playable : bool = true, alive : bool = true, either_or : bool = false ) :
 	if current_board == null : return

@@ -8,28 +8,26 @@ var global := GeneralKnowledge.new()
 @export var active : bool = true
 @export var body : Piece
 @export var max_health : float = global.STANDARD_MAX_HEALTH
-@export var health_points : float = global.STANDARD_MAX_HEALTH :
+@export var health_points : float = max_health :
 	get() : 
 		var final_hp : float = ( health_points + effect ) * multiplier
-		if final_hp > max_health : final_hp = max_health
 		return final_hp
 var effect : float = global.STANDARD_EFFECT
 var multiplier : float = global.STANDARD_MULTIPLIER
 var alive : bool :
-	set(new_value) : return
 	get() :
 		return health_points > 0
 @export var invincible_time : float = 2.0
 var invincible : bool = false
 var playable_component : PlayableComponent :
-	set(new_value) : return
 	get() : 
 		if body == null : return playable_component
 		return body.playable_component
 
-func _on_health_area_area_entered(area: Area3D):
-	return
-	if area.get_parent_node_3d().body == body: return
+func set_health(new_health : float, addition : bool = true, ignore_max_health : bool = false):
+	if !addition : health_points = 0
+	health_points += new_health
+	if !ignore_max_health && health_points > max_health : health_points = max_health
 
 func _on_ready():
 	if body == null : body = get_parent_node_3d()

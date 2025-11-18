@@ -19,8 +19,8 @@ var affected_by
 var affected_with
 var affected
 
-func attack(new_attacker : Piece, attacked_piece : Piece, from : Tile, to : Tile) :
-	attacker = new_attacker
+func attack(attacker_piece : Piece, attacked_piece : Piece, from : Tile, to : Tile) :
+	attacker = attacker_piece
 	attacked = attacked_piece
 	attacked_from = from
 	attacked_to = to

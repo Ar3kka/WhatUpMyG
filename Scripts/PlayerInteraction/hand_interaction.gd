@@ -4,6 +4,7 @@ const DRAG_STRENGTH : float = 14.5
 const ROTATION_STRENGTH : float = 3.5
 const RAYCAST_DISTANCE : float = 250.0
 const FINGER_SIZE : float = 0.5
+const STANDARD_SELECT_TIME_OFFSET : float = 0.150
 
 @export var manipulator : Manipulator
 @export var holding_drag : bool = true
@@ -31,6 +32,9 @@ var horizontal_drag : bool = false
 var rotate_left : bool = false
 var rotate_right : bool = false
 
+@export var select_time_offset : float = STANDARD_SELECT_TIME_OFFSET
+var _select_timer : Timer = Timer.new()
+var _can_change_selection : bool = true
 var current_pieces : Array[Piece] :
 	get() :
 		if manipulator == null : return []
@@ -53,6 +57,11 @@ func _ready() -> void:
 	if !manipulator : manipulator = get_parent_node_3d()
 	finger = %Finger
 	finger_size = FINGER_SIZE
+	
+	_select_timer.one_shot = true
+	_select_timer.wait_time = select_time_offset
+	_select_timer.timeout.connect(func () : _can_change_selection = true )
+	add_child(_select_timer)
 
 func stop_dragging(draggable_component : DraggableComponent) :
 	if !draggable_component : return
@@ -68,6 +77,8 @@ func _deselect():
 	if draggable_component && draggable_component.active && draggable_component.dragged() : stop_dragging(draggable_component)
 	var snappable_component : SnappableComponent = selected_object.snappable_component
 	if snappable_component : snappable_component.stop_snapping()
+	var playable_component : PlayableComponent = selected_object.playable_component
+	if playable_component : playable_component.unhighlight_played_tiles()
 	selected_object = null
 
 func dragging() -> bool: return horizontal_drag || vertical_drag
@@ -92,16 +103,21 @@ func _process(_delta):
 	###### SWITCH DRAGGING TYPE
 	if Input.is_action_just_pressed("Switch Drag Mode"): holding_drag = !holding_drag
 	
-	if Input.is_action_just_pressed("Change Team"): 
-		if current_team == 1 : current_team = 2
-		else : if current_team == 2 : current_team = 1
+	if Input.is_action_just_pressed("Change Team"):
+		current_team += 1
+		if current_team > 2 : current_team = 0
+		print("New team: ", current_team)
 	
 	if Input.is_action_just_pressed("Reload"): get_tree().reload_current_scene()
 	
 	####### Selectable pieces navigation
 	var keyboard_select : bool = false
-	if Input.is_action_just_pressed("Select Left") : current_index += 1 ; keyboard_select = true
-	else : if Input.is_action_just_pressed("Select Right") : current_index -= 1 ; keyboard_select = true
+	if Input.is_action_pressed("Select Left") && _can_change_selection : 
+		_select_timer.start()
+		current_index += 1 ; keyboard_select = true ; _can_change_selection = false
+	else : if Input.is_action_pressed("Select Right") && _can_change_selection :
+		_select_timer.start()
+		current_index -= 1 ; keyboard_select = true ; _can_change_selection = false
 	if keyboard_select :
 		var new_selected : Piece = manipulator.pieces.get(current_index)
 		if new_selected == null : return

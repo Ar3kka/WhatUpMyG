@@ -78,6 +78,9 @@ standard_reach = 7
 get_only_played_tiles = true
 
 [node name="Damage" parent="." instance=ExtResource("11_pls4v")]
+active = true
+damage_points = 1.0
+cooldown_time = 2.0
 
 [node name="Health" parent="." instance=ExtResource("12_q07mo")]
 

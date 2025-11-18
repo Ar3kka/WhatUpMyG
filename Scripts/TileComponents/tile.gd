@@ -115,13 +115,15 @@ func unhighlight() :
 	if playable_piece == null : reset_position()
 	is_highlighting = false
 	highlight_color = tint
-	set_color(tint)
+	set_color(tint, false)
 	unhighlighted.emit()
 
 func occupy(new_occupier : Piece) :
 	if new_occupier == null : return unocuppy()
+	print( new_occupier )
 	if ( is_highlighting && new_occupier != occupier &&
-	new_occupier.snappable_component && new_occupier.snappable_component.is_handled ) : reset_position()
+	new_occupier.snappable_component && 
+	( new_occupier.snappable_component.is_handled || new_occupier.snappable_component.keyboard_recovery ) ) : reset_position()
 	occupier = new_occupier
 	occupied.emit()
 
@@ -172,10 +174,12 @@ func set_movable() -> MovableComponent :
 	movable.reset_vector_states()
 	return movable
 
-func set_color(new_tint : Color):
+func set_color(new_tint : Color, mix : bool = true, mix_strength : float = HIGHLIGHT_STRENGTH):
 	if appearance == null : return
+	var final_color = new_tint
+	if mix && skin && skin.albedo_color != tint : final_color = lerp(skin.albedo_color, new_tint, mix_strength)
 	skin = StandardMaterial3D.new()
-	skin.albedo_color = new_tint
+	skin.albedo_color = final_color
 	appearance.set_surface_override_material(0, skin)
 
 func _is_different_playable_and_not_attacking(snappable_component : SnappableComponent) -> bool :

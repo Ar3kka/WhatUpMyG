@@ -182,7 +182,7 @@ func _process(delta: float) -> void:
 	if body.rotatable_component != null && fix_rotation : body.rotatable_component.fix_rotation()
 	
 	if is_not_moving() : _stop_dragging_timer.start() ; return
-	if !drag_animation || snappable_component && ( snappable_component.is_handled || ( snappable_component.keyboard_recovery && is_not_moving(1) )) : return 
+	if !drag_animation || snappable_component && ( snappable_component.is_handled || ( ( snappable_component.keyboard_recovery || snappable_component.is_recovering ) && is_not_moving(1) )) : return 
 	
 	var final_rotation := Vector3(body.rotation_degrees.x, body.rotation_degrees.y, body.rotation_degrees.z)
 	

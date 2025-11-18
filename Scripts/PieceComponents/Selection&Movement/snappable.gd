@@ -119,32 +119,31 @@ func _ready() -> void:
 		if !attacking_snap : is_recovering = false
 		else : attacking_snap = false
 		if _playable && _playable.current_tile && _playable.current_tile != snapped_to : 
-			var new_move := Action.new()
-			new_move.move(body, _playable.current_tile, snapped_to )
-			_playable.actions.append(new_move)
+			_playable.add_movement(body, _playable.current_tile, snapped_to)
 			_playable.current_tile.unocuppy()
 		snapped_to.playable_piece = _playable )
 	
 	grounded.connect( func () :
 		if is_recovering && !keyboard_recovery : stop_snapping() ; return
 		if snapped_to == null : return
-		var is_attackable : bool = _is_tile_attackable(snapped_to)
-		if _playable && ( _is_tile_playable(snapped_to) || is_attackable ) : 
-			if is_attackable : attack_recover.emit() 
-			connected.emit() ; return
+		if _playable :
+			if _is_tile_attackable(snapped_to) : attack_recover.emit() ; return
+			else : if _is_tile_playable(snapped_to) : connected.emit() ; return
 		if keyboard_recovery : stop_snapping(true) )
 	
 	attack_recover.connect( func () : 
 		if snapped_to == null || !active || !recoverable : return
-		if ( attacking_snap && !is_recovering ) || keyboard_recovery : 
-			snapped_to.playable_piece.attacked.emit(body.damage_component) )
+		if ( attacking_snap && !is_recovering ) || keyboard_recovery :
+			snapped_to.playable_piece.attacked.emit(body.playable_component)
+			_playable.attack.emit(snapped_to.playable_piece)
+			if keyboard_recovery : _playable.reset_to_playable_position() )
 	
 	auto_recover.connect( func (is_hit : bool = false) :
 		if !recoverable || (is_hit && !hit_recovery) || !displacement_recovery : return
 		just_in_recovery = true
 		_current_timer.start() )
 	
-	recover.connect( func ( new_tile : Tile ) : 
+	recover.connect( func ( new_tile : Tile = snapped_to ) : 
 		if !recoverable : return
 		is_recovering = true 
 		snap_to(new_tile) )

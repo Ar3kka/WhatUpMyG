@@ -4,6 +4,8 @@
 class_name PlayableComponent extends Node3D
 
 const STANDARD_LAST_MOVEMENT_COLOR : Color = Color.GOLD
+const STANDARD_LAST_ATTACK_COLOR : Color = Color.LIGHT_PINK
+const STANDARD_LAST_ATTACK_RECEIVED_COLOR : Color = Color.INDIGO
 
 signal loaded_dependencies()
 
@@ -12,7 +14,8 @@ signal unplayed()
 
 signal first_move()
 
-signal attacked(attacked_by : DamageComponent)
+signal attack(attacked : PlayableComponent)
+signal attacked(attacked_by : PlayableComponent)
 signal kill(killed_piece : PlayableComponent)
 signal death(by_take : bool)
 
@@ -29,8 +32,13 @@ signal death(by_take : bool)
 	get() :
 		if current_tile == null : return Vector2i.ZERO
 		return current_tile.id
-var highlight_latest_tile : bool = true
+@export_group("Highlight")
+@export var highlight_latest_tile : bool = true
 @export var last_movement_color : Color = STANDARD_LAST_MOVEMENT_COLOR
+@export var highlight_latest_attacked : bool = true
+@export var last_attack_color : Color = STANDARD_LAST_ATTACK_COLOR
+@export var highlight_latest_attack_received : bool = true
+@export var last_attack_received_color : Color = STANDARD_LAST_ATTACK_RECEIVED_COLOR
 var _generation_move : bool = true
 var _first_move : bool = true
 var mother : PieceGenerator :
@@ -125,6 +133,32 @@ var last_movement : Action :
 		for action in actions :
 			index -= 1
 			if actions[index].has_moved : return actions[index]
+		return
+var last_attack_received : Action :
+	get() :
+		if actions.is_empty() : return
+		var index = actions.size()
+		for action in actions :
+			index -= 1
+			var attack = actions[index]
+			if attack.has_attacked && attack.attacked == body : return attack
+		return
+var last_attack_dealt : Action :
+	get() :
+		if actions.is_empty() : return
+		var index = actions.size()
+		for action in actions :
+			index -= 1
+			var attack = actions[index]
+			if attack.has_attacked && attack.attacker == body : return attack
+		return
+var last_effect : Action :
+	get() :
+		if actions.is_empty() : return
+		var index = actions.size()
+		for action in actions :
+			index -= 1
+			if actions[index].has_affected : return actions[index]
 		return
 
 @export_group("Dependencies")
@@ -302,21 +336,51 @@ func get_playable_tiles() :
 func play(new_tile : Tile, highlight : bool = true) :
 	if highlight : unhighlight_played_tiles()
 	current_tile = new_tile
-	if highlight : highlight_last_played_tile()
+	if highlight : highlight_actions()
 	played.emit()
 
 func unplay() :
 	current_tile = null
 	unplayed.emit()
 
+func highlight_actions(movement : bool = true, attack_dealt : bool = true, attack_received : bool = true) :
+	if movement : highlight_last_played_tile()
+	if attack_received : highlight_last_attacker()
+	if attack_dealt : highlight_last_attacked_tile()
+
+func highlight_last_attacker() :
+	if last_attack_received == null || !highlight_latest_attack_received : return
+	last_attack_received.attacked_from.color_highlight(last_attack_received_color, false)
+	
+func highlight_last_attacked_tile() :
+	if last_attack_dealt == null || !highlight_latest_attacked : return
+	last_attack_dealt.attacked_to.color_highlight(last_attack_color, false)
+
 func highlight_last_played_tile() :
 	if last_movement == null || !highlight_latest_tile : return 
 	last_movement.moved_from.color_highlight(last_movement_color, false)
 
-func unhighlight_played_tiles() :
+func unhighlight_played_tiles(moved := true, attacked := true, attacked_by := true) :
 	if actions.is_empty() == null || !highlight_latest_tile : return
 	for action in actions : 
-		if action.has_moved : action.moved_from.unhighlight()
+		if attacked && action.has_attacked && action.attacker == body : action.attacked_to.unhighlight()
+		if attacked_by && action.has_attacked && action.attacked == body : action.attacked_from.unhighlight()
+		if moved && action.has_moved : action.moved_from.unhighlight()
+
+func add_movement(moved_piece : Piece = body, from : Tile = current_tile, to : Tile = current_tile) :
+	var new_move := Action.new()
+	new_move.move(moved_piece, from, to)
+	actions.append(new_move)
+
+func add_attack(attacker_piece : Piece, attacked_piece : Piece, from : Tile, to : Tile) :
+	var new_attack := Action.new()
+	new_attack.attack(attacker_piece, attacked_piece, from, to)
+	actions.append(new_attack)
+
+func add_effect(effect, receiver, perpretator) :
+	var new_effect := Action.new()
+	new_effect.effect(effect, receiver, perpretator)
+	actions.append(new_effect)
 
 func _ready():
 	if body == null : body = get_parent_node_3d()
@@ -326,21 +390,22 @@ func _ready():
 	if !_has_dependencies : return
 	loaded_dependencies.emit()
 	
-	body.found_health.connect(func () : 
-		body.health_component.death.connect(func () : death.emit() ))
+	body.found_health.connect(func () : body.health_component.death.connect(func () : death.emit() ))
 	
-	snappable_component.grounded.connect(func () : highlight_last_played_tile())
+	snappable_component.grounded.connect(func () : if selectable_component && selectable_component.selected : highlight_actions() )
 	
-	snappable_component.connected.connect(func () : 
-		play(snappable_component.snapped_to) )
+	snappable_component.connected.connect(func () : play(snappable_component.snapped_to) )
 	
-	selectable_component.just_selected.connect(func() : highlight_last_played_tile())
+	selectable_component.just_selected.connect(func() : highlight_actions() )
 	
 	selectable_component.just_deselected.connect((func() : unhighlight_played_tiles()))
 	
-	attacked.connect( func(attacked_by : DamageComponent) : 
-		if health_component == null : return
-		attacked_by.hit( health_component )
+	attack.connect(func(attacked_piece : PlayableComponent) : add_attack(body, attacked_piece.body, current_tile, attacked_piece.current_tile) )
+	
+	attacked.connect( func(attacked_by : PlayableComponent) : 
+		if health_component == null || attacked_by == null || attacked_by.damage_component == null : return
+		add_attack(attacked_by.body, body, attacked_by.current_tile, current_tile)
+		attacked_by.damage_component.hit( health_component )
 		if snappable_component && health_component.alive : snappable_component.auto_recover.emit(true) )
 	
 	death.connect(func (by_take : bool = true) :
@@ -351,6 +416,9 @@ func _ready():
 	
 	kill.connect(func (killed_piece : PlayableComponent) :
 		stop_highlight()
+		add_movement(body, current_tile, killed_piece.current_tile)
+		unhighlight_played_tiles()
+		highlight_actions()
 		snappable_component.stop_snapping()
 		snappable_component.snap_to(killed_piece.current_tile)
 		current_tile.unocuppy()

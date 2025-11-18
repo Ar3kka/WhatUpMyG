@@ -17,8 +17,9 @@ func populate( piece_set : PieceSet , force : bool = false, negative : bool = tr
 	piece_set.add_piece( dna.HORSE, 1, Vector2i(0, 6) )
 	piece_set.add_piece( dna.TOWER, 1, Vector2i(0, 7) )
 	
-	
 	if !negative : return
+	
+	piece_set.add_specific_piece( dna.generate_piece( dna.PAWN, 2, Vector2i(5, 5), 10 ) )
 	
 	piece_set.add_row( dna.PAWN, 2, 6, 8 )
 	
