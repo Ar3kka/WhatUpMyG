@@ -209,7 +209,7 @@ func _process(_delta: float) -> void:
 		if attacking_snap && is_recovering_done() : stop_entirely() ; return
 		if _hit_reset && ( cannot_recover() || is_recovering_done() ) : stop_entirely(true) ; return
 		final_snap_force = recovery_snap_force
-		if attacking_snap : final_snap_force = attack_recovery_snap_force
 		if keyboard_recovery : final_snap_force = keyboard_movement_snap_force
+		if attacking_snap : final_snap_force = attack_recovery_snap_force
 	
 	_draggable.drag.emit(true, true, snap_point, final_snap_force, _draggable.current_manipulator)

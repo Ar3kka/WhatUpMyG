@@ -16,6 +16,10 @@ var grid : TileGrid :
 	get():
 		if board == null : return
 		return board.grid
+var grid_size : Vector2i :
+	get():
+		if grid == null : return Vector2i.ZERO
+		return grid.grid_size
 var teams : TeamsHandler :
 	get():
 		if board == null : return
@@ -37,6 +41,7 @@ func _ready() -> void:
 	board.found_grid.connect(func() : 
 		grid.initial_generation.connect(func () : 
 			add_set(initial_set)
+			add_random_pieces(2)
 			update_pieces() ) )
 	
 	generated_piece.connect(func(new_piece : Piece) : pieces.append(new_piece))
@@ -115,6 +120,10 @@ func add_specific_piece( piece : Piece , team_from_id : bool = true ) :
 	if team_from_id : piece.initial_team = teams.get_team(piece.initial_team_id)
 	add_child(piece)
 	generated_piece.emit(piece)
+
+func add_random_pieces(team_id : int = teams.get_random_team().id, n_pieces : int = god.randi_range(1, grid_size.y)) :
+	if grid == null || grid.is_empty : return
+	for i in n_pieces : add_piece( dna.get_random_dna(), team_id, grid.get_random_coordinates() )
 
 func add_random_piece( team_id : int = teams.get_random_team().id ) :
 	if grid == null || grid.is_empty : return

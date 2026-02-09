@@ -2,7 +2,7 @@ class_name SetClassic extends Node
 
 var dna := PieceDNA.new()
 
-func populate( piece_set : PieceSet , force : bool = false, negative : bool = true ):
+func populate( piece_set : PieceSet , force : bool = false, negative : bool = false ):
 	if !piece_set.templates.is_empty() && !force : return
 
 	piece_set.add_row( dna.PAWN, 1, 1, 8 )

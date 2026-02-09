@@ -120,7 +120,7 @@ func unhighlight() :
 
 func occupy(new_occupier : Piece) :
 	if new_occupier == null : return unocuppy()
-	print( new_occupier )
+	#print( new_occupier )
 	if ( is_highlighting && new_occupier != occupier &&
 	new_occupier.snappable_component && 
 	( new_occupier.snappable_component.is_handled || new_occupier.snappable_component.keyboard_recovery ) ) : reset_position()

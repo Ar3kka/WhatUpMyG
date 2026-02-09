@@ -406,7 +406,6 @@ func playable_tiles_from(tile_list : Array[Tile], ignore_block : bool = ignore_b
 
 func get_playable_tiles(store_tiles : bool = true) -> Array[Tile]:
 	if !is_functional : return []
-	
 	var playables : Array[Tile] = []
 
 	if follow_uniform_pattern : 

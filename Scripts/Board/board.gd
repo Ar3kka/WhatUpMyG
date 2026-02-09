@@ -25,7 +25,7 @@ func _ready() -> void:
 	
 	var seed_to_use : int = hash( seed ) if seed else randi()
 	god.seed = seed_to_use
-	print("BOARD: ", self, " | SEED NAME: ", seed, "| SEED ID: ", god.seed)
+	print("BOARD: ", self, " | SEED NAME: ", seed, " | SEED ID: ", god.seed)
 	
 	found_grid.connect(func() : grid.generate_rows() )
 	

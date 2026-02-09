@@ -66,7 +66,6 @@ initial_board = NodePath("../Board")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
 
 [node name="Board" parent="SubViewportContainer/SubViewport" instance=ExtResource("3_707cn")]
-seed = "MIGUEL ANGEL HUALLPA CONTRERAS"
 
 [node name="Pieces" parent="SubViewportContainer/SubViewport/Board" index="0"]
 default_set = true

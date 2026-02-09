@@ -311,7 +311,7 @@ func set_coordinates(new_coords : Vector2i, connect : bool = false, set_position
 	var grid_size : Vector2i = current_grid.grid_size
 	var target_tile : Tile
 	target_tile = current_grid.get_tile_at(new_coords)
-	target_tile.occupy(body)
+	if target_tile : target_tile.occupy(body)
 	
 	if connect : play(target_tile)
 	else : if snappable_component : 

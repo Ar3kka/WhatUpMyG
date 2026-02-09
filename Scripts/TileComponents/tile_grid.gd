@@ -5,8 +5,9 @@ signal generated_rows()
 
 const SCENE : PackedScene = preload("res://Scenes/Tiles/tile_grid.tscn")
 
-const STANDARD_SIZE : int = 8
-const STANDARD_GENERATION_SIZE := Vector2i(STANDARD_SIZE, STANDARD_SIZE) 
+const STANDARD_MINIMUM_SIZE := Vector2i(1, 1)
+const STANDARD_SIZE := Vector2i(8, 8)
+const STANDARD_GENERATION_SIZE := Vector2i(STANDARD_SIZE.x, STANDARD_SIZE.y)
 const STANDARD_DIRECTION : Vector2i = Vector2i(-1, -1)
 const STANDARD_COLOR_PATTERN : Array[Color] = [Color.WHITE, Color.BLACK]
 const STANDARD_RAISE_HEIGHT : float = 0.250
@@ -26,11 +27,6 @@ var god : RandomNumberGenerator :
 @export var generation_grid_size : Vector2i = STANDARD_GENERATION_SIZE
 ## When true: the gridmap size will randomize the gridsize within the range provided in the Grid Size
 ## vector from x to y.
-@export var randomize : Vector2i :
-	get() : return Vector2i(randomize_depth, randomize_width)
-@export var randomize_depth : bool = false
-@export var randomize_width : bool = false
-
 ## Direction for generation where X represents the horizontal direction and Y the vertical direction.
 ## If left on 0 it will set it to the standard direction (-1, -1)
 @export var generation_direction : Vector2i = STANDARD_DIRECTION :
@@ -41,6 +37,12 @@ var god : RandomNumberGenerator :
 		if new_direction.y > 1 : generation_direction.y = 1
 		if new_direction.x < -1 : generation_direction.x = -1
 		if new_direction.y < -1 : generation_direction.y = -1
+@export_group("Random Settings")
+@export var randomize_depth : bool = false
+@export var randomize_width : bool = false
+@export var randomize_from := STANDARD_MINIMUM_SIZE
+@export var randomize_to := STANDARD_SIZE
+@export_group("Pattern Settings")
 ## Forces the tint of the tiles to be overwritten by the color pattern entered below.
 @export var force_pattern : bool = true
 ## The color pattern that the generation will follow with each printed tile.
@@ -183,11 +185,11 @@ func _reset_tyle_types():
 ## If a direction is not given, a single tile will be returned as part of the array, ignoring the reach given.
 func get_tiles_from(origin_coordinates : Vector2i = Vector2i.ZERO, direction : Vector2i = Vector2i(1, 0), reach : int = 1) -> Array[Tile] :
 	var result_tiles : Array[Tile]
-	if direction == Vector2i.ZERO : 
+	if direction == Vector2i.ZERO :
 		tiles.append(get_tile_at(origin_coordinates))
 		return result_tiles
-	if origin_coordinates.x > generation_grid_size.y : origin_coordinates.x = generation_grid_size.x
-	if origin_coordinates.y > generation_grid_size.x : origin_coordinates.y = generation_grid_size.y
+	if origin_coordinates.x > grid_size.y : origin_coordinates.x = grid_size.y
+	if origin_coordinates.y > grid_size.x : origin_coordinates.y = grid_size.x
 	var final_reach = reach
 	if final_reach > tiles.size() : final_reach = tiles.size()
 	for id in range(final_reach) :
@@ -225,7 +227,7 @@ func get_tiles_following_pattern(origin_coordinates : Vector2i = Vector2i.ZERO, 
 			#(1, 2) (-1, 2) horse left
 			# swap, y *= -1 gets negative
 			final_pattern = Vector2i(final_pattern.y, final_pattern.x)
-			if !mirror || (mirror && round != (rounds / 2) - 1): final_pattern.y *= -1
+			if !mirror || (mirror && round != (rounds / 2) - 1) : final_pattern.y *= -1
 			result_tiles.append(tile)
 		return result_tiles
 
@@ -246,11 +248,11 @@ func get_tile_at(tile_coordinates : Vector2i = Vector2i.ZERO) -> Tile:
 var current_switch_pattern : bool = color_switch
 var color_switch_index : int = 0
 
-func generate_rows(final_size : Vector2i = generation_grid_size, custom_generation_direction : Vector2i = generation_direction, randomize_x : bool = randomize_depth, randomize_y : bool = randomize_width):
+func generate_rows(final_size : Vector2i = generation_grid_size, custom_generation_direction : Vector2i = generation_direction, randomize_x : bool = randomize_width, randomize_y : bool = randomize_depth):
 	if !active : return
 	# Check and initialize the final size of the desired grid
-	if randomize_x : final_size.x = god.randi_range(1, generation_grid_size.x)
-	if randomize_y : final_size.y = god.randi_range(1, generation_grid_size.y)
+	if randomize_x : final_size.x = god.randi_range(randomize_from.x, randomize_to.x)
+	if randomize_y : final_size.y = god.randi_range(randomize_from.y, randomize_to.y)
 	
 	if tiles.size() < 1 && color_pattern.size() < 1 : force_pattern = false
 	# Check if the new size is an addition, in the case of it being an addition, the grid size will be changed to fit.

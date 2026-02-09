@@ -4,8 +4,8 @@ signal locked_in()
 
 const IMAGINATION_SCENE : PackedScene = preload("res://Scenes/PlayerComponents/imagination.tscn")
 
-const ROTATION_FORCE : float = 2125.0
-const ROTATION_SMOOTHNESS : float = 0.04
+const ROTATION_FORCE : float = 2250.0
+const ROTATION_SMOOTHNESS : float = 0.05
 const EYES_BACKWARD_ROTATION_LIMIT : float = -90.0
 const EYES_FORWARD_ROTATION_LIMIT : float = -8.3
 const EYES_ROTATION : float = -58.3
