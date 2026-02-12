@@ -17,6 +17,8 @@ var pieces : Array[Piece] :
 	get() :
 		if pieces_node == null : return []
 		return pieces_node.pieces
+		
+@export var turn_node : TurnHandler
 
 var god := RandomNumberGenerator.new()
 @export var seed := ""
@@ -32,6 +34,7 @@ func _ready() -> void:
 	if grid == null : _find_grid()
 	if pieces_node == null : _find_pieces_node()
 	if teams_node == null : _find_teams_node()
+	if turn_node == null : _find_turn_handler_node()
 
 func get_pieces() -> Array[Piece] :
 	if pieces_node == null : return []
@@ -52,3 +55,7 @@ func _find_pieces_node() :
 func _find_teams_node() :
 	for child in get_children():
 		if child is TeamsHandler : teams_node = child ; return
+		
+func _find_turn_handler_node() :
+	for child in get_children():
+		if child is TurnHandler : turn_node = child ; return

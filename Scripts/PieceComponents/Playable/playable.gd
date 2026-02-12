@@ -48,7 +48,11 @@ var mother : PieceGenerator :
 var asus : Board :
 	get() :
 		if mother == null : return
-		return mother.board 
+		return mother.board
+var turn_node : TurnHandler :
+	get() :
+		if asus == null : return
+		return asus.turn_node
 ## The currently played tile.
 var current_tile : Tile :
 	set(new_tile) :
@@ -367,20 +371,23 @@ func unhighlight_played_tiles(moved := true, attacked := true, attacked_by := tr
 		if attacked_by && action.has_attacked && action.attacked == body : action.attacked_from.unhighlight()
 		if moved && action.has_moved : action.moved_from.unhighlight()
 
-func add_movement(moved_piece : Piece = body, from : Tile = current_tile, to : Tile = current_tile) :
+func add_movement(moved_piece : Piece = body, from : Tile = current_tile, to : Tile = current_tile, is_sole_action : bool = true) :
 	var new_move := Action.new()
 	new_move.move(moved_piece, from, to)
 	actions.append(new_move)
+	if turn_node != null : turn_node.act(new_move, self, is_sole_action)
 
-func add_attack(attacker_piece : Piece, attacked_piece : Piece, from : Tile, to : Tile) :
+func add_attack(attacker_piece : Piece, attacked_piece : Piece, from : Tile, to : Tile, is_sole_action : bool = true) :
 	var new_attack := Action.new()
 	new_attack.attack(attacker_piece, attacked_piece, from, to)
 	actions.append(new_attack)
+	if turn_node != null : turn_node.act(new_attack, self, is_sole_action)
 
 func add_effect(effect, receiver, perpretator) :
 	var new_effect := Action.new()
 	new_effect.effect(effect, receiver, perpretator)
 	actions.append(new_effect)
+	if turn_node != null : turn_node.global_actions.append(new_effect)
 
 func _ready():
 	if body == null : body = get_parent_node_3d()
@@ -416,7 +423,7 @@ func _ready():
 	
 	kill.connect(func (killed_piece : PlayableComponent) :
 		stop_highlight()
-		add_movement(body, current_tile, killed_piece.current_tile)
+		add_movement(body, current_tile, killed_piece.current_tile, false)
 		unhighlight_played_tiles()
 		highlight_actions()
 		snappable_component.stop_snapping()

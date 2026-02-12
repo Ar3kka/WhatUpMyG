@@ -70,13 +70,14 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
 [node name="Pieces" parent="SubViewportContainer/SubViewport/Board" index="0"]
 default_set = true
 
-[node name="White" parent="SubViewportContainer/SubViewport/Board/Teams" index="0"]
-actions_per_turn = 5
-
 [node name="TileGrid" parent="SubViewportContainer/SubViewport/Board" index="2"]
 randomize_depth = true
 randomize_from = Vector2i(1, 8)
 randomize_to = Vector2i(8, 100)
+
+[node name="TurnMeOn" parent="SubViewportContainer/SubViewport/Board" index="3"]
+active = true
+randomized = false
 
 [editable path="SubViewportContainer/SubViewport/Manipulator"]
 [editable path="SubViewportContainer/SubViewport/Board"]

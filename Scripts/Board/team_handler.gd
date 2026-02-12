@@ -5,8 +5,10 @@ const SCENE : PackedScene = preload("res://Scenes/World/team.tscn")
 @export var handler : TeamsHandler
 @export var team_name : String = ""
 @export var id : int = 0
+var index : int = 0
 @export var uniform_color : bool = true
 @export var team_color : Color = Color.WHITE_SMOKE
+@export var actions_per_turn : int = 1
 @export var invert_axis : bool = false
 @export var update_on_generation : bool = false
 var board : Board :

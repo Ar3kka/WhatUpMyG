@@ -33,6 +33,14 @@ var current_board : Board :
 		if feet == null : return
 		return feet.board
 var pieces : Array[Piece]
+var turn_node : TurnHandler :
+	get() :
+		if current_board == null : return
+		return current_board.turn_node
+var is_current_turn : bool :
+	get() :
+		if turn_node == null : return true
+		return turn_node.can_act(self)
 
 func _ready():
 	

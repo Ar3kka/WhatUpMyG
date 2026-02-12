@@ -52,6 +52,10 @@ var current_index : int = 0 :
 		if new_value < 0 : new_value = current_pieces.size() - 1
 		else : if new_value > current_pieces.size() - 1 : new_value = 0
 		current_index = new_value
+var turn_node : TurnHandler :
+	get() :
+		if manipulator == null || manipulator.current_board == null || manipulator.current_board.turn_node == null : return
+		return manipulator.current_board.turn_node
 
 func _ready() -> void:
 	if !manipulator : manipulator = get_parent_node_3d()
@@ -103,10 +107,13 @@ func _process(_delta):
 	###### SWITCH DRAGGING TYPE
 	if Input.is_action_just_pressed("Switch Drag Mode"): holding_drag = !holding_drag
 	
+	if Input.is_action_just_pressed("Pass Turn") && turn_node != null : turn_node.pass_turn()
+	
 	if Input.is_action_just_pressed("Change Team"):
+		print("Changed from team: ", current_team)
 		current_team += 1
 		if current_team > 2 : current_team = 0
-		print("New team: ", current_team)
+		print("To team: ", current_team)
 	
 	if Input.is_action_just_pressed("Reload"): get_tree().reload_current_scene()
 	
@@ -181,7 +188,7 @@ func _process(_delta):
 	if team_component != null: team_component.observer_team_id = current_team # set observing player team id to the team component
 	# if there's a team component and it's active and the team id of the obj is above 0 
 	# and the team id of the obj is different from your team, skip
-	if team_component != null && team_component.active && team_component.id > 0 && team_component.id != current_team : return
+	if !manipulator.is_current_turn || ( team_component != null && team_component.active && team_component.id > 0 && team_component.id != current_team ) : return
 	
 	if selected_object == null: return
 
