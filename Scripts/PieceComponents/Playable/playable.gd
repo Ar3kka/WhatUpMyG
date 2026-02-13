@@ -411,7 +411,7 @@ func _ready():
 	
 	attacked.connect( func(attacked_by : PlayableComponent) : 
 		if health_component == null || attacked_by == null || attacked_by.damage_component == null : return
-		add_attack(attacked_by.body, body, attacked_by.current_tile, current_tile)
+		add_attack(attacked_by.body, body, attacked_by.current_tile, current_tile, false)
 		attacked_by.damage_component.hit( health_component )
 		if snappable_component && health_component.alive : snappable_component.auto_recover.emit(true) )
 	
