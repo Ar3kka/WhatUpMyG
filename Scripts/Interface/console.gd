@@ -429,8 +429,8 @@ func spawn_prompt( message : Message, decoded_input : Array = [], sub_output : A
 		
 		var team_id : int = decoded_input[3][1] if decoded_input[3].size() > 1 && decoded_input[3][1] is int else teams.get_random_team().id
 		
-		var coordinates : Vector2i = sub_output[3][0] if !sub_output[3].is_empty() else grid.get_random_coordinates()
-		var force_connect : bool = sub_output[3][1] if sub_output[3].size() > 1 else false
+		var coordinates : Vector2i = sub_output[3][0] if sub_output.size() > 2 && !sub_output[3].is_empty() else grid.get_random_coordinates()
+		var force_connect : bool = sub_output[3][1] if sub_output.size() > 2 && sub_output[3].size() > 1 else false
 		
 		var generated_piece : Piece = womb.generate_piece(dna, team_id, coordinates, force_connect)
 		
