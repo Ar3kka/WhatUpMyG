@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://dbmblhsgy37pg"]
+
+[ext_resource type="Script" uid="uid://ci7fqvxjxamox" path="res://Scripts/Interface/console.gd" id="1_bvu3a"]
+
+[node name="God" type="Node3D"]
+script = ExtResource("1_bvu3a")

@@ -32,6 +32,7 @@ _surfaces = [{
 [node name="King" type="RigidBody3D" node_paths=PackedStringArray("skin")]
 collision_mask = 3
 script = ExtResource("1_o3ehe")
+piece_name = "king"
 skin = NodePath("Mesh/KING")
 
 [node name="CollisionHitbox" type="CollisionShape3D" parent="."]

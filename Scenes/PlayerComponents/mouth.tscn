@@ -1,0 +1,67 @@
+[gd_scene load_steps=4 format=3 uid="uid://bof1l6e7jlkia"]
+
+[ext_resource type="Script" uid="uid://b6cwo0e7776pd" path="res://Scripts/PlayerInteraction/brain.gd" id="1_iyuxt"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_iyuxt"]
+corner_radius_top_left = 20
+corner_radius_top_right = 20
+corner_radius_bottom_right = 20
+corner_radius_bottom_left = 20
+
+[sub_resource type="Theme" id="Theme_6fura"]
+Panel/styles/panel = SubResource("StyleBoxFlat_iyuxt")
+
+[node name="Mouth" type="LineEdit" node_paths=PackedStringArray("background", "output")]
+anchors_preset = -1
+anchor_left = 0.021
+anchor_top = 0.914
+anchor_right = 0.979
+anchor_bottom = 0.963
+offset_left = -0.192001
+offset_top = -0.272034
+offset_right = 0.192017
+offset_bottom = -0.0240479
+grow_horizontal = 2
+grow_vertical = 0
+context_menu_enabled = false
+select_all_on_focus = true
+script = ExtResource("1_iyuxt")
+background = NodePath("BG")
+output = NodePath("History")
+
+[node name="BG" type="ColorRect" parent="."]
+visibility_layer = 2
+z_index = -1
+layout_mode = 1
+anchors_preset = -1
+anchor_top = -12.75
+anchor_right = 1.0
+anchor_bottom = -0.75
+offset_top = 8.00003
+offset_bottom = 8.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = SubResource("Theme_6fura")
+color = Color(0, 0, 0, 0.801)
+
+[node name="History" type="RichTextLabel" parent="."]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.029
+anchor_top = -12.25
+anchor_right = 0.971
+anchor_bottom = -1.0
+offset_left = -0.0160027
+offset_top = 8.00003
+offset_right = 0.0158691
+offset_bottom = 8.0
+grow_horizontal = 2
+grow_vertical = 2
+focus_mode = 2
+theme_override_font_sizes/normal_font_size = 10
+theme_override_font_sizes/bold_font_size = 12
+scroll_following = true
+vertical_alignment = 2
+selection_enabled = true
+
+[connection signal="text_submitted" from="." to="." method="_on_text_submitted"]

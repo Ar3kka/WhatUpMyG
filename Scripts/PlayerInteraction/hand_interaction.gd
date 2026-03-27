@@ -56,6 +56,10 @@ var turn_node : TurnHandler :
 	get() :
 		if manipulator == null || manipulator.current_board == null || manipulator.current_board.turn_node == null : return
 		return manipulator.current_board.turn_node
+var mouth : Mouth :
+	get() :
+		if manipulator == null : return
+		return manipulator.mouth
 
 func _ready() -> void:
 	if !manipulator : manipulator = get_parent_node_3d()
@@ -105,17 +109,16 @@ func _process(_delta):
 	camera.blink()
 	
 	###### SWITCH DRAGGING TYPE
-	if Input.is_action_just_pressed("Switch Drag Mode"): holding_drag = !holding_drag
+	if Input.is_action_just_pressed("Console") && mouth : mouth.focus()
 	
-	if Input.is_action_just_pressed("Pass Turn") && turn_node != null : turn_node.pass_turn()
+	if !mouth || !mouth.has_focus() :
+		if Input.is_action_just_pressed("Switch Drag Mode") : holding_drag = !holding_drag
 	
-	if Input.is_action_just_pressed("Change Team"):
-		print("Changed from team: ", current_team)
-		current_team += 1
-		if current_team > 2 : current_team = 0
-		print("To team: ", current_team)
+		if Input.is_action_just_pressed("Pass Turn") && turn_node != null : turn_node.pass_turn( manipulator )
 	
-	if Input.is_action_just_pressed("Reload"): get_tree().reload_current_scene()
+		if Input.is_action_just_pressed("Change Team") : manipulator.change_team(); _deselect()
+	
+		if Input.is_action_just_pressed("Reload") : get_tree().reload_current_scene()
 	
 	####### Selectable pieces navigation
 	var keyboard_select : bool = false
@@ -178,7 +181,7 @@ func _process(_delta):
 		camera.big_momma = draggable_component
 		draggable_object = final_draggable_object
 	
-	if Input.is_action_just_pressed("Deselect"): return _deselect()
+	if Input.is_action_just_pressed("Deselect") || manipulator.praying : return _deselect()
 	
 	# if the object IS NOT draggable or if there's not an already selected object, skip
 	if draggable_object == null || (selected_object != null && selected_object != draggable_object): return
@@ -190,8 +193,7 @@ func _process(_delta):
 	# and the team id of the obj is different from your team, skip
 	if !manipulator.is_current_turn || ( team_component != null && team_component.active && team_component.id > 0 && team_component.id != current_team ) : return
 	
-	if selected_object == null: return
-
+	if selected_object == null : return
 	
 	####### Checking inputs to manually rotate the SELECTED object
 	var rotatable_component : RotatableComponent = selected_object.rotatable_component

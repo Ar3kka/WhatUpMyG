@@ -28,10 +28,14 @@ signal death(by_take : bool)
 ## The piece this components belongs to.
 @export var body : Piece
 @export var coordinates : Vector2i :
-	set(new_coords) : set_coordinates(new_coords, true, true)
+	set(new_coords) : set_coordinates(new_coords)
 	get() :
 		if current_tile == null : return Vector2i.ZERO
 		return current_tile.id
+@export var set_position_on_coords_changed : bool = true
+@export var connect_on_coords_changed : bool = true
+@export var force_connect_on_coords_changed : bool = false
+@export var random_if_playable_on_coords_changed : bool = true
 @export_group("Highlight")
 @export var highlight_latest_tile : bool = true
 @export var last_movement_color : Color = STANDARD_LAST_MOVEMENT_COLOR
@@ -56,7 +60,8 @@ var turn_node : TurnHandler :
 ## The currently played tile.
 var current_tile : Tile :
 	set(new_tile) :
-		if current_tile != null && new_tile != null && current_tile != new_tile:
+		# Checks if we are moving to a new tile
+		if current_tile && new_tile && current_tile != new_tile:
 			current_tile.disconnect_playable()
 			if _first_move : first_move.emit()
 		
@@ -307,24 +312,27 @@ func move_to_rear_right(connect : bool = false, set_position : bool = false, ign
 	last_movement_id = 8
 	set_coordinates(tile.id, connect, set_position)
 
-func set_coordinates(new_coords : Vector2i, connect : bool = false, set_position : bool = false) :
+func set_coordinates(new_coords : Vector2i, connect : bool = connect_on_coords_changed, set_position : bool = set_position_on_coords_changed, force : bool = force_connect_on_coords_changed, random : bool = random_if_playable_on_coords_changed) :
 	if !active || current_grid == null : return
-	if current_tile :
-		if connect : current_tile.disconnect_playable() ; unplay()
-		current_tile.unocuppy()
+	
 	var grid_size : Vector2i = current_grid.grid_size
 	var target_tile : Tile
 	target_tile = current_grid.get_tile_at(new_coords)
-	if target_tile : target_tile.occupy(body)
 	
-	if connect : play(target_tile)
+	var final_tile : Tile = target_tile
+	if connect : 
+		if target_tile && target_tile.has_playable :
+			if force : target_tile.disconnect_playable()
+			elif random : final_tile = current_grid.get_random_tile()
+			else : final_tile = null
+		if final_tile : play(final_tile) ; target_tile.occupy(body)
 	else : if snappable_component : 
 		snappable_component.keyboard_recovery = true
 		snappable_component.recover.emit(target_tile)
 		if is_tile_attackable(target_tile) : attacking_snap = true
 	
 	if !set_position : return
-	if target_tile : body.global_position = target_tile.global_position ; return
+	if final_tile : body.global_position = final_tile.global_position ; return
 	if mother : body.global_position = mother.spawn_point ; return
 	if current_grid : body.global_position = current_grid.center_point ; return
 	body.global_position = Vector3.ZERO
@@ -337,7 +345,7 @@ func get_playable_tiles() :
 	attack_tiles
 	movement_tiles
 
-func play(new_tile : Tile, highlight : bool = true) :
+func play(new_tile : Tile, highlight : bool = true, force : bool = false) :
 	if highlight : unhighlight_played_tiles()
 	current_tile = new_tile
 	if highlight : highlight_actions()

@@ -6,6 +6,7 @@ signal acted()
 @export var active : bool = true
 @export var board : Board
 @export var randomized : bool = false
+@export var switch_on_pass : bool = false
 var teams_node : TeamsHandler :
 	get() :
 		if board == null : return
@@ -14,6 +15,7 @@ var turn : int = 0
 var action : int = 0
 @export var initial_team : Team
 var team : Team
+var prev_team : Team
 var teams : Array[Team] :
 	get() :
 		if teams_node == null : return []
@@ -29,18 +31,22 @@ func act( new_action : Action, playable : PlayableComponent, count_action : bool
 	if !active : return
 	global_actions.append(new_action); 
 	if count_action : action += 1; acted.emit()
-	print("Action [", action ,"] done by: ", playable, " Attack: ", new_action.has_attacked, " Movement: ", new_action.has_moved, " Effect: ", new_action.has_affected)
+	#print("Action [", action ,"] done by: ", playable, " Attack: ", new_action.has_attacked, " Movement: ", new_action.has_moved, " Effect: ", new_action.has_affected)
 	if action >= team.actions_per_turn : pass_turn()
 
 func can_act( manipulator : Manipulator ) -> bool :
 	if !active || teams_node.get_team(manipulator.team_id) == team : return true
 	return false
 
-func pass_turn() :
-	print("turn [", turn, "] ended by team: ", team) 
+func pass_turn( manipulator : Manipulator = null ) -> bool :
+	if manipulator != null && teams_node.get_team( manipulator.team_id ) != team : return false
 	turn += 1
-	if randomized && teams_node.teams.size() > 2 : team = teams_node.get_random_team()
-	else : team = teams_node.get_team_by_index(team.index + 1)
-	print("New turn [", turn, "], new team: ", team)
+	prev_team = team
+	if randomized : team = teams_node.get_random_team( true, prev_team.id )
+	else : team = teams_node.get_team_by_index(prev_team.index + 1)
+	
+	#print("turn [", turn, "] ended by team: ", prev_team, ", new turn [", turn + 1 , "], new team: ", team)
+	if switch_on_pass && manipulator : manipulator.team_id = team.id
 	action = 0
 	finished_turn.emit()
+	return true

@@ -31,7 +31,16 @@ var eyes : Eyes :
 		smoothness = new_value
 		if nervous_signals : nervous_signals.weight = smoothness
 @export_group("Delimitations")
-var board : Board
+var board : Board :
+	set(new_board) :
+		if body == null : return
+		var prev_board = board
+		board = new_board
+		if board != null :
+			board.manipulators.append(body)
+			body.assigned_board.emit()
+		if prev_board != null :
+			prev_board.manipulators.erase(body)
 var grid : TileGrid :
 	get() :
 		if board == null : return
@@ -92,7 +101,7 @@ func center_to_board():
 	global_position = Vector3(grid.middle_bottom.x, global_position.y, grid.middle_bottom.z)
 
 func _process(delta):
-	if !active : return
+	if !active || body == null || body.praying : return
 	
 	var scroll : bool = false
 	var final_y : float = 0

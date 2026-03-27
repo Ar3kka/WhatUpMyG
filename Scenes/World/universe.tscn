@@ -1,0 +1,49 @@
+[gd_scene load_steps=5 format=3 uid="uid://dwkftdanphpfd"]
+
+[ext_resource type="Script" uid="uid://dxroe3qs8cilg" path="res://Scripts/World/edge_detection_compositor.gd" id="1_rc2x8"]
+
+[sub_resource type="Environment" id="Environment_hlxti"]
+background_mode = 1
+background_color = Color(0.0338533, 0.0338533, 0.0338533, 1)
+
+[sub_resource type="CompositorEffect" id="CompositorEffect_5a7ea"]
+resource_local_to_scene = false
+resource_name = ""
+enabled = false
+effect_callback_type = 4
+needs_motion_vectors = false
+needs_normal_roughness = true
+script = ExtResource("1_rc2x8")
+metadata/_custom_type_script = "uid://dxroe3qs8cilg"
+
+[sub_resource type="Compositor" id="Compositor_kw6ij"]
+compositor_effects = Array[CompositorEffect]([SubResource("CompositorEffect_5a7ea")])
+
+[node name="Universe" type="Node3D"]
+
+[node name="Galaxy" type="SubViewportContainer" parent="."]
+texture_filter = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+stretch = true
+stretch_shrink = 3
+metadata/_edit_use_anchors_ = true
+
+[node name="Planetary System" type="SubViewport" parent="Galaxy"]
+handle_input_locally = false
+size = Vector2i(384, 216)
+render_target_update_mode = 4
+
+[node name="Earth" type="WorldEnvironment" parent="Galaxy/Planetary System"]
+environment = SubResource("Environment_hlxti")
+compositor = SubResource("Compositor_kw6ij")
+
+[node name="Sun" type="DirectionalLight3D" parent="Galaxy/Planetary System"]
+transform = Transform3D(1, 0, 0, 0, -0.517011, 0.855978, 0, -0.855978, -0.517011, 0, 14.469, 0)
+light_color = Color(0.988159, 0.981618, 0.971416, 1)
+light_energy = 1.101
+shadow_enabled = true
+directional_shadow_mode = 1

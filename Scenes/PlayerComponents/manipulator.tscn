@@ -1,8 +1,9 @@
-[gd_scene load_steps=5 format=3 uid="uid://bfg5q5lyyec7k"]
+[gd_scene load_steps=6 format=3 uid="uid://bfg5q5lyyec7k"]
 
 [ext_resource type="Script" uid="uid://d0citqljt5ugg" path="res://Scripts/PlayerInteraction/manipulator.gd" id="1_66ekc"]
 [ext_resource type="PackedScene" uid="uid://ctumhks8h5tt2" path="res://Scenes/PlayerComponents/hands.tscn" id="2_01x3t"]
 [ext_resource type="PackedScene" uid="uid://7725558gj7rr" path="res://Scenes/PlayerComponents/eyes.tscn" id="2_66ekc"]
+[ext_resource type="PackedScene" uid="uid://bof1l6e7jlkia" path="res://Scenes/PlayerComponents/mouth.tscn" id="2_wte6m"]
 [ext_resource type="PackedScene" uid="uid://cxgtaeo6opt03" path="res://Scenes/PlayerComponents/feet.tscn" id="3_wte6m"]
 
 [node name="Manipulator" type="Node3D" node_paths=PackedStringArray("eyes", "hands", "feet")]
@@ -10,6 +11,8 @@ script = ExtResource("1_66ekc")
 eyes = NodePath("Eyes")
 hands = NodePath("Hands")
 feet = NodePath("Feet")
+
+[node name="Mouth" parent="." instance=ExtResource("2_wte6m")]
 
 [node name="Eyes" parent="." node_paths=PackedStringArray("body") instance=ExtResource("2_66ekc")]
 body = NodePath("..")
@@ -20,3 +23,5 @@ body = NodePath("..")
 [node name="Hands" parent="." node_paths=PackedStringArray("manipulator") instance=ExtResource("2_01x3t")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -4.76837e-07)
 manipulator = NodePath("..")
+
+[editable path="Mouth"]

@@ -80,9 +80,21 @@ var has_playable : bool :
 var playable_piece : PlayableComponent :
 	set(new_value) :
 		if !is_playable : return
+		if grid == null : return
+		
+		var previous_playable = playable_piece
 		playable_piece = new_value
-		if grid == null : return 
-		if playable_piece == null : grid.played_tiles -= 2 ; return
+		if playable_piece == null :
+			if !grid.x_played_tiles.is_empty() : grid.x_played_tiles[previous_playable.coordinates.x] -= 2
+			if !grid.y_played_tiles.is_empty() : grid.y_played_tiles[previous_playable.coordinates.y] -= 2
+			grid.played_tiles -= 2 ; return
+			
+		if grid.x_played_tiles.is_empty() : grid.x_played_tiles.append(0)
+		if grid.y_played_tiles.is_empty() : grid.y_played_tiles.append(0)
+		while new_value.coordinates.x > grid.x_played_tiles.size() - 1 : grid.x_played_tiles.append(0)
+		while new_value.coordinates.y > grid.y_played_tiles.size() - 1 : grid.y_played_tiles.append(0)
+		grid.x_played_tiles[new_value.coordinates.x] += 1
+		grid.y_played_tiles[new_value.coordinates.y] += 1
 		grid.played_tiles += 1
 var current_team : TeamComponent :
 	set(new_value) : return
@@ -120,7 +132,6 @@ func unhighlight() :
 
 func occupy(new_occupier : Piece) :
 	if new_occupier == null : return unocuppy()
-	#print( new_occupier )
 	if ( is_highlighting && new_occupier != occupier &&
 	new_occupier.snappable_component && 
 	( new_occupier.snappable_component.is_handled || new_occupier.snappable_component.keyboard_recovery ) ) : reset_position()

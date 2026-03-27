@@ -12,43 +12,44 @@
 [node name="Board" type="Node3D" node_paths=PackedStringArray("god", "grid", "teams_node", "turn_node", "set_node", "pieces_node")]
 script = ExtResource("1_q76ey")
 god = NodePath("God")
-grid = NodePath("Tile Grid")
-teams_node = NodePath("Team Manager")
-turn_node = NodePath("Turn System")
-set_node = NodePath("Set Operator")
-pieces_node = NodePath("Piece Womb")
+grid = NodePath("TileGrid")
+teams_node = NodePath("Teams")
+turn_node = NodePath("TurnHandler")
+set_node = NodePath("SetHandler")
+pieces_node = NodePath("Pieces")
 
 [node name="God" parent="." instance=ExtResource("8_3hwk7")]
+command_trigger = null
 
-[node name="Team Manager" type="Node3D" parent="." node_paths=PackedStringArray("board")]
+[node name="Teams" type="Node3D" parent="." node_paths=PackedStringArray("board")]
 script = ExtResource("3_5bi0w")
 board = NodePath("..")
 
-[node name="White" parent="Team Manager" node_paths=PackedStringArray("handler") instance=ExtResource("3_a6k0q")]
+[node name="White" parent="Teams" node_paths=PackedStringArray("handler") instance=ExtResource("3_a6k0q")]
 handler = NodePath("..")
 team_name = "White"
 id = 1
 team_color = Color(0.877616, 0.877616, 0.877616, 1)
 
-[node name="Black" parent="Team Manager" node_paths=PackedStringArray("handler") instance=ExtResource("3_a6k0q")]
+[node name="Black" parent="Teams" node_paths=PackedStringArray("handler") instance=ExtResource("3_a6k0q")]
 handler = NodePath("..")
 team_name = "Black"
 id = 2
 team_color = Color(0.125911, 0.125911, 0.125911, 1)
 invert_axis = true
 
-[node name="Tile Grid" parent="." node_paths=PackedStringArray("board") instance=ExtResource("5_a6k0q")]
+[node name="TileGrid" parent="." node_paths=PackedStringArray("board") instance=ExtResource("5_a6k0q")]
 board = NodePath("..")
 
-[node name="Turn System" type="Node3D" parent="." node_paths=PackedStringArray("board")]
+[node name="TurnHandler" type="Node3D" parent="." node_paths=PackedStringArray("board")]
 script = ExtResource("6_5s141")
 board = NodePath("..")
 
-[node name="Set Operator" type="Node3D" parent="." node_paths=PackedStringArray("board")]
+[node name="SetHandler" type="Node3D" parent="." node_paths=PackedStringArray("board")]
 script = ExtResource("7_82t2u")
 board = NodePath("..")
 
-[node name="Piece Womb" type="Node3D" parent="." node_paths=PackedStringArray("board")]
+[node name="Pieces" type="Node3D" parent="." node_paths=PackedStringArray("board")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -4.94566)
 script = ExtResource("3_q76ey")
 board = NodePath("..")

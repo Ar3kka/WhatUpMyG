@@ -20,12 +20,16 @@ const PLAYABLE_COMPONENT = "Playable"
 
 @export var active : bool = true
 var manipulator : Manipulator
+@export var piece_name : String = ""
 @export var team_id : int = 0 :
 	set(new_value) : set_team_id(new_value)
 	get() :
 		if team_component == null : return team_id
 		return team_component.id
-var initial_team_id : int = 0
+var initial_team_id : int :
+	get() :
+		if initial_team == null : return initial_team_id
+		return initial_team.id
 var initial_health : float = 1
 var initial_team : Team
 var initial_invert : bool = false
@@ -63,6 +67,7 @@ var current_coordinates : Vector2i :
 	get() :
 		if playable_component == null : return Vector2i.ZERO
 		return playable_component.coordinates
+var force_connect_on_coordinates : bool = false
 var mother : PieceGenerator
 
 
@@ -253,13 +258,14 @@ func set_health( new_health : float = initial_health ) :
 	health_component.max_health = new_health
 	health_component.set_health(new_health)
 
-func set_initial_coordinates( new_coords : Vector2i = initial_coordinates ) :
+func set_initial_coordinates( new_coords : Vector2i = initial_coordinates, force : bool = force_connect_on_coordinates ) :
 	if playable_component == null : return
-	playable_component.coordinates = new_coords
+	playable_component.force_connect_on_coords_changed = force
+	playable_component.coordinates = new_coords 
 
-func set_coordinates(new_coords : Vector2i, connect : bool, set_position : bool):
+func set_coordinates(new_coords : Vector2i, connect : bool, set_position : bool, force : bool = false):
 	if playable_component == null : return
-	playable_component.set_coordinates(new_coords, connect, set_position)
+	playable_component.set_coordinates(new_coords, connect, set_position, force)
 	
 func set_team_id( new_id : int = initial_team_id ): 
 	if team_component == null : return
@@ -292,6 +298,8 @@ func read_components():
 
 func _ready() -> void:
 	if !active : return
+	
+	initial_team_id = 0
 	
 	found_health.connect(set_health)
 	if initial_team : found_team.connect(set_team)

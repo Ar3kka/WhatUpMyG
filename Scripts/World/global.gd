@@ -1,4 +1,22 @@
-class_name GeneralKnowledge extends Node
+class_name GeneralKnowledge extends RefCounted
+
+const _ERROR : String = "ERROR : "
+const _ERROR_BOARD : String = "NO BOARD AVAILABLE"
+const _ERROR_PRIVILEGE : String = "NO PRIVILEGES TO USE COMMAND \"%s\""
+const _ERROR_OUTPUT : String = "NO OUTPUT" + "\n"
+const _ERROR_COMMAND : String = "NO COMMAND GIVEN"
+const _ERROR_RESULT : String = "NO RESULTS"
+const _ERROR_ARGUMENTS : String = "NOT ENOUGH ARGUMENTS GIVEN"
+const _ERROR_TURN_HANDLER : String = "NO TURN HANDLER AVAILABLE | NO BOARD AVAILABLE"
+const _ERROR_SENDER : String = "MESSAGE WITH NO SENDER"
+const _ERROR_INPUT : String = "MESSAGE WITH NO INPUT"
+const _ERROR_PRIVATE_RECEIVER : String = "PRIVATE MESSAGE WITH NO RECEIVER"
+const _ERROR_VALID_TEAM : String = "NO VALID TEAM FOUND WITH ID \"%s\""
+const _ERROR_CURRENT_TEAM : String = "NO CURRENT TEAM"
+const _ERROR_NO_GRID : String = "NO CURRENT GRID"
+const _ERROR_DUPLICATE_COMMAND : String = "DUPLICATE COMMAND AT"
+
+const DEFAULT_COMMAND_TRIGGER : String = "/"
 
 const SPECIAL_APPLY : String = "apply"
 

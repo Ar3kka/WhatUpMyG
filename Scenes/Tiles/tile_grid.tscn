@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" uid="uid://dqlax70jg888g" path="res://Scripts/TileComponents/tile_grid.gd" id="1_7thmo"]
 
-[node name="TileGrid" type="Node3D"]
+[node name="Tile Grid" type="Node3D"]
 script = ExtResource("1_7thmo")
 
 [node name="Types" type="Node3D" parent="."]

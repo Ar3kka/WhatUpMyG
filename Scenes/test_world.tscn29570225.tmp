@@ -17,6 +17,9 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
 
 [node name="Board" parent="Universe/Galaxy/Planetary System" index="3" instance=ExtResource("3_707cn")]
 
+[node name="Pieces" parent="Universe/Galaxy/Planetary System/Board" index="5"]
+default_set = true
+
 [editable path="Universe"]
 [editable path="Universe/Galaxy/Planetary System/Manipulator"]
 [editable path="Universe/Galaxy/Planetary System/Manipulator/Mouth"]

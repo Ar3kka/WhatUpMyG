@@ -1,0 +1,78 @@
+[gd_scene load_steps=7 format=3 uid="uid://b078atu5ef0dt"]
+
+[ext_resource type="Script" uid="uid://dxroe3qs8cilg" path="res://Scripts/World/edge_detection_compositor.gd" id="1_yrarp"]
+[ext_resource type="PackedScene" uid="uid://bfg5q5lyyec7k" path="res://Scenes/PlayerComponents/manipulator.tscn" id="2_dqfvb"]
+[ext_resource type="PackedScene" uid="uid://dy0yy25snu76o" path="res://Scenes/World/board.tscn" id="3_707cn"]
+
+[sub_resource type="Environment" id="Environment_fo5ed"]
+background_mode = 1
+background_color = Color(0.0338533, 0.0338533, 0.0338533, 1)
+
+[sub_resource type="CompositorEffect" id="CompositorEffect_5a7ea"]
+resource_local_to_scene = false
+resource_name = ""
+enabled = false
+effect_callback_type = 4
+needs_motion_vectors = false
+needs_normal_roughness = true
+script = ExtResource("1_yrarp")
+metadata/_custom_type_script = "uid://dxroe3qs8cilg"
+
+[sub_resource type="Compositor" id="Compositor_fo5ed"]
+compositor_effects = Array[CompositorEffect]([SubResource("CompositorEffect_5a7ea")])
+
+[node name="World" type="Node3D"]
+
+[node name="SubViewportContainer" type="SubViewportContainer" parent="."]
+texture_filter = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+stretch = true
+stretch_shrink = 3
+metadata/_edit_use_anchors_ = true
+
+[node name="SubViewport" type="SubViewport" parent="SubViewportContainer"]
+handle_input_locally = false
+size = Vector2i(384, 216)
+render_target_update_mode = 4
+
+[node name="WorldShader" type="WorldEnvironment" parent="SubViewportContainer/SubViewport"]
+environment = SubResource("Environment_fo5ed")
+compositor = SubResource("Compositor_fo5ed")
+
+[node name="BlueLight" type="DirectionalLight3D" parent="SubViewportContainer/SubViewport"]
+transform = Transform3D(0.906441, -0.183806, 0.380238, 5.45776e-09, 0.900326, 0.435216, -0.422333, -0.394497, 0.816092, 2.22688, 5.87193, 15.0536)
+visible = false
+light_color = Color(0.534917, 0.80211, 0.894056, 1)
+light_energy = 1.911
+shadow_enabled = true
+directional_shadow_mode = 1
+
+[node name="RedLight" type="DirectionalLight3D" parent="SubViewportContainer/SubViewport"]
+transform = Transform3D(1, 0, 0, 0, -0.517011, 0.855978, 0, -0.855978, -0.517011, 0, 14.469, 0)
+light_color = Color(0.988159, 0.981618, 0.971416, 1)
+light_energy = 1.101
+shadow_enabled = true
+directional_shadow_mode = 1
+
+[node name="Manipulator" parent="SubViewportContainer/SubViewport" node_paths=PackedStringArray("initial_board") instance=ExtResource("2_dqfvb")]
+team_id = 1
+initial_board = NodePath("../Board")
+
+[node name="Hands" parent="SubViewportContainer/SubViewport/Manipulator" index="2"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+
+[node name="Board" parent="SubViewportContainer/SubViewport" instance=ExtResource("3_707cn")]
+
+[node name="Pieces" parent="SubViewportContainer/SubViewport/Board" index="0"]
+default_set = true
+
+[node name="TileGrid" parent="SubViewportContainer/SubViewport/Board" index="2"]
+randomize_from = Vector2i(1, 8)
+randomize_to = Vector2i(8, 100)
+
+[editable path="SubViewportContainer/SubViewport/Manipulator"]
+[editable path="SubViewportContainer/SubViewport/Board"]

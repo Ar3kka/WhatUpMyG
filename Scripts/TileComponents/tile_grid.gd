@@ -11,20 +11,30 @@ const STANDARD_GENERATION_SIZE := Vector2i(STANDARD_SIZE.x, STANDARD_SIZE.y)
 const STANDARD_DIRECTION : Vector2i = Vector2i(-1, -1)
 const STANDARD_COLOR_PATTERN : Array[Color] = [Color.WHITE, Color.BLACK]
 const STANDARD_RAISE_HEIGHT : float = 0.250
+const INITIAL_SIZE_LIMIT : Vector2i = Vector2i(16, 80)
+const SIZE_LIMIT : Vector2i = Vector2i(INITIAL_SIZE_LIMIT.x * 2, INITIAL_SIZE_LIMIT.y * 2)
 
 var global := GeneralKnowledge.new()
 
 @export var active : bool = true
 @export var board : Board
-var god : RandomNumberGenerator :
-	get() : 
+var god : God :
+	get() :
 		if board == null : return
 		return board.god
+var miracle : RandomNumberGenerator :
+	get() : 
+		if god == null : return
+		return god.miracle
 ## The tiles that this tile grid can generate randomly throughout the map generation accounting by their
 ## generation chance set in each tile individually.
 @export var tile_types : Array[Tile]
 ## Size for the matrix of tiles, where X represents the horizontal tiles and Y the vertical tiles.
 @export var generation_grid_size : Vector2i = STANDARD_GENERATION_SIZE
+var initial_size_limit : Vector2i = INITIAL_SIZE_LIMIT
+var size_limit : Vector2i = SIZE_LIMIT
+var left_to_reach_limit : Vector2i :
+	get() : return size_limit - grid_size
 ## When true: the gridmap size will randomize the gridsize within the range provided in the Grid Size
 ## vector from x to y.
 ## Direction for generation where X represents the horizontal direction and Y the vertical direction.
@@ -53,16 +63,21 @@ var god : RandomNumberGenerator :
 @export var color_switch : bool = true
 
 var tiles : Array[Array]
+var tile_amount : int :
+	get() :
+		if tiles.size() < 1 : return 0
+		return tiles.size() * tiles[0].size()
 var played_tiles : int = 0
+var x_played_tiles : Array[int] = []
+var y_played_tiles : Array[int] = []
 var is_full_of_played_tiles : bool :
 	get() :
 		if tiles.is_empty() : return false
-		return grid_size_amount == played_tiles
+		return tile_amount == played_tiles
 var grid_size : Vector2i :
 	get() :
 		if tiles.is_empty() : return Vector2i.ZERO
 		return Vector2i( tiles[0].size(), tiles.size() )
-var grid_size_amount : int
 var is_empty : bool :
 	get() : return tiles.size() < 1
 var last_row : Array :
@@ -117,21 +132,14 @@ var top_left : Vector3 :
 		if tiles.is_empty() : return global.STADARD_NEGATIVE_VECTOR
 		return Vector3(bottom_left.x, global_position.y, top_right.z)
 
-
 func _ready() -> void:
 	if !tile_types.size(): _reset_tyle_types()
 	
 	generated_rows.connect(func () :
-		update_grid_tile_amount()
 		if !_has_generated : 
 			if board : board.initial_grid_generation.emit()
 			initial_generation.emit()
 			_has_generated = true )
-	
-	#generate_rows()
-	#print(get_tiles_from(Vector2i.ZERO, Vector2i(1, 1), 10))
-	#print(get_specific_tile_from(Vector2i(1, 1), Vector2i(1, 2)))
-	#print(get_tiles_following_pattern(Vector2i(2, 3), Vector2i(2, -1), true))
 
 func is_tile_on_bottom_border(x : float = 0, y : float = 0) -> bool :
 	return is_tile_on_row(Vector2i(x, y), 0)
@@ -144,28 +152,80 @@ func is_tile_on_row(coordinates : Vector2i = Vector2i.ZERO, row : int = 0) -> bo
 	if tile == null : return false
 	return tile.id.x == row
 
-func update_grid_tile_amount() -> int :
-	if tiles.size() < 1 : return 0
-	grid_size_amount = tiles.size() * tiles[0].size()
-	return grid_size_amount
+func reset(initial_size : Vector2i = board.initial_size if board else generation_grid_size) :
+	clear()
+	generation_grid_size = initial_size
+	_has_generated = false
 
-func reset() :
+func clear() :
 	if tiles.size() < 1 : return
+	var x_index : int = 0
+	var y_index : int = 0
 	for x in range(tiles.size()) :
 		for y in range(tiles[x].size()) :
-			var tile : Tile = tiles[x][y]
-			tile.queue_free()
-	tiles = []
+			tiles[x_index][y_index].queue_free()
+			y_index += 1
+		x_index += 1
+		y_index = 0
+	tiles.clear()
+
+func is_x_available( x : int = 0 ) -> bool :
+	if tiles.is_empty() || x_played_tiles[x] == grid_size.x : return false
+	return true
+	
+func is_y_available( y : int = 0 ) -> bool :
+	if tiles.is_empty() || y_played_tiles[y] == grid_size.y : return false
+	return true
+
+func can_spawn_playable( coords : Vector2i = get_random_coordinates(false)) -> int :
+	if get_tile_at(coords).has_playable : return 0
+	if is_full_of_played_tiles : return -1
+	return 1
+
+func get_random_x( y : int = 0, discard_played_tiles : bool = true) -> int :
+	var iterate : bool = true
+	var x : int = 0
+	while iterate :
+		iterate = false
+		x = miracle.randi_range(0, tiles.size() - 1)
+		if discard_played_tiles :
+			var tile : Tile = get_tile_at(Vector2i(x, y))
+			if !tile : continue
+			if tile.has_playable : iterate = true
+			if y_played_tiles[y] == grid_size.y : return -1
+	return x
+
+func get_random_y( x : int = 0, discard_played_tiles : bool = true) -> int :
+	var iterate : bool = true
+	var y : int = 0
+	while iterate :
+		iterate = false
+		y = miracle.randi_range(0, tiles[0].size() - 1)
+		if discard_played_tiles :
+			var tile : Tile = get_tile_at(Vector2i(x, y))
+			if !tile : continue
+			if tile.has_playable : iterate = true
+			if x_played_tiles[x] == grid_size.x : return -1
+	return y
 
 func get_random_coordinates(discard_played_tiles : bool = true) -> Vector2i :
 	var random_coords : Vector2i
 	var iterate : bool = true
 	while iterate :
 		iterate = false
-		random_coords = Vector2i( god.randi_range(0, tiles.size() - 1), god.randi_range(0, tiles[0].size() - 1) )
-		if discard_played_tiles && get_tile_at(random_coords).has_playable: iterate = true
-		if discard_played_tiles && is_full_of_played_tiles : return Vector2i(-1, -1)
+		random_coords = Vector2i( miracle.randi_range(0, tiles.size() - 1), miracle.randi_range(0, tiles[0].size() - 1)  )
+		if discard_played_tiles :
+			var tile : Tile = get_tile_at(random_coords)
+			if !tile : continue
+			if tile.has_playable : iterate = true
+			if is_full_of_played_tiles : return Vector2i(-1, -1)
 	return random_coords
+
+func get_random_tile(discard_played_tiles : bool = true) -> Tile :
+	var random_tile : Tile
+	var random_coords : Vector2i = get_random_coordinates(discard_played_tiles)
+	if random_coords != Vector2i(-1, -1) : random_tile = tiles.get(random_coords.x).get(random_coords.y)
+	return random_tile
 
 func instantiate(size : Vector2i = generation_grid_size, random : bool = false, direction : Vector2i = generation_direction) -> TileGrid :
 	var new_grid : TileGrid = SCENE.instantiate()
@@ -240,7 +300,15 @@ func get_specific_tile_from(origin_coordinates : Vector2i = Vector2i.ZERO, direc
 
 ## Get the tile in the coordinates given, returns null if coordinates aren't following
 ## the current grid size parameters.
-func get_tile_at(tile_coordinates : Vector2i = Vector2i.ZERO) -> Tile:
+func get_tile_at(tile_coordinates : Vector2i, fix_out_of_bounds : bool = false) -> Tile:
+	if tiles.is_empty() : return
+	
+	if fix_out_of_bounds :
+		if tile_coordinates.x > tiles.size() - 1 : tile_coordinates.x = tiles.size() - 1
+		else : if tile_coordinates.x < 0 : tile_coordinates.x = 0
+		if tile_coordinates.y > tiles[0].size() - 1 : tile_coordinates.y = tiles[0].size() - 1
+		else : if tile_coordinates.y < 0 : tile_coordinates.y = 0
+	
 	var supposed_horizontal = tiles.get(tile_coordinates.x)
 	if supposed_horizontal == null : return
 	return supposed_horizontal.get(tile_coordinates.y)
@@ -248,16 +316,37 @@ func get_tile_at(tile_coordinates : Vector2i = Vector2i.ZERO) -> Tile:
 var current_switch_pattern : bool = color_switch
 var color_switch_index : int = 0
 
-func generate_rows(final_size : Vector2i = generation_grid_size, custom_generation_direction : Vector2i = generation_direction, randomize_x : bool = randomize_width, randomize_y : bool = randomize_depth):
+## final size Vector2i(columns, rows)
+func generate_rows(final_size : Vector2i = generation_grid_size, custom_generation_direction : Vector2i = generation_direction, randomize_x : bool = randomize_width, randomize_y : bool = randomize_depth) :
 	if !active : return
+	
+	if !_has_generated :
+		var initial_request = generation_grid_size
+		if final_size.x <= 0 : final_size.x = STANDARD_GENERATION_SIZE.x
+		if final_size.y <= 0 : final_size.y = STANDARD_GENERATION_SIZE.y
+		
+		if final_size.x > initial_size_limit.x : final_size.x = initial_size_limit.x
+		if final_size.y > initial_size_limit.y : final_size.y = initial_size_limit.y
+		generation_grid_size = final_size
+	else :
+		if grid_size.x >= size_limit.x && god : god.print_lines(["ERROR : X SIZE LIMIT REACHED"]) ; return 
+		if grid_size.x >= size_limit.x && god : god.print_lines(["ERROR : Y SIZE LIMIT REACHED"]) ; return
+		
+		if final_size.x <= 0 : final_size.x = 1
+		if final_size.y <= 0 : final_size.y = 1
+		
+		if final_size.x > left_to_reach_limit.x : final_size.x = left_to_reach_limit.x
+		if final_size.y > left_to_reach_limit.y : final_size.y = left_to_reach_limit.y
+	
 	# Check and initialize the final size of the desired grid
-	if randomize_x : final_size.x = god.randi_range(randomize_from.x, randomize_to.x)
-	if randomize_y : final_size.y = god.randi_range(randomize_from.y, randomize_to.y)
+	if randomize_x : final_size.x = miracle.randi_range(randomize_from.x, randomize_to.x)
+	if randomize_y : final_size.y = miracle.randi_range(randomize_from.y, randomize_to.y)
 	
 	if tiles.size() < 1 && color_pattern.size() < 1 : force_pattern = false
+	
 	# Check if the new size is an addition, in the case of it being an addition, the grid size will be changed to fit.
-	if final_size.x > tiles.size() : generation_grid_size.y += final_size.x
-	if tiles && tiles[0] && final_size.y > tiles[0].size() : generation_grid_size.x += final_size.y
+	#if final_size.x > tiles.size() : generation_grid_size.y += final_size.x
+	#if tiles && tiles[0] && final_size.y > tiles[0].size() : generation_grid_size.x += final_size.y
 	
 	## Vertical Tiles
 	for z in range(final_size.y):
