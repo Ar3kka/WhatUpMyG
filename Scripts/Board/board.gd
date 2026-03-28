@@ -69,7 +69,7 @@ func _start() :
 	else : found_god.emit()
 	
 	seed = hash( initial_seed ) if initial_seed or !initial_seed.is_empty() else randi()
-	print("BOARD: ", self, " | SEED NAME: ", initial_seed, " | SEED ID: ", seed, " | DIMENTIONS [ X:", initial_size.x, ", Y:", initial_size.x, " ]")
+	print("BOARD: ", self, " | SEED NAME: ", initial_seed, " | SEED ID: ", seed, " | DIMENSIONS [ X:", initial_size.x, ", Y:", initial_size.x, " ]")
 	
 	if grid == null : _find_grid()
 	else : found_grid.emit()
