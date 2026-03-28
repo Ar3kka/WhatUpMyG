@@ -561,8 +561,8 @@ func board_prompt( message : Message, decoded_input : Array = [], sub_output : A
 	var set_name : String = sub_output[0][1] if !sub_output.is_empty() && sub_output[0].size() > 1 else ""
 	
 	if !message.all_output.is_empty() : return message
-	if _board_to_restart_to && !sub_output.is_empty() : message.output.append("GENERATED NEW BOARD > SET: %s | SEED NAME: %s | DIMENTIONS: [ X: %s, Y: %s ]" % [sub_output[0][1], sub_output[0][2], str(sub_output[0][3].x), str(sub_output[0][3].y)])
-	else : message.output.append("SET: %s | SEED NAME: %s | SEED ID: %s | DIMENTIONS: [ X: %s, Y: %s ]" % [set_name.to_upper(), board.initial_seed, str(board.seed), str(grid.grid_size.x), str(grid.grid_size.y)])
+	if _board_to_restart_to && !sub_output.is_empty() : message.output.append("GENERATED NEW BOARD > SET: %s | SEED NAME: %s | DIMENTIONS: [ X: %s, Y: %s ]" % [sub_output[0][1], sub_output[0][2], str(sub_output[0][3].x if sub_output[0][3].x != 0 else 8), str(sub_output[0][3].x if sub_output[0][3].y != 0 else 8)])
+	else : message.output.append("SET: %s | SEED NAME: %s | SEED ID: %s | DIMENTIONS: [ X: %s, Y: %s ]" % [set_name.to_upper(), board.initial_seed, str(board.seed), str(grid.grid_size.x ), str(grid.grid_size.y)])
 	return message
 
 func size_prompt( message : Message ) -> Message :
